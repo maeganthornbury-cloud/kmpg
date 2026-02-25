@@ -218,7 +218,7 @@
     #customerTable .actions-cell button {
       padding: 4px 10px;
       font-size: 12px;
-      border-radius: 4px;
+            border-radius: 4px;
       border: none;
       cursor: pointer;
       margin-right: 4px;
@@ -856,32 +856,6 @@ body{
           <span class="kympg-hint">Reference pricing</span>
         </span>
       </button>
-    </nav>
-        </span>
-      </button>
-    </nav>
-
-    <div class="kympg-sectionLabel">Tools</div>
-    <nav class="kympg-nav">
-      <button class="kympg-navBtn" data-tip="Breakage Pricing" type="button" onclick="kympgOpen('breakage', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Breakage Pricing</span>
-          <span class="kympg-hint">Open breakage tool</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="Sq Ft Price List" type="button" onclick="kympgOpen('pricelist', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Sq Ft Price List</span>
-          <span class="kympg-hint">Reference pricing</span>
-        </span>
-      </button>
 
       <button class="kympg-navBtn" data-tip="Customer Import" type="button" onclick="kympgOpen('customerimport', this)">
         <span class="kympg-ico" aria-hidden="true">
@@ -894,55 +868,6 @@ body{
       </button>
     </nav>
 
-    <div class="kympg-spacer"></div>
-  </aside>
-
-  <main class="kympg-main">
-    <div class="kympg-shellInner">
-      <div class="kympg-topBar">
-        <div class="kympg-pageTitle">
-          <h1 id="kympgPageTitle">Kentucky Mirror and Plate Glass</h1>
-          <p id="kympgPageSub">Select an option on the left to get started.</p>
-        </div>
-        <div class="kympg-pill" title="App status">
-          <span class="dot"></span>
-          <span>Ready</span>
-        </div>
-      </div>
-
-      <section class="kympg-card">
-        <div class="kympg-cardHeader">
-          <div class="h" id="kympgCardTitle">Home</div>
-          <div class="sub" id="kympgCardSub">Welcome</div>
-        </div>
-        <div class="kympg-cardBody" id="kympgContentArea">
-          <div id="landing-section" class="active">
-@@ -3061,45 +3071,52 @@ document.addEventListener("DOMContentLoaded", async function () {
-  const p = document.getElementById('po-section');
-  if (p){ p.style.display = 'block'; }
-
-  kympgSetHeader(
-    'Purchase Orders',
-    'Track vendor purchase orders.',
-    'Purchase Orders',
-    'Vendor POs'
-  );
-
-  loadPurchaseOrders();   // ← THIS LINE loads the database
-  return;
-}
-    if (which === 'breakage'){
-      const b = document.getElementById('breakage-section');
-      if (b){ b.style.display = 'block'; }
-      kympgSetHeader('Breakage Pricing', 'Open the breakage calculator inside the app.', 'Breakage Pricing', 'Tool');
-      return;
-    }
-    if (which === 'pricelist'){
-      const p = document.getElementById('pricelist-section');
-      if (p){ p.style.display = 'block'; }
-      kympgSetHeader('Sq Ft Price List', 'Reference pricing inside the app.', 'Sq Ft Price List', 'Tool');
-      return;
-    }
     <div class="kympg-spacer"></div>
   </aside>
 
@@ -3029,9 +2954,11 @@ document.addEventListener("DOMContentLoaded", async function () {
   function kympgToggleSidebar(){
     document.getElementById('kympgSidebar')?.classList.toggle('collapsed');
   }
+
   function kympgClearActiveNav(){
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
   }
+
   function kympgHideAllSections(){
     const ids = ['landing-section','calculator-section','customer-section','orders-section',
                  'quotedb-section','po-section','breakage-section','pricelist-section'];
@@ -3042,6 +2969,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       el.classList.remove('active');
     });
   }
+
   function kympgSetHeader(title, sub, cardTitle, cardSub){
     const t = document.getElementById('kympgPageTitle');
     const s = document.getElementById('kympgPageSub');
@@ -3052,89 +2980,73 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (ct) ct.textContent = cardTitle || '';
     if (cs) cs.textContent = cardSub || '';
   }
+
   function kympgShowLanding(){
     kympgClearActiveNav();
     kympgHideAllSections();
     const el = document.getElementById('landing-section');
-    if (el){ el.style.display = 'block'; el.classList.add('active'); }
-    kympgSetHeader('Kentucky Mirror and Plate Glass', 'Select an option on the left to get started.', 'Home', 'Welcome');
-  }
-  async function loadPurchaseOrders() {
-  try {
-    const res = await fetch('/.netlify/functions/purchase-orders');
-    if (!res.ok) throw new Error('Failed to load Purchase Orders');
-
-    const data = await res.json();
-
-    const container = document.getElementById('po-section');
-
-    // Clear existing content
-    container.innerHTML = '<h2>Purchase Orders</h2>';
-
-    if (!data || data.length === 0) {
-      container.innerHTML += '<p>No purchase orders found.</p>';
-      return;
+    if (el){
+      el.style.display = 'block';
+      el.classList.add('active');
     }
+    kympgSetHeader(
+      'Kentucky Mirror and Plate Glass',
+      'Select an option on the left to get started.',
+      'Home',
+      'Welcome'
+    );
+  }
 
-    const table = document.createElement('table');
-    table.style.width = '100%';
-    table.style.borderCollapse = 'collapse';
+  async function loadPurchaseOrders(){
+    try {
+      const res = await fetch('/.netlify/functions/purchase-orders');
+      if (!res.ok) throw new Error('Failed to load Purchase Orders');
 
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th>PO #</th>
-          <th>Vendor</th>
-          <th>Date</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.map(po => `
+      const data = await res.json();
+      const container = document.getElementById('po-section');
+      if (!container) return;
+
+      container.innerHTML = '<h2>Purchase Orders</h2>';
+
+      if (!data || data.length === 0) {
+        container.innerHTML += '<p>No purchase orders found.</p>';
+        return;
+      }
+
+      const table = document.createElement('table');
+      table.style.width = '100%';
+      table.style.borderCollapse = 'collapse';
+      table.innerHTML = `
+        <thead>
           <tr>
-            <td>${po.poNumber || ''}</td>
-            <td>${po.vendor || ''}</td>
-            <td>${po.date || ''}</td>
-            <td>${po.total || ''}</td>
+            <th>PO #</th>
+            <th>Vendor</th>
+            <th>Date</th>
+            <th>Total</th>
           </tr>
-        `).join('')}
-      </tbody>
-    `;
- if (which === 'customerimport'){
-      const c = document.getElementById('customer-section');
-      if (c){ c.style.display = 'block'; }
-      kympgSetHeader('Customer Import', 'Upload and manage customer records.', 'Customer Import', 'Customer tools');
-      try{ if (typeof loadCustomers === 'function') loadCustomers(); }catch(e){}
-      return;
+        </thead>
+        <tbody>
+          ${data.map(po => `
+            <tr>
+              <td>${po.poNumber || ''}</td>
+              <td>${po.vendor || ''}</td>
+              <td>${po.date || ''}</td>
+              <td>${po.total || ''}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      `;
+      container.appendChild(table);
+
+    } catch (err) {
+      console.error(err);
+      const container = document.getElementById('po-section');
+      if (container) {
+        container.innerHTML = '<p style="color:red;">Error loading purchase orders.</p>';
+      }
     }
-    kympgShowLanding();
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
-    const content = document.getElementById('kympgContentArea');
-    if (content){
-      ['calculator-section','customer-section','orders-section'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.parentElement !== content){
-          content.appendChild(el);
-        }
-        if (el) el.style.display = 'none';
-      });
-    }
-    kympgShowLanding();
-  });
-</script>
-
-</body>
-</html>
-    container.appendChild(table);
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById('po-section').innerHTML =
-      '<p style="color:red;">Error loading purchase orders.</p>';
-  }
-}
   function kympgOpen(which, btn){
     if (btn){
       kympgClearActiveNav();
@@ -3144,56 +3056,64 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (which === 'quote'){
       const calc = document.getElementById('calculator-section');
-      if (calc){ calc.style.display = 'block'; }
+      if (calc) calc.style.display = 'block';
       kympgSetHeader('New Quote', 'Create and print a quote.', 'New Quote', 'Quote builder');
       return;
     }
+
     if (which === 'order'){
       const calc = document.getElementById('calculator-section');
-      if (calc){ calc.style.display = 'block'; }
+      if (calc) calc.style.display = 'block';
       kympgSetHeader('New Order', 'Create an order and print ticket/invoice.', 'New Order', 'Order form');
-      try{ if (typeof startNewOrder === 'function') startNewOrder(); }catch(e){}
+      try { if (typeof startNewOrder === 'function') startNewOrder(); } catch(e) {}
       return;
     }
+
     if (which === 'orders'){
       const ord = document.getElementById('orders-section');
-      if (ord){ ord.style.display = 'block'; }
+      if (ord) ord.style.display = 'block';
       kympgSetHeader('Search / Open Orders', 'Find and open past orders.', 'Orders', 'Search and open orders');
-      try{ if (typeof loadOrders === 'function') loadOrders(); }catch(e){}
+      try { if (typeof loadOrders === 'function') loadOrders(); } catch(e) {}
       return;
     }
+
     if (which === 'quotedb'){
       const q = document.getElementById('quotedb-section');
-      if (q){ q.style.display = 'block'; }
+      if (q) q.style.display = 'block';
       kympgSetHeader('Open Quotes', 'Search and open saved quotes.', 'Quotes', 'Quotes database');
       return;
     }
-  if (which === 'po') {
-  const p = document.getElementById('po-section');
-  if (p){ p.style.display = 'block'; }
 
-  kympgSetHeader(
-    'Purchase Orders',
-    'Track vendor purchase orders.',
-    'Purchase Orders',
-    'Vendor POs'
-  );
+    if (which === 'po'){
+      const p = document.getElementById('po-section');
+      if (p) p.style.display = 'block';
+      kympgSetHeader('Purchase Orders', 'Track vendor purchase orders.', 'Purchase Orders', 'Vendor POs');
+      loadPurchaseOrders();
+      return;
+    }
 
-  loadPurchaseOrders();   // ← THIS LINE loads the database
-  return;
-}
     if (which === 'breakage'){
       const b = document.getElementById('breakage-section');
-      if (b){ b.style.display = 'block'; }
+      if (b) b.style.display = 'block';
       kympgSetHeader('Breakage Pricing', 'Open the breakage calculator inside the app.', 'Breakage Pricing', 'Tool');
       return;
     }
+
     if (which === 'pricelist'){
       const p = document.getElementById('pricelist-section');
-      if (p){ p.style.display = 'block'; }
+      if (p) p.style.display = 'block';
       kympgSetHeader('Sq Ft Price List', 'Reference pricing inside the app.', 'Sq Ft Price List', 'Tool');
       return;
     }
+
+    if (which === 'customerimport'){
+      const c = document.getElementById('customer-section');
+      if (c) c.style.display = 'block';
+      kympgSetHeader('Customer Import', 'Upload and manage customer records.', 'Customer Import', 'Customer tools');
+      try { if (typeof loadCustomers === 'function') loadCustomers(); } catch(e) {}
+      return;
+    }
+
     kympgShowLanding();
   }
 
@@ -3202,9 +3122,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (content){
       ['calculator-section','customer-section','orders-section'].forEach(id => {
         const el = document.getElementById(id);
-        if (el && el.parentElement !== content){
-          content.appendChild(el);
-        }
+        if (el && el.parentElement !== content) content.appendChild(el);
         if (el) el.style.display = 'none';
       });
     }
@@ -3214,3 +3132,4 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 </body>
 </html>
+
