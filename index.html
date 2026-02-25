@@ -860,7 +860,7 @@ body{
         <span class="kympg-labelWrap">
           <span class="kympg-label">Customer Import</span>
           <span class="kympg-hint">Upload customer list</span>
-            </span>
+    </span>
       </button>
     </nav>
 
@@ -1038,157 +1038,7 @@ body{
         </tr>
       </thead>
       <tbody id="glassTableBody"></tbody>
-    </table>
-
-    <div class="buttons">
-      <button class="btn-save-order" onclick="saveOrder()">Save Order</button>
-      <button class="btn-new-order" onclick="startNewOrder()">New Order</button>
-      <button onclick="addRow()">Add Line</button>
-      <button type="button" onclick="printDoc('quote')">Print Quote</button>
-<button type="button" onclick="printDoc('ticket')">Print Ticket</button>
-<button type="button" onclick="printDoc('invoice')">Print Invoice</button>
-    </div>
-
-    <h3 id="grandTotal">Grand Total: $0.00</h3>
-    <h3 id="grandTotalTax">Grand Total with Tax (6%): $0.00</h3>
-  </div>
-
-  <!-- Hardware Pricing Section -->
-  <div style="flex: 1; margin-top: 16px;">
-    <h2 style="margin-top: 10px; text-align:left;">Misc Hardware Pricing</h2>
-    <table id="hardwareTable">
-      <thead>
-        <tr>
-          <th>Qty</th>
-          <th>Part</th>
-          <th>Price</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody id="hardwareTableBody">
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-      </tbody>
-    </table>
-    <datalist id="hardwarePartsList"></datalist>
-    <h3 id="hardwareGrandTotal">Hardware Total: $0.00</h3>
-    <button onclick="clearHardware()">Clear Hardware</button>
-  </div>
-</div>
-</div><!-- end calculator-section -->
-
-<!-- Customer Management Section -->
-<div id="customer-section">
-  <h2>Customer Database</h2>
-
-  <div id="customerFormWrapper" style="display:none;">
-    <form id="customerForm" onsubmit="saveCustomer(event)">
-      <input type="hidden" id="custEditId" value="">
-      <h3 id="formTitle">Add New Customer</h3>
-
-      <label for="custName">Customer Name *</label>
-      <input type="text" id="custName" required placeholder="Enter customer name">
-
-      <label for="custAddress">Address</label>
-      <input type="text" id="custAddress" placeholder="Enter address">
-
-      <label for="custEmail">Email</label>
-      <input type="email" id="custEmail" placeholder="Enter email address">
-
-      <label for="custPhone">Phone Number</label>
-      <input type="tel" id="custPhone" placeholder="(123) 456-7890">
-
-      <label for="custCreditTerms">Credit Terms</label>
-      <input type="text" id="custCreditTerms" placeholder="e.g. Net 30, COD, Prepaid">
-
-      <div class="form-actions">
-        <button type="submit" class="btn-save">Save Customer</button>
-        <button type="button" class="btn-cancel" onclick="cancelCustomerForm()">Cancel</button>
-      </div>
-    </form>
-  </div>
-
-  <button class="btn-add-customer" onclick="showAddCustomerForm()">+ Add Customer</button>
-  <button class="btn-upload-customer" onclick="document.getElementById('importFileInput').click()">Upload from CSV/Excel</button>
-  <input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" style="display:none;" onchange="handleImportFile(event)">
-  <input type="text" id="customerSearch" placeholder="Search customers..." oninput="filterCustomerTable()">
-
-  <table id="customerTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Address</th>
-        <th>Email</th>
-        <th>Phone</th>
-        <th>Credit Terms</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="customerTableBody">
-      <tr><td colspan="6" style="text-align:center;">Loading customers...</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- Orders Section -->
-<div id="orders-section">
-  <h2>Orders</h2>
-  <input type="text" id="orderSearch" placeholder="Search by order number or customer name..." oninput="searchOrders()">
-
-  <table id="orderTable">
-    <thead>
-      <tr>
-        <th>Order #</th>
-        <th>Customer</th>
-        <th>Items</th>
-        <th>Grand Total</th>
-        <th>Total w/ Tax</th>
-        <th>Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="orderTableBody">
-      <tr><td colspan="7" style="text-align:center;">Loading orders...</td></tr>
-    </tbody>
-  </table>
-</div>
-<script>
-  // Sidebar + shell navigation (load this early so inline onclick works)
-  function kympgToggleSidebar() {
-    const sb = document.getElementById('kympgSidebar');
-    if (!sb) return;
-    sb.classList.toggle('collapsed');
-  }
-
-  function kympgShowLanding() {
+@@ -1138,54 +1165,63 @@ body{
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
@@ -1204,6 +1054,58 @@ body{
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
+      quote: 'calculator-section',
+      order: 'calculator-section',
+      orders: 'orders-section',
+      customerimport: 'customer-section',
+      breakage: 'breakage-section',
+      pricelist: 'pricelist-section',
+      quotedb: 'quotedb-section',
+      po: 'po-section',
+    };
+
+    const targetId = map[which] || 'landing-section';
+    const target = document.getElementById(targetId);
+    if (target) target.style.display = 'block';
+  const targetId = map[which] || 'landing-section';
+  const target = document.getElementById(targetId);
+  if (target) target.style.display = 'block';
+  }
+
+  // Ignore noisy browser-extension promise rejections unrelated to app logic.
+  window.addEventListener('unhandledrejection', function(event) {
+    const reason = event && event.reason;
+    const message = (typeof reason === 'string' ? reason : (reason && reason.message) || '').toLowerCase();
+    if (message.includes('no tab with id')) {
+      event.preventDefault();
+    }
+  });
+</script>
+  
+// ===== KY MPG Shell navigation (required for sidebar clicks) =====
+window.kympgToggleSidebar = function() {
+  const sb = document.getElementById('kympgSidebar');
+  if (!sb) return;
+  sb.classList.toggle('collapsed');
+};
+
+window.kympgShowLanding = function() {
+  const landing = document.getElementById('landing-section');
+  if (landing) landing.style.display = 'block';
+
+  ['calculator-section','orders-section','customer-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+};
+
+window.kympgOpen = function(which, btn) {
+  document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  ['landing-section','calculator-section','orders-section','customer-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+
+  const map = {
+          
       quote: 'calculator-section',
       order: 'calculator-section',
       orders: 'orders-section',
