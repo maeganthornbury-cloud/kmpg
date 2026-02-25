@@ -12,9 +12,6 @@
     th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
     input, select { width: 90%; }
     .buttons { margin-top: 15px; }
-    #hardwareList { overflow-y: auto; max-height: 200px; border: 1px solid #ccc; padding: 5px; list-style: none; }
-    #hardwareList li { cursor: pointer; margin: 5px 0; }
-    #hardwareDropdownBtn { margin-left: 5px; }
 
 .glassList li.active {
   background-color: #cce5ff;
@@ -218,7 +215,7 @@
     #customerTable .actions-cell button {
       padding: 4px 10px;
       font-size: 12px;
-            border-radius: 4px;
+      border-radius: 4px;
       border: none;
       cursor: pointer;
       margin-right: 4px;
@@ -660,7 +657,6 @@ body{
   padding: 6px 10px 0 10px;
 }
 .kympg-sidebar.collapsed .kympg-sectionLabel{ display:none; }
-
 .kympg-nav{ display:flex; flex-direction:column; gap:6px; }
 .kympg-navBtn{
   width:100%;
@@ -810,7 +806,7 @@ body{
         </span>
         <span class="kympg-labelWrap">
           <span class="kympg-label">Search / Open Orders</span>
-<span class="kympg-hint">Find past orders</span>
+          <span class="kympg-hint">Find past orders</span>
         </span>
       </button>
 
@@ -831,32 +827,6 @@ body{
         <span class="kympg-labelWrap">
           <span class="kympg-label">Purchase Orders</span>
           <span class="kympg-hint">Vendor POs</span>
-        </span>
-      </button>
-    </nav>
-
-    <div class="kympg-sectionLabel">Tools</div>
-    <nav class="kympg-nav">
-      <button class="kympg-navBtn" data-tip="Breakage Pricing" type="button" onclick="kympgOpen('breakage', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Breakage Pricing</span>
-          <span class="kympg-hint">Open breakage tool</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="Sq Ft Price List" type="button" onclick="kympgOpen('pricelist', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Sq Ft Price List</span>
-          <span class="kympg-hint">Reference pricing</span>
-        </span>
-      </button>
-    </nav>
         </span>
       </button>
     </nav>
@@ -917,61 +887,11 @@ body{
         </div>
         <div class="kympg-cardBody" id="kympgContentArea">
           <div id="landing-section" class="active">
-@@ -3061,45 +3071,52 @@ document.addEventListener("DOMContentLoaded", async function () {
-  const p = document.getElementById('po-section');
-  if (p){ p.style.display = 'block'; }
-
-  kympgSetHeader(
-    'Purchase Orders',
-    'Track vendor purchase orders.',
-    'Purchase Orders',
-    'Vendor POs'
-  );
-
-  loadPurchaseOrders();   // ← THIS LINE loads the database
-  return;
-}
-    if (which === 'breakage'){
-      const b = document.getElementById('breakage-section');
-      if (b){ b.style.display = 'block'; }
-      kympgSetHeader('Breakage Pricing', 'Open the breakage calculator inside the app.', 'Breakage Pricing', 'Tool');
-      return;
-    }
-    if (which === 'pricelist'){
-      const p = document.getElementById('pricelist-section');
-      if (p){ p.style.display = 'block'; }
-      kympgSetHeader('Sq Ft Price List', 'Reference pricing inside the app.', 'Sq Ft Price List', 'Tool');
-      return;
-    }
-    <div class="kympg-spacer"></div>
-  </aside>
-
-  <main class="kympg-main">
-    <div class="kympg-shellInner">
-      <div class="kympg-topBar">
-        <div class="kympg-pageTitle">
-          <h1 id="kympgPageTitle">Kentucky Mirror and Plate Glass</h1>
-          <p id="kympgPageSub">Select an option on the left to get started.</p>
-        </div>
-        <div class="kympg-pill" title="App status">
-          <span class="dot"></span>
-          <span>Ready</span>
-        </div>
-      </div>
-
-      <section class="kympg-card">
-        <div class="kympg-cardHeader">
-          <div class="h" id="kympgCardTitle">Home</div>
-          <div class="sub" id="kympgCardSub">Welcome</div>
-        </div>
-        <div class="kympg-cardBody" id="kympgContentArea">
-          <div id="landing-section" class="active">
             <div class="kympg-landingWrap">
               <div class="kympg-landingLogo">
                 <img src="564e4083-db27-4742-b925-737f1faaa333.jpg" alt="Kentucky Mirror and Plate Glass" onerror="this.style.display='none';" />
               </div>
               <div class="kympg-landingTitle">Kentucky Mirror and Plate Glass</div>
-          
               <div class="kympg-landingSub">
                 Use the sidebar to create a new quote or order, search past orders, open quotes, manage purchase orders,
                 or open the pricing tools.
@@ -1077,7 +997,7 @@ body{
     <!-- Glass Table -->
     <table id="glassTable">
       <thead>
-     <tr>
+        <tr>
           <th>Qty</th>
           <th>Width (in)</th>
           <th>Height (in)</th>
@@ -1102,21 +1022,57 @@ body{
 <button type="button" onclick="printDoc('invoice')">Print Invoice</button>
     </div>
 
-    <h3 id="glassPricing">Glass Pricing: $0.00</h3>
-    <h3 id="hardwarePrice">Hardware Pricing: $0.00</h3>
     <h3 id="grandTotal">Grand Total: $0.00</h3>
     <h3 id="grandTotalTax">Grand Total with Tax (6%): $0.00</h3>
   </div>
 
   <!-- Hardware Pricing Section -->
-  <div style="flex: 1;">
-    <h2 style="margin-top: 10px;">Misc Hardware Pricing</h2>
-    <div id="hardwareDropdown" class="dropdown-container">
-      <input id="hardwareSearch" type="text" placeholder="Search hardware..." />
-      <button id="hardwareDropdownBtn" type="button">&#9662;</button>
-      <ul id="hardwareList" class="dropdown-list"></ul>
-    </div>
-    <h3 id="hardwarePrice">Hardware Price: $0.00</h3>
+  <div style="flex: 1; margin-top: 16px;">
+    <h2 style="margin-top: 10px; text-align:left;">Misc Hardware Pricing</h2>
+    <table id="hardwareTable">
+      <thead>
+        <tr>
+          <th>Qty</th>
+          <th>Part</th>
+          <th>Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="hardwareTableBody">
+        <tr>
+          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
+          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
+          <td class="hw-price">$0.00</td>
+          <td class="hw-total">$0.00</td>
+        </tr>
+        <tr>
+          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
+          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
+          <td class="hw-price">$0.00</td>
+          <td class="hw-total">$0.00</td>
+        </tr>
+        <tr>
+          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
+          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
+          <td class="hw-price">$0.00</td>
+          <td class="hw-total">$0.00</td>
+        </tr>
+        <tr>
+          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
+          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
+          <td class="hw-price">$0.00</td>
+          <td class="hw-total">$0.00</td>
+        </tr>
+        <tr>
+          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
+          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
+          <td class="hw-price">$0.00</td>
+          <td class="hw-total">$0.00</td>
+        </tr>
+      </tbody>
+    </table>
+    <datalist id="hardwarePartsList"></datalist>
+    <h3 id="hardwareGrandTotal">Hardware Total: $0.00</h3>
     <button onclick="clearHardware()">Clear Hardware</button>
   </div>
 </div>
@@ -1142,6 +1098,7 @@ body{
 
       <label for="custPhone">Phone Number</label>
       <input type="tel" id="custPhone" placeholder="(123) 456-7890">
+
       <label for="custCreditTerms">Credit Terms</label>
       <input type="text" id="custCreditTerms" placeholder="e.g. Net 30, COD, Prepaid">
 
@@ -1392,6 +1349,7 @@ async function loadPricingFromSheets() {
     standardglassPartsData = rowsToGlassMap(stdRows);
     specialGlassPartsData  = rowsToGlassMap(spRows);
     hardwareParts          = rowsToHardwareMap(hwRows);
+    refreshHardwareDatalist();
 
     // Refresh active pointer after load
     const specialToggle = document.getElementById('specialPricingToggle');
@@ -1546,11 +1504,12 @@ document.getElementById('glassTableBody').addEventListener('click', function(e) 
   updateTotals();
 });
 
-// Hardware search events
-document.getElementById('hardwareSearch').addEventListener('input', showHardwareList);
-document.getElementById('hardwareDropdownBtn').addEventListener('click', toggleHardwareList);
-document.addEventListener('click', function(event) {
-  if (!document.getElementById('hardwareDropdown').contains(event.target)) hideHardwareList();
+// Hardware table events
+document.getElementById('hardwareTableBody').addEventListener('input', function (event) {
+  const row = event.target.closest('tr');
+  if (!row) return;
+  updateHardwareRow(row);
+  updateHardwareTotals();
 });
 
 // ===================== FUNCTIONS =====================
@@ -1568,47 +1527,6 @@ function parseInput(value) {
   } else {
     return parseFloat(value);
   }
-}
-
-    <td><input type="checkbox" class="shape"></td>
-    <td class="eachPrice">$0.00</td>
-    <td class="lineTotal">$0.00</td>
-    <td class="delete-cell">
-      <button class="icon-btn clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
-    </td>
-  `;
-});
-
-// Hardware search events
-document.getElementById('hardwareSearch').addEventListener('input', showHardwareList);
-document.getElementById('hardwareDropdownBtn').addEventListener('click', toggleHardwareList);
-document.addEventListener('click', function(event) {
-  if (!document.getElementById('hardwareDropdown').contains(event.target)) hideHardwareList();
-});
-
-// ===================== FUNCTIONS =====================
-function parseInput(value) {
-  if (!value) return 0;
-  value = value.trim();
-  if (value.includes(' ')) {
-    const parts = value.split(' ');
-    const whole = parseFloat(parts[0]);
-    const fractionParts = parts[1].split('/');
-    return whole + (parseFloat(fractionParts[0]) / parseFloat(fractionParts[1]));
-  } else if (value.includes('/')) {
-    const fractionParts = value.split('/');
-    return parseFloat(fractionParts[0]) / parseFloat(fractionParts[1]);
-  } else {
-    return parseFloat(value);
-  }
-}
-function printDoc(type) {
-  if (!currentOrderId) {
-    alert("Please save the order first, then print.");
-    return;
-  }
-  const url = `/api/orders?id=${encodeURIComponent(currentOrderId)}&print=${encodeURIComponent(type)}`;
-  window.open(url, "_blank");
 }
 function roundEven(num) {
   if (isNaN(num)) return 0;
@@ -1635,6 +1553,14 @@ function addRow() {
         <option value="1 1/4">1 1/4"</option>
       </select>
     </td>
+    <td><input type="checkbox" class="shape"></td>
+    <td class="eachPrice">$0.00</td>
+    <td class="lineTotal">$0.00</td>
+    <td class="delete-cell">
+      <button class="icon-btn clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
+    </td>
+  `;
+
   tbody.appendChild(tr);
   setupGlassSearch(tr.querySelector('.glassTypeInput'), tr.querySelector('.glassList'));
   tr.querySelectorAll('input, select').forEach(el => {
@@ -1707,7 +1633,7 @@ function setupGlassSearch(inputElement, listElement) {
     const items = listElement.querySelectorAll('li');
 
     if (e.key === 'ArrowDown' && items.length) {
-          e.preventDefault();
+      e.preventDefault();
       currentIndex = (currentIndex + 1) % items.length;
       setActiveItem(items);
     } else if (e.key === 'ArrowUp' && items.length) {
@@ -1727,6 +1653,17 @@ function setupGlassSearch(inputElement, listElement) {
     }
   });
 }
+
+
+
+
+function updateTotals() {
+  let grandTotal = 0;
+  const rows = document.querySelectorAll('#glassTableBody tr');
+
+  rows.forEach(row => {
+    const widthInput = row.querySelector('.width').value;
+    const heightInput = row.querySelector('.height').value;
     const glassType = row.querySelector('.glassTypeInput').value;
     const bevelCheckbox = row.querySelector('.bevel');
     const bevelChecked = bevelCheckbox.checked;
@@ -1752,30 +1689,13 @@ function setupGlassSearch(inputElement, listElement) {
       return;
     }
 
-// PLEXI — quote ONLY if the piece cannot be cut from a 48 x 96 sheet (any orientation)
-const isPlexi = glassType.toUpperCase().includes('PLEXI');
-
-if (isPlexi) {
-  const fitsNormal  = width  <= 48 && height <= 96; // 48 x 96
-  const fitsRotated = width  <= 96 && height <= 48; // 96 x 48
     // PLEXI — quote ONLY if the piece cannot be cut from a 48 x 96 sheet (any orientation)
     const isPlexi = glassType.toUpperCase().includes('PLEXI');
 
-  // If it doesn't fit in either orientation, it must be quoted
-  if (!fitsNormal && !fitsRotated) {
-    row.querySelector('.eachPrice').innerText = '$0.00';
-    row.querySelector('.lineTotal').innerText = 'Must be quoted by General Rubber';
     if (isPlexi) {
       const fitsNormal  = width <= 48 && height <= 96; // 48 x 96
       const fitsRotated = width <= 96 && height <= 48; // 96 x 48
 
-    if (row.dataset.plexiAlerted !== "true") {
-      alert("This size cannot be cut from a 48 x 96 sheet and must be quoted by General Rubber.");
-      row.dataset.plexiAlerted = "true";
-    }
-
-    return; // stop calculations for this row
-  }
       // If it doesn't fit in either orientation, it must be quoted
       if (!fitsNormal && !fitsRotated) {
         row.querySelector('.eachPrice').innerText = '$0.00';
@@ -1786,55 +1706,12 @@ if (isPlexi) {
           row.dataset.plexiAlerted = 'true';
         }
 
-// If we get here, the piece fits in 48 x 96 somehow → continue with normal pricing...    } else {
-      delete row.dataset.plexiAlerted;
         return; // stop calculations for this row
       }
     }
 
     // If we get here, either it is not plexi, or plexi fits 48x96 in some orientation
     delete row.dataset.plexiAlerted;
-
-    let area = (width * height) / 144;
-    const partInfo = glassPartsData[glassType];
-
-    // ================= CUSTOM MINIMUM RULE CHANGES =================
-    // - Polished tempered: minimum 3 sq ft charge
-    // - Polished non-tempered: $15 minimum
-    // - Everything else: use partInfo.min
-    let basePrice;
-
-    const upperType = glassType.toUpperCase();
-    const isTempered = upperType.includes("TEMPERED");
-    const isPolished = upperType.includes("POLISHED");
-
-    // 🚨 TEMPERED + SHAPE = MUST QUOTE BY GLENNY
-if (isTempered && shapeChecked) {
-  row.querySelector('.eachPrice').innerText = '$0.00';
-  row.querySelector('.lineTotal').innerText = 'Needs quoted by Glenny';
-
-  if (row.dataset.temperedShapeAlerted !== "true") {
-    alert("Tempered shapes must be quoted by Glenny.");
-    row.dataset.temperedShapeAlerted = "true";
-  }
-
-  return; // stop calculations for this row
-} else {
-
-
-
-function updateTotals() {
-  let grandTotal = 0;
-  let glassTotal = 0;
-  const rows = document.querySelectorAll('#glassTableBody tr');
-
-  rows.forEach(row => {
-    const widthInput = row.querySelector('.width').value;
-    const heightInput = row.querySelector('.height').value;
-   
-// If we get here, the piece fits in 48 x 96 somehow → continue with normal pricing...    } else {
-      delete row.dataset.plexiAlerted;
-    }
 
     let area = (width * height) / 144;
     const partInfo = glassPartsData[glassType];
@@ -1879,7 +1756,6 @@ if (isTempered && shapeChecked) {
       if (basePrice < partInfo.min) basePrice = partInfo.min;
     }
     // ===============================================================
-
     let bevelCost = 0;
     const thickness = glassType.includes('1/4') ? "1/4" :
                       glassType.includes('3/8') ? "3/8" :
@@ -1893,7 +1769,7 @@ if (isTempered && shapeChecked) {
       row.dataset.bevelAlerted = "false";
     } else if (bevelChecked && row.dataset.bevelAlerted !== "true") {
       alert("This glass type cannot be beveled.");
- row.dataset.bevelAlerted = "true";
+      row.dataset.bevelAlerted = "true";
     }
 
     const qty = parseInt(row.querySelector('.qty')?.value) || 1;
@@ -1919,18 +1795,7 @@ let total = eachPrice * qty;
     row.querySelector('.lineTotal').innerText = `$${total.toFixed(2)}`;
 
     grandTotal += total;
-    glassTotal += total;
   });
-
-  const hardwareText = document.getElementById('hardwarePrice').innerText;
-  const hardwareMatch = hardwareText.match(/\$([\d,.]+)/);
-  const hardwareTotal = hardwareMatch ? parseFloat(hardwareMatch[1].replace(/,/g, '')) : 0;
-  const grandTotal = glassTotal + hardwareTotal;
-
-  document.getElementById('glassPricing').innerText =
-    `Glass Pricing: $${glassTotal.toFixed(2)}`;
-  document.getElementById('hardwarePrice').innerText =
-    `Hardware Pricing: $${hardwareTotal.toFixed(2)}`;
 
   document.getElementById('grandTotal').innerText =
     `Grand Total: $${grandTotal.toFixed(2)}`;
@@ -1942,47 +1807,55 @@ function clearForm() {
   startNewOrder();
 }
 
-function showHardwareList() {
-  const list = document.getElementById('hardwareList');
-  const search = document.getElementById('hardwareSearch').value.toLowerCase();
-  list.innerHTML = '';
-  Object.keys(hardwareParts).forEach(part => {
-    if (part.toLowerCase().includes(search)) {
-      const li = document.createElement('li');
-      li.textContent = part;
-      li.onclick = () => {
-        document.getElementById('hardwareSearch').value = part;
-        document.getElementById('hardwarePrice').innerText =
-          `Hardware Price: $${hardwareParts[part].toFixed(2)}`;
-          `Hardware Pricing: $${hardwareParts[part].toFixed(2)}`;
-        updateTotals();
-        hideHardwareList();
-      };
+function refreshHardwareDatalist() {
+  const datalist = document.getElementById('hardwarePartsList');
+  if (!datalist) return;
+  datalist.innerHTML = Object.keys(hardwareParts)
+    .sort((a,b) => a.localeCompare(b))
+    .map(part => `<option value="${escapeHtml(part)}"></option>`)
+    .join('');
+}
 
-      list.appendChild(li);
-    }
+function updateHardwareRow(row) {
+  const qtyEl = row.querySelector('.hw-qty');
+  const partEl = row.querySelector('.hw-part');
+  const priceEl = row.querySelector('.hw-price');
+  const totalEl = row.querySelector('.hw-total');
+
+  const qty = Math.max(0, parseInt(qtyEl?.value, 10) || 0);
+  if (qtyEl && String(qtyEl.value) !== String(qty)) qtyEl.value = qty;
+
+  const partName = (partEl?.value || '').trim();
+  const unitPrice = hardwareParts[partName] || 0;
+  const lineTotal = unitPrice * qty;
+
+  if (priceEl) priceEl.innerText = `$${unitPrice.toFixed(2)}`;
+  if (totalEl) totalEl.innerText = `$${lineTotal.toFixed(2)}`;
+}
+
+function updateHardwareTotals() {
+  const rows = document.querySelectorAll('#hardwareTableBody tr');
+  let hardwareTotal = 0;
+  rows.forEach(row => {
+    const totalText = row.querySelector('.hw-total')?.innerText || '$0.00';
+    const match = totalText.match(/\$([\d,.]+)/);
+    if (match) hardwareTotal += parseFloat(match[1].replace(/,/g, '')) || 0;
   });
-  list.style.display = 'block';
+
+  const totalEl = document.getElementById('hardwareGrandTotal');
+  if (totalEl) totalEl.innerText = `Hardware Total: $${hardwareTotal.toFixed(2)}`;
 }
 
-function hideHardwareList() {
-  document.getElementById('hardwareList').style.display = 'none';
-}
 function clearHardware() {
-  document.getElementById('hardwareSearch').value = '';
-  document.getElementById('hardwareList').innerHTML = '';
-  document.getElementById('hardwarePrice').innerText = 'Hardware Price: $0.00';
-  document.getElementById('hardwarePrice').innerText = 'Hardware Pricing: $0.00';
-  updateTotals();
-}
-
-function toggleHardwareList() {
-  const list = document.getElementById('hardwareList');
-  if (list.style.display === 'block') {
-    hideHardwareList();
-  } else {
-    showHardwareList();
-  }
+  document.querySelectorAll('#hardwareTableBody tr').forEach(row => {
+    const qtyEl = row.querySelector('.hw-qty');
+    const partEl = row.querySelector('.hw-part');
+    if (qtyEl) qtyEl.value = 0;
+    if (partEl) partEl.value = '';
+    row.querySelector('.hw-price').innerText = '$0.00';
+    row.querySelector('.hw-total').innerText = '$0.00';
+  });
+  updateHardwareTotals();
 }
 
 // ===================== TAB SWITCHING =====================
@@ -1999,6 +1872,8 @@ function switchTab(tab) {
   custSection.classList.remove('active');
   ordSection.classList.remove('active');
   tabCalc.classList.remove('active');
+  tabCust.classList.remove('active');
+  tabOrd.classList.remove('active');
 
   if (tab === 'customers') {
     custSection.classList.add('active');
@@ -2100,7 +1975,6 @@ async function editCustomer(id) {
   document.getElementById('custCreditTerms').value = customer.creditTerms || '';
   document.getElementById('customerFormWrapper').style.display = 'block';
 }
-
 async function saveCustomer(event) {
   event.preventDefault();
 
@@ -2321,7 +2195,6 @@ function clearCustomerInfo() {
 // ===================== QUICK-ADD CUSTOMER MODAL =====================
 function openQuickAddCustomer(prefillName) {
   document.getElementById('customerLookupList').style.display = 'none';
-
   // Check if modal already exists, if not create it
   let modal = document.getElementById('quickAddModal');
   if (!modal) {
@@ -2492,12 +2365,26 @@ function gatherOrderData() {
     });
   });
 
-  // Gather hardware
-  const hwName = document.getElementById('hardwareSearch').value.trim();
-  const hwPriceText = document.getElementById('hardwarePrice').innerText;
-  const hwMatch = hwPriceText.match(/\$([\d.]+)/);
-  const hwPrice = hwMatch ? parseFloat(hwMatch[1]) : 0;
-  const hardware = hwName ? { name: hwName, price: hwPrice } : null;
+  // Gather hardware rows
+  const hardwareItems = Array.from(document.querySelectorAll('#hardwareTableBody tr')).map(row => {
+    const qty = parseInt(row.querySelector('.hw-qty')?.value, 10) || 0;
+    const name = (row.querySelector('.hw-part')?.value || '').trim();
+    const unitPriceText = row.querySelector('.hw-price')?.innerText || '$0.00';
+    const lineTotalText = row.querySelector('.hw-total')?.innerText || '$0.00';
+    const unitMatch = unitPriceText.match(/\$([\d.]+)/);
+    const lineMatch = lineTotalText.match(/\$([\d.]+)/);
+    return {
+      qty,
+      name,
+      price: unitMatch ? parseFloat(unitMatch[1]) : 0,
+      total: lineMatch ? parseFloat(lineMatch[1]) : 0,
+    };
+  }).filter(item => item.qty > 0 && item.name);
+
+  const hardwareTotal = hardwareItems.reduce((sum, item) => sum + item.total, 0);
+  const hardware = hardwareItems.length
+    ? { name: hardwareItems.length === 1 ? hardwareItems[0].name : 'Multiple hardware items', price: hardwareTotal }
+    : null;
 
   // Totals
   const grandTotalText = document.getElementById('grandTotal').innerText;
@@ -2509,7 +2396,7 @@ function gatherOrderData() {
 
   const specialPricing = document.getElementById('specialPricingToggle').checked;
 
-  return { customer, items, hardware, specialPricing, grandTotal, grandTotalWithTax };
+  return { customer, items, hardware, hardwareItems, specialPricing, grandTotal, grandTotalWithTax };
 }
 
 async function saveOrder() {
@@ -2527,864 +2414,3 @@ async function saveOrder() {
 
   const saveBtn = document.querySelector('.btn-save-order');
   saveBtn.disabled = true;
-  saveBtn.textContent = 'Saving...';
-
-  try {
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to save order');
-    }
-
-const savedOrder = await res.json();
-
-// Remember what we just saved (so Print works even after clearing)
-lastSavedOrderId = savedOrder.id;
-
-// Briefly show confirmation (optional)
-document.getElementById('currentOrderNumber').textContent = savedOrder.orderNumber;
-document.getElementById('orderSavedStatus').textContent = `Saved! ${savedOrder.orderNumber}`;
-
-// Refresh Orders tab list (optional but nice)
-try { await loadOrders(); } catch (e) {}
-
-// Clear the form for the next order
-startNewOrder();
-
-  } catch (err) {
-    alert('Error saving order: ' + err.message);
-  } finally {
-    saveBtn.disabled = false;
-    saveBtn.textContent = 'Save Order';
-  }
-}
-
-// ===================== ORDERS LIST (Orders Tab) =====================
-let allOrders = [];
-
-async function loadOrders() {
-  try {
-    const res = await fetch('/api/orders');
-    if (!res.ok) throw new Error('Failed to load orders');
-    allOrders = await res.json();
-    renderOrderTable(allOrders);
-  } catch (err) {
-    console.error(err);
-    document.getElementById('orderTableBody').innerHTML =
-      '<tr><td colspan="7" style="text-align:center;">Failed to load orders.</td></tr>';
-  }
-}
-
-function renderOrderTable(orders) {
-  const tbody = document.getElementById('orderTableBody');
-  if (!orders.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No orders found.</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = orders.map(o => {
-    const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '';
-    const custName = o.customer?.name || 'N/A';
-    const itemCount = (o.items || []).length;
-    return `
-    <tr onclick="viewOrder('${o.id}')">
-      <td><strong>${escapeHtml(o.orderNumber || '')}</strong></td>
-      <td>${escapeHtml(custName)}</td>
-      <td>${itemCount} item${itemCount !== 1 ? 's' : ''}</td>
-      <td>$${(o.grandTotal || 0).toFixed(2)}</td>
-      <td>$${(o.grandTotalWithTax || 0).toFixed(2)}</td>
-      <td>${escapeHtml(date)}</td>
-      <td class="actions-cell">
-        <button class="btn-edit" onclick="event.stopPropagation(); loadOrderIntoCalculator('${o.id}')">Open</button>
-        <button class="btn-delete" onclick="event.stopPropagation(); deleteOrder('${o.id}')">Delete</button>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-async function searchOrders() {
-  const query = document.getElementById('orderSearch').value.trim();
-
-  if (!query) {
-    renderOrderTable(allOrders);
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/orders?search=${encodeURIComponent(query)}`);
-    if (!res.ok) throw new Error('Search failed');
-    const results = await res.json();
-    renderOrderTable(results);
-  } catch (err) {
-    console.error(err);
-  }
-}
-
-async function deleteOrder(id) {
-  if (!confirm('Are you sure you want to delete this order?')) return;
-
-  try {
-    const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    });
-    if (!res.ok) throw new Error('Failed to delete order');
-    await loadOrders();
-  } catch (err) {
-    alert('Error deleting order: ' + err.message);
-  }
-}
-
-function viewOrder(id) {
-  const order = allOrders.find(o => o.id === id);
-  if (!order) return;
-
-  // Remove existing modal if any
-  let existing = document.getElementById('orderDetailModal');
-  if (existing) existing.remove();
-
-  const cust = order.customer || {};
-  const items = order.items || [];
-  const date = order.createdAt ? new Date(order.createdAt).toLocaleString() : '';
-
-  let itemsHtml = '';
-  items.forEach(item => {
-    let typeStr = escapeHtml(item.glassType || '');
-    const bits = [];
-    if (item.bevel) bits.push(`${escapeHtml(item.bevelWidth || '')}" BEVEL`);
-    if (item.shape) bits.push('SHAPE');
-    if (bits.length === 1) typeStr += ` WITH ${bits[0]}`;
-    else if (bits.length === 2) typeStr += ` WITH ${bits[0]} & ${bits[1]}`;
-
-    itemsHtml += `<tr>
-      <td>${item.qty || 1}</td>
-      <td>${escapeHtml(item.width || '')} x ${escapeHtml(item.height || '')}</td>
-      <td>${typeStr}</td>
-      <td>${escapeHtml(item.eachPrice || '$0.00')}</td>
-      <td>${escapeHtml(item.lineTotal || '$0.00')}</td>
-    </tr>`;
-  });
-
-  const hwHtml = order.hardware
-    ? `<p><strong>Hardware:</strong> ${escapeHtml(order.hardware.name)} — $${(order.hardware.price || 0).toFixed(2)}</p>`
-    : '';
-
-  const modal = document.createElement('div');
-  modal.id = 'orderDetailModal';
-  modal.className = 'order-detail-modal-overlay';
-  modal.innerHTML = `
-    <div class="order-detail-modal">
-      <h3>${escapeHtml(order.orderNumber || 'Order')}</h3>
-      <p style="font-size:12px;color:#888;">Created: ${escapeHtml(date)}${order.specialPricing ? ' | Special Pricing' : ''}</p>
-
-      <div class="order-detail-info">
-        <div><strong>Customer</strong>${escapeHtml(cust.name || 'N/A')}</div>
-        <div><strong>Phone</strong>${escapeHtml(cust.phone || 'N/A')}</div>
-        <div><strong>Address</strong>${escapeHtml(cust.address || 'N/A')}</div>
-        <div><strong>Email</strong>${escapeHtml(cust.email || 'N/A')}</div>
-        <div><strong>Credit Terms</strong>${escapeHtml(cust.creditTerms || 'N/A')}</div>
-      </div>
-
-      <table>
-        <thead><tr><th>Qty</th><th>Size (W x H)</th><th>Glass Type</th><th>Each</th><th>Line Total</th></tr></thead>
-        <tbody>${itemsHtml}</tbody>
-      </table>
-
-      ${hwHtml}
-
-      <p style="font-size:16px;font-weight:bold;margin-top:15px;">
-        Grand Total: $${(order.grandTotal || 0).toFixed(2)}<br>
-        Grand Total with Tax (6%): $${(order.grandTotalWithTax || 0).toFixed(2)}
-      </p>
-
-      <div style="display:flex;gap:10px;margin-top:15px;">
-        <button onclick="loadOrderIntoCalculator('${order.id}'); closeOrderDetailModal();" style="padding:8px 18px;font-size:14px;font-weight:bold;background:#007BFF;color:white;border:none;border-radius:6px;cursor:pointer;">Open in Calculator</button>
-        <button onclick="printOrderFromDetail('${order.id}')" style="padding:8px 18px;font-size:14px;font-weight:bold;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;">Print</button>
-        <button onclick="closeOrderDetailModal()" style="padding:8px 18px;font-size:14px;font-weight:bold;background:lightgrey;color:black;border:none;border-radius:6px;cursor:pointer;">Close</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-  modal.addEventListener('click', function(e) {
-    if (e.target === modal) closeOrderDetailModal();
-  });
-}
-
-function closeOrderDetailModal() {
-  const modal = document.getElementById('orderDetailModal');
-  if (modal) modal.remove();
-}
-
-function printOrderFromDetail(id) {
-  const order = allOrders.find(o => o.id === id);
-  if (!order) return;
-
-  const cust = order.customer || {};
-  const items = order.items || [];
-
-  let breakdownWindow = window.open('', '', 'width=800,height=600');
-  breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
-  breakdownWindow.document.write('</head><body>');
-  breakdownWindow.document.write('<h2>Kentucky Mirror and Plate Glass</h2>');
-  breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${escapeHtml(order.orderNumber || '')}</h3>`);
-
-  let custInfoHtml = `<p style="text-align:center; font-size:16px; margin-bottom:20px;">
-    <strong>Customer Name:</strong> ${escapeHtml(cust.name || 'N/A')} &nbsp;&nbsp;
-    <strong>Phone:</strong> ${escapeHtml(cust.phone || 'N/A')}`;
-  if (cust.address) custInfoHtml += `<br><strong>Address:</strong> ${escapeHtml(cust.address)}`;
-  if (cust.email) custInfoHtml += ` &nbsp;&nbsp;<strong>Email:</strong> ${escapeHtml(cust.email)}`;
-  if (cust.creditTerms) custInfoHtml += `<br><strong>Credit Terms:</strong> ${escapeHtml(cust.creditTerms)}`;
-  custInfoHtml += `</p>`;
-  breakdownWindow.document.write(custInfoHtml);
-
-  breakdownWindow.document.write('<table>');
-  breakdownWindow.document.write('<thead><tr><th>Qty</th><th>Size (W x H)</th><th>Glass Type</th><th>Each Price</th><th>Line Total</th></tr></thead><tbody>');
-
-  items.forEach(item => {
-    let typeStr = item.glassType || '';
-    const bits = [];
-    if (item.bevel) bits.push(`${item.bevelWidth || ''}" BEVEL`);
-    if (item.shape) bits.push('SHAPE');
-    if (bits.length === 1) typeStr += ` WITH ${bits[0]}`;
-    else if (bits.length === 2) typeStr += ` WITH ${bits[0]} & ${bits[1]}`;
-
-    breakdownWindow.document.write(`<tr>
-      <td>${item.qty || 1}</td>
-      <td>${item.width || ''} x ${item.height || ''}</td>
-      <td>${typeStr}</td>
-      <td>${item.eachPrice || '$0.00'}</td>
-      <td>${item.lineTotal || '$0.00'}</td>
-    </tr>`);
-  });
-
-  breakdownWindow.document.write('</tbody></table>');
-  breakdownWindow.document.write(`<h3>Grand Total: $${(order.grandTotal || 0).toFixed(2)}</h3>`);
-  breakdownWindow.document.write(`<h3>Grand Total with Tax (6%): $${(order.grandTotalWithTax || 0).toFixed(2)}</h3>`);
-  breakdownWindow.document.write('</body></html>');
-  breakdownWindow.document.close();
-  breakdownWindow.print();
-}
-
-async function loadOrderIntoCalculator(id) {
-  const order = allOrders.find(o => o.id === id);
-  if (!order) {
-    // Try to fetch it
-    try {
-      const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`);
-      if (!res.ok) throw new Error('Order not found');
-      const fetched = await res.json();
-      populateCalculatorFromOrder(fetched);
-    } catch (err) {
-      alert('Could not load order: ' + err.message);
-    }
-    return;
-  }
-  populateCalculatorFromOrder(order);
-}
-
-function populateCalculatorFromOrder(order) {
-  // Switch to calculator tab
-  switchTab('calculator');
-
-  currentOrderId = order.id;
-  document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
-  document.getElementById('orderSavedStatus').textContent = '';
-
-  // Set customer info
-  const cust = order.customer || {};
-  document.getElementById('customerName').value = cust.name || '';
-  document.getElementById('customerPhone').value = cust.phone || '';
-  document.getElementById('calcCustAddress').value = cust.address || '';
-  document.getElementById('calcCustEmail').value = cust.email || '';
-  document.getElementById('calcCustCreditTerms').value = cust.creditTerms || '';
-
-  if (cust.name) {
-    setCalcCustomerFieldsReadonly(true);
-  }
-
-  // Set special pricing toggle
-  const specialToggle = document.getElementById('specialPricingToggle');
-  specialToggle.checked = order.specialPricing || false;
-  glassPartsData = specialToggle.checked ? specialGlassPartsData : standardglassPartsData;
-
-  // Clear and rebuild glass rows
-  document.getElementById('glassTableBody').innerHTML = '';
-  const items = order.items || [];
-  if (items.length === 0) {
-    for (let i = 0; i < 5; i++) addRow();
-  } else {
-    items.forEach(item => {
-      addRow();
-      const rows = document.querySelectorAll('#glassTableBody tr');
-      const row = rows[rows.length - 1];
-
-      row.querySelector('.qty').value = item.qty || 1;
-      row.querySelector('.width').value = item.width || '';
-      row.querySelector('.height').value = item.height || '';
-      row.querySelector('.glassTypeInput').value = item.glassType || '';
-      row.querySelector('.bevel').checked = item.bevel || false;
-      row.querySelector('.bevelWidth').value = item.bevelWidth || '1/2';
-      row.querySelector('.shape').checked = item.shape || false;
-    });
-    // Add a few blank rows at the end
-    for (let i = 0; i < 2; i++) addRow();
-  }
-
-  // Set hardware
-  if (order.hardware && order.hardware.name) {
-    document.getElementById('hardwareSearch').value = order.hardware.name;
-    document.getElementById('hardwarePrice').innerText =
-      `Hardware Price: $${(order.hardware.price || 0).toFixed(2)}`;
-      `Hardware Pricing: $${(order.hardware.price || 0).toFixed(2)}`;
-  } else {
-    clearHardware();
-  }
-
-  updateTotals();
-}
-
-// ===================== CSV/EXCEL IMPORT =====================
-let importParsedRows = []; // raw parsed rows (array of arrays)
-let importHeaders = [];    // first row (column headers)
-
-function handleImportFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  event.target.value = ''; // reset so same file can be re-selected
-
-  const ext = file.name.split('.').pop().toLowerCase();
-
-  if (ext === 'csv') {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const rows = parseCsv(e.target.result);
-      if (rows.length < 2) {
-        alert('The CSV file appears to be empty or has no data rows.');
-        return;
-
-  
-      }
-      importHeaders = rows[0];
-      importParsedRows = rows.slice(1);
-      openImportModal();
-    };
-    reader.readAsText(file);
-  } else if (ext === 'xlsx' || ext === 'xls') {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        const workbook = XLSX.read(e.target.result, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-
-        if (data.length < 2) {
-          alert('The Excel file appears to be empty or has no data rows.');
-          return;
-        }
-
-        importHeaders = data[0].map(h => String(h).trim());
-        importParsedRows = data.slice(1).map(row => row.map(cell => String(cell).trim()));
-        openImportModal();
-      } catch (err) {
-        alert('Error reading Excel file: ' + err.message);
-      }
-    };
-    reader.readAsArrayBuffer(file);
-  } else {
-    alert('Please upload a .csv, .xlsx, or .xls file.');
-  }
-}
-
-function guessMapping(headers) {
-  // Try to auto-map columns to customer fields
-  const mapping = { name: '', address: '', email: '', phone: '', creditTerms: '' };
-  const lower = headers.map(h => h.toLowerCase());
-
-  lower.forEach((h, i) => {
-    const col = headers[i];
-    if (!mapping.name && (h.includes('name') || h.includes('customer'))) mapping.name = col;
-    else if (!mapping.address && (h.includes('address') || h.includes('addr') || h.includes('street') || h.includes('city'))) mapping.address = col;
-    else if (!mapping.email && (h.includes('email') || h.includes('e-mail'))) mapping.email = col;
-    else if (!mapping.phone && (h.includes('phone') || h.includes('tel') || h.includes('mobile') || h.includes('cell'))) mapping.phone = col;
-    else if (!mapping.creditTerms && (h.includes('credit') || h.includes('terms') || h.includes('payment'))) mapping.creditTerms = col;
-  });
-
-  return mapping;
-}
-
-function openImportModal() {
-  // Remove existing modal if any
-  let existing = document.getElementById('importModal');
-  if (existing) existing.remove();
-
-  const mapping = guessMapping(importHeaders);
-
-  const modal = document.createElement('div');
-  modal.id = 'importModal';
-  modal.className = 'import-modal-overlay';
-
-  const optionsHtml = '<option value="">(skip)</option>' +
-    importHeaders.map(h => `<option value="${escapeHtml(h)}">${escapeHtml(h)}</option>`).join('');
-
-  function selectHtml(field, label) {
-    return `<div>
-      <label>${label}</label>
-      <select id="importMap_${field}" onchange="updateImportPreview()">
-        ${optionsHtml}
-      </select>
-    </div>`;
-  }
-
-  modal.innerHTML = `
-    <div class="import-modal">
-      <h3>Import Customers from File</h3>
-      <p style="font-size:13px;color:#555;margin-bottom:12px;">
-        Found <strong>${importParsedRows.length}</strong> row(s). Map the file columns to customer fields below. Rows without a name will be skipped.
-      </p>
-
-      <div class="column-mapping">
-        ${selectHtml('name', 'Name *')}
-        ${selectHtml('address', 'Address')}
-        ${selectHtml('email', 'Email')}
-        ${selectHtml('phone', 'Phone')}
-        ${selectHtml('creditTerms', 'Credit Terms')}
-      </div>
-
-      <div style="max-height:300px;overflow-y:auto;margin-bottom:15px;">
-        <table class="import-preview-table">
-          <thead><tr>
-            <th>#</th><th>Name</th><th>Address</th><th>Email</th><th>Phone</th><th>Credit Terms</th>
-          </tr></thead>
-          <tbody id="importPreviewBody"></tbody>
-        </table>
-      </div>
-
-      <div class="import-actions">
-        <button class="btn-import-confirm" id="btnImportConfirm" onclick="confirmImport()">Import Customers</button>
-        <button class="btn-import-cancel" onclick="closeImportModal()">Cancel</button>
-        <span class="import-status" id="importStatus"></span>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-
-  // Set auto-detected mappings
-  if (mapping.name) document.getElementById('importMap_name').value = mapping.name;
-  if (mapping.address) document.getElementById('importMap_address').value = mapping.address;
-  if (mapping.email) document.getElementById('importMap_email').value = mapping.email;
-  if (mapping.phone) document.getElementById('importMap_phone').value = mapping.phone;
-  if (mapping.creditTerms) document.getElementById('importMap_creditTerms').value = mapping.creditTerms;
-
-  updateImportPreview();
-}
-
-function closeImportModal() {
-  const modal = document.getElementById('importModal');
-  if (modal) modal.remove();
-  importParsedRows = [];
-  importHeaders = [];
-}
-
-function getImportMapping() {
-  const fields = ['name', 'address', 'email', 'phone', 'creditTerms'];
-  const mapping = {};
-  fields.forEach(f => {
-    const el = document.getElementById('importMap_' + f);
-    const colName = el ? el.value : '';
-    mapping[f] = colName ? importHeaders.indexOf(colName) : -1;
-  });
-  return mapping;
-}
-
-function getMappedValue(row, colIndex) {
-  if (colIndex < 0 || colIndex >= row.length) return '';
-  return (row[colIndex] || '').toString().trim();
-}
-
-function updateImportPreview() {
-  const mapping = getImportMapping();
-  const tbody = document.getElementById('importPreviewBody');
-  if (!tbody) return;
-
-  const previewRows = importParsedRows.slice(0, 100); // show up to 100 rows in preview
-
-  tbody.innerHTML = previewRows.map((row, i) => {
-    const name = getMappedValue(row, mapping.name);
-    const skip = !name;
-    return `<tr class="${skip ? 'skip-row' : ''}">
-      <td>${i + 1}</td>
-      <td>${escapeHtml(name) || '<em style="color:#999;">empty</em>'}</td>
-      <td>${escapeHtml(getMappedValue(row, mapping.address))}</td>
-      <td>${escapeHtml(getMappedValue(row, mapping.email))}</td>
-      <td>${escapeHtml(getMappedValue(row, mapping.phone))}</td>
-      <td>${escapeHtml(getMappedValue(row, mapping.creditTerms))}</td>
-    </tr>`;
-  }).join('');
-
-  if (importParsedRows.length > 100) {
-    tbody.innerHTML += `<tr><td colspan="6" style="text-align:center;font-style:italic;color:#666;">...and ${importParsedRows.length - 100} more rows</td></tr>`;
-  }
-}
-
-async function confirmImport() {
-  const mapping = getImportMapping();
-
-  if (mapping.name < 0) {
-    alert('Please map at least the "Name" column before importing.');
-    return;
-  }
-
-  const customers = importParsedRows
-    .map(row => ({
-      name: getMappedValue(row, mapping.name),
-      address: getMappedValue(row, mapping.address),
-      email: getMappedValue(row, mapping.email),
-      phone: getMappedValue(row, mapping.phone),
-      creditTerms: getMappedValue(row, mapping.creditTerms),
-    }))
-    .filter(c => c.name); // skip rows without a name
-
-  if (customers.length === 0) {
-    alert('No valid customers to import (all rows are missing a name).');
-    return;
-  }
-
-  const statusEl = document.getElementById('importStatus');
-  const confirmBtn = document.getElementById('btnImportConfirm');
-  confirmBtn.disabled = true;
-  confirmBtn.textContent = 'Importing...';
-  statusEl.className = 'import-status';
-  statusEl.textContent = `Importing ${customers.length} customer(s)...`;
-
-  try {
-    const res = await fetch('/api/customers-import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customers }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Import failed');
-    }
-
-    const result = await res.json();
-    statusEl.className = 'import-status success';
-    statusEl.textContent = `Done! ${result.created} imported, ${result.skipped} skipped.`;
-
-    // Refresh customer list
-    await loadCustomers();
-    await loadCalcCustomers();
-
-    // Close modal after a short delay so user can see results
-    setTimeout(() => {
-      closeImportModal();
-    }, 1500);
-  } catch (err) {
-    statusEl.className = 'import-status error';
-    statusEl.textContent = 'Error: ' + err.message;
-    confirmBtn.disabled = false;
-    confirmBtn.textContent = 'Import Customers';
-  }
-}
-
-// ===================== STARTUP =====================
-document.addEventListener("DOMContentLoaded", async function () {
-  const specialToggle = document.getElementById('specialPricingToggle');
-  specialToggle.checked = false;
-
-  // Load pricing tables from Google Sheets (Glass + Hardware)
-  await loadPricingFromSheets();
-
-  // Set the active table (standard by default)
-  glassPartsData = standardglassPartsData;
-
-  for (let i = 0; i < 5; i++) addRow();
-  updateTotals();
-
-  // Load customers for autocomplete in calculator
-  await loadCalcCustomers();
-  setupCustomerLookup();
-});
-</script>
-
-<script>
-  function kympgToggleSidebar(){
-    document.getElementById('kympgSidebar')?.classList.toggle('collapsed');
-  }
-
-  function kympgClearActiveNav(){
-    document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
-  }
-
-  function kympgHideAllSections(){
-    const ids = ['landing-section','calculator-section','customer-section','orders-section',
-                 'quotedb-section','po-section','breakage-section','pricelist-section'];
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.style.display = 'none';
-      el.classList.remove('active');
-    });
-  }
-
-  function kympgSetHeader(title, sub, cardTitle, cardSub){
-    const t = document.getElementById('kympgPageTitle');
-    const s = document.getElementById('kympgPageSub');
-    const ct = document.getElementById('kympgCardTitle');
-    const cs = document.getElementById('kympgCardSub');
-    if (t) t.textContent = title || '';
-    if (s) s.textContent = sub || '';
-    if (ct) ct.textContent = cardTitle || '';
-    if (cs) cs.textContent = cardSub || '';
-  }
-
-  function kympgShowLanding(){
-    kympgClearActiveNav();
-    kympgHideAllSections();
-    const el = document.getElementById('landing-section');
-    if (el){ el.style.display = 'block'; el.classList.add('active'); }
-    kympgSetHeader('Kentucky Mirror and Plate Glass', 'Select an option on the left to get started.', 'Home', 'Welcome');
-    if (el){
-      el.style.display = 'block';
-      el.classList.add('active');
-    }
-    kympgSetHeader(
-      'Kentucky Mirror and Plate Glass',
-      'Select an option on the left to get started.',
-      'Home',
-      'Welcome'
-    );
-  }
-  async function loadPurchaseOrders() {
-  try {
-    const res = await fetch('/.netlify/functions/purchase-orders');
-    if (!res.ok) throw new Error('Failed to load Purchase Orders');
-
-    const data = await res.json();
-
-    const container = document.getElementById('po-section');
-  async function loadPurchaseOrders(){
-    try {
-      const res = await fetch('/.netlify/functions/purchase-orders');
-      if (!res.ok) throw new Error('Failed to load Purchase Orders');
-
-    // Clear existing content
-    container.innerHTML = '<h2>Purchase Orders</h2>';
-      const data = await res.json();
-      const container = document.getElementById('po-section');
-      if (!container) return;
-
-    if (!data || data.length === 0) {
-      container.innerHTML += '<p>No purchase orders found.</p>';
-      return;
-    }
-      container.innerHTML = '<h2>Purchase Orders</h2>';
-
-    const table = document.createElement('table');
-    table.style.width = '100%';
-    table.style.borderCollapse = 'collapse';
-      if (!data || data.length === 0) {
-        container.innerHTML += '<p>No purchase orders found.</p>';
-        return;
-      }
-
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th>PO #</th>
-          <th>Vendor</th>
-          <th>Date</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.map(po => `
-      const table = document.createElement('table');
-      table.style.width = '100%';
-      table.style.borderCollapse = 'collapse';
-      table.innerHTML = `
-        <thead>
-          <tr>
-            <td>${po.poNumber || ''}</td>
-            <td>${po.vendor || ''}</td>
-            <td>${po.date || ''}</td>
-            <td>${po.total || ''}</td>
-            <th>PO #</th>
-            <th>Vendor</th>
-            <th>Date</th>
-            <th>Total</th>
-          </tr>
-        `).join('')}
-      </tbody>
-    `;
- if (which === 'customerimport'){
-      const c = document.getElementById('customer-section');
-      if (c){ c.style.display = 'block'; }
-      kympgSetHeader('Customer Import', 'Upload and manage customer records.', 'Customer Import', 'Customer tools');
-      try{ if (typeof loadCustomers === 'function') loadCustomers(); }catch(e){}
-      return;
-    }
-    kympgShowLanding();
-  }
-        </thead>
-        <tbody>
-          ${data.map(po => `
-            <tr>
-              <td>${po.poNumber || ''}</td>
-              <td>${po.vendor || ''}</td>
-              <td>${po.date || ''}</td>
-              <td>${po.total || ''}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      `;
-      container.appendChild(table);
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const content = document.getElementById('kympgContentArea');
-    if (content){
-      ['calculator-section','customer-section','orders-section'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.parentElement !== content){
-          content.appendChild(el);
-        }
-        if (el) el.style.display = 'none';
-      });
-    } catch (err) {
-      console.error(err);
-      const container = document.getElementById('po-section');
-      if (container) {
-        container.innerHTML = '<p style="color:red;">Error loading purchase orders.</p>';
-      }
-    }
-    kympgShowLanding();
-  });
-</script>
-
-</body>
-</html>
-    container.appendChild(table);
-
-  } catch (err) {
-    console.error(err);
-    document.getElementById('po-section').innerHTML =
-      '<p style="color:red;">Error loading purchase orders.</p>';
-  }
-}
-
-  function kympgOpen(which, btn){
-    if (btn){
-      kympgClearActiveNav();
-      btn.classList.add('active');
-    }
-    kympgHideAllSections();
-
-    if (which === 'quote'){
-      const calc = document.getElementById('calculator-section');
-      if (calc){ calc.style.display = 'block'; }
-      if (calc) calc.style.display = 'block';
-      kympgSetHeader('New Quote', 'Create and print a quote.', 'New Quote', 'Quote builder');
-      return;
-    }
-
-    if (which === 'order'){
-      const calc = document.getElementById('calculator-section');
-      if (calc){ calc.style.display = 'block'; }
-      if (calc) calc.style.display = 'block';
-      kympgSetHeader('New Order', 'Create an order and print ticket/invoice.', 'New Order', 'Order form');
-      try{ if (typeof startNewOrder === 'function') startNewOrder(); }catch(e){}
-      try { if (typeof startNewOrder === 'function') startNewOrder(); } catch(e) {}
-      return;
-    }
-
-    if (which === 'orders'){
-      const ord = document.getElementById('orders-section');
-      if (ord){ ord.style.display = 'block'; }
-      if (ord) ord.style.display = 'block';
-      kympgSetHeader('Search / Open Orders', 'Find and open past orders.', 'Orders', 'Search and open orders');
-      try{ if (typeof loadOrders === 'function') loadOrders(); }catch(e){}
-      try { if (typeof loadOrders === 'function') loadOrders(); } catch(e) {}
-      return;
-    }
-
-    if (which === 'quotedb'){
-      const q = document.getElementById('quotedb-section');
-      if (q){ q.style.display = 'block'; }
-      if (q) q.style.display = 'block';
-      kympgSetHeader('Open Quotes', 'Search and open saved quotes.', 'Quotes', 'Quotes database');
-      return;
-    }
-  if (which === 'po') {
-  const p = document.getElementById('po-section');
-  if (p){ p.style.display = 'block'; }
-
-  kympgSetHeader(
-    'Purchase Orders',
-    'Track vendor purchase orders.',
-    'Purchase Orders',
-    'Vendor POs'
-  );
-    if (which === 'po'){
-      const p = document.getElementById('po-section');
-      if (p) p.style.display = 'block';
-      kympgSetHeader('Purchase Orders', 'Track vendor purchase orders.', 'Purchase Orders', 'Vendor POs');
-      loadPurchaseOrders();
-      return;
-    }
-
-  loadPurchaseOrders();   // ← THIS LINE loads the database
-  return;
-}
-    if (which === 'breakage'){
-      const b = document.getElementById('breakage-section');
-      if (b){ b.style.display = 'block'; }
-      if (b) b.style.display = 'block';
-      kympgSetHeader('Breakage Pricing', 'Open the breakage calculator inside the app.', 'Breakage Pricing', 'Tool');
-      return;
-    }
-
-    if (which === 'pricelist'){
-      const p = document.getElementById('pricelist-section');
-      if (p){ p.style.display = 'block'; }
-      if (p) p.style.display = 'block';
-      kympgSetHeader('Sq Ft Price List', 'Reference pricing inside the app.', 'Sq Ft Price List', 'Tool');
-      return;
-    }
-
-    if (which === 'customerimport'){
-      const c = document.getElementById('customer-section');
-      if (c) c.style.display = 'block';
-      kympgSetHeader('Customer Import', 'Upload and manage customer records.', 'Customer Import', 'Customer tools');
-      try { if (typeof loadCustomers === 'function') loadCustomers(); } catch(e) {}
-      return;
-    }
-
-    kympgShowLanding();
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const content = document.getElementById('kympgContentArea');
-    if (content){
-      ['calculator-section','customer-section','orders-section'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.parentElement !== content){
-          content.appendChild(el);
-        }
-        if (el && el.parentElement !== content) content.appendChild(el);
-        if (el) el.style.display = 'none';
-      });
-    }
-    kympgShowLanding();
-  });
-</script>
-
-</body>
-</html>
