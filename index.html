@@ -857,7 +857,92 @@ body{
         </span>
       </button>
     </nav>
+        </span>
+      </button>
+    </nav>
 
+    <div class="kympg-sectionLabel">Tools</div>
+    <nav class="kympg-nav">
+      <button class="kympg-navBtn" data-tip="Breakage Pricing" type="button" onclick="kympgOpen('breakage', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+        </span>
+        <span class="kympg-labelWrap">
+          <span class="kympg-label">Breakage Pricing</span>
+          <span class="kympg-hint">Open breakage tool</span>
+        </span>
+      </button>
+
+      <button class="kympg-navBtn" data-tip="Sq Ft Price List" type="button" onclick="kympgOpen('pricelist', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        </span>
+        <span class="kympg-labelWrap">
+          <span class="kympg-label">Sq Ft Price List</span>
+          <span class="kympg-hint">Reference pricing</span>
+        </span>
+      </button>
+
+      <button class="kympg-navBtn" data-tip="Customer Import" type="button" onclick="kympgOpen('customerimport', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
+        </span>
+        <span class="kympg-labelWrap">
+          <span class="kympg-label">Customer Import</span>
+          <span class="kympg-hint">Upload customer list</span>
+        </span>
+      </button>
+    </nav>
+
+    <div class="kympg-spacer"></div>
+  </aside>
+
+  <main class="kympg-main">
+    <div class="kympg-shellInner">
+      <div class="kympg-topBar">
+        <div class="kympg-pageTitle">
+          <h1 id="kympgPageTitle">Kentucky Mirror and Plate Glass</h1>
+          <p id="kympgPageSub">Select an option on the left to get started.</p>
+        </div>
+        <div class="kympg-pill" title="App status">
+          <span class="dot"></span>
+          <span>Ready</span>
+        </div>
+      </div>
+
+      <section class="kympg-card">
+        <div class="kympg-cardHeader">
+          <div class="h" id="kympgCardTitle">Home</div>
+          <div class="sub" id="kympgCardSub">Welcome</div>
+        </div>
+        <div class="kympg-cardBody" id="kympgContentArea">
+          <div id="landing-section" class="active">
+@@ -3061,45 +3071,52 @@ document.addEventListener("DOMContentLoaded", async function () {
+  const p = document.getElementById('po-section');
+  if (p){ p.style.display = 'block'; }
+
+  kympgSetHeader(
+    'Purchase Orders',
+    'Track vendor purchase orders.',
+    'Purchase Orders',
+    'Vendor POs'
+  );
+
+  loadPurchaseOrders();   // ← THIS LINE loads the database
+  return;
+}
+    if (which === 'breakage'){
+      const b = document.getElementById('breakage-section');
+      if (b){ b.style.display = 'block'; }
+      kympgSetHeader('Breakage Pricing', 'Open the breakage calculator inside the app.', 'Breakage Pricing', 'Tool');
+      return;
+    }
+    if (which === 'pricelist'){
+      const p = document.getElementById('pricelist-section');
+      if (p){ p.style.display = 'block'; }
+      kympgSetHeader('Sq Ft Price List', 'Reference pricing inside the app.', 'Sq Ft Price List', 'Tool');
+      return;
+    }
     <div class="kympg-spacer"></div>
   </aside>
 
@@ -3015,7 +3100,33 @@ document.addEventListener("DOMContentLoaded", async function () {
         `).join('')}
       </tbody>
     `;
+ if (which === 'customerimport'){
+      const c = document.getElementById('customer-section');
+      if (c){ c.style.display = 'block'; }
+      kympgSetHeader('Customer Import', 'Upload and manage customer records.', 'Customer Import', 'Customer tools');
+      try{ if (typeof loadCustomers === 'function') loadCustomers(); }catch(e){}
+      return;
+    }
+    kympgShowLanding();
+  }
 
+  window.addEventListener('DOMContentLoaded', () => {
+    const content = document.getElementById('kympgContentArea');
+    if (content){
+      ['calculator-section','customer-section','orders-section'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.parentElement !== content){
+          content.appendChild(el);
+        }
+        if (el) el.style.display = 'none';
+      });
+    }
+    kympgShowLanding();
+  });
+</script>
+
+</body>
+</html>
     container.appendChild(table);
 
   } catch (err) {
