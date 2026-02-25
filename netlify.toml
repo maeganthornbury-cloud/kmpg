@@ -1,0 +1,16 @@
+[build]
+  # IMPORTANT: publish must be relative to your repo root.
+  # Change "dist" to "." or "build" if that matches your actual output folder.
+  publish = "dist"
+
+  # Netlify Functions folder (relative to repo root)
+  functions = "netlify/functions"
+
+[functions]
+  [functions."*"]
+
+[[plugins]]
+  origin = "ui"
+  package = "@netlify/plugin-lighthouse"
+
+  [plugins.inputs]
