@@ -1155,6 +1155,46 @@ body{
 </div>
 
 <script>
+  <script>
+
+// ===== KY MPG Shell navigation (required for sidebar clicks) =====
+window.kympgToggleSidebar = function() {
+  const sb = document.getElementById('kympgSidebar');
+  if (!sb) return;
+  sb.classList.toggle('collapsed');
+};
+
+window.kympgShowLanding = function() {
+  const landing = document.getElementById('landing-section');
+  if (landing) landing.style.display = 'block';
+
+  ['calculator-section','orders-section','customer-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+};
+
+window.kympgOpen = function(which, btn) {
+  document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  ['landing-section','calculator-section','orders-section','customer-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+
+  const map = {
+    quote: 'calculator-section',
+    order: 'calculator-section',
+    orders: 'orders-section',
+    customerimport: 'customer-section',
+    breakage: 'breakage-section',
+    pricelist: 'pricelist-section',
+    quotedb: 'quotedb-section',
+    po: 'po-section',
+  };
+
+  const targetId = map[which] || 'landing-section';
+  const target = document.getElementById(targetId);
+  if (target) target.style.display = 'block';
+};
+
 // ===================== DATA SECTION =====================
 // Pricing is now loaded from Google Sheets (Glass + Hardware).
 // All sizing/minimum/bevel/shape rules remain the same — only the price tables moved out of the code.
