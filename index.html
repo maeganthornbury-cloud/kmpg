@@ -1,2416 +1,1141 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kentucky Mirror and Plate Glass - New Order</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { text-align: center; }
-    .container { display: flex; }
-    .section { width: 50%; padding: 10px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
-    input, select { width: 90%; }
-    .buttons { margin-top: 15px; }
-
-.glassList li.active {
-  background-color: #cce5ff;
-}
-    .glassTypeInput {
-      width: 100%;
-      max-width: 750px;
-      height: 12px;
-      font-size: 16px;
-      padding: 1px;
-    }
-
-    .glassList {
-      position: absolute;
-      background: #fff;
-      border: 1px solid #ccc;
-      max-height: 200px;
-      overflow-y: auto;
-      list-style: none;
-      padding: 0;
-      margin-top: 2px;
-      display: none;
-      z-index: 1000;
-    }
-    .glassList li {
-      padding: 15px;
-      cursor: pointer;
-      font-size: 12px;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      white-space: normal;
-    }
-    .glassList li:hover { background-color: #eee; }
-    .dropdown-container { position: relative; }
-
-    .special-pricing-toggle {
-      text-align: left;
-      margin-bottom: 10px;
-    }
-    .special-pricing-toggle label {
-      display: flex;
-      align-items: left;
-      font-size: 12px;
-    }
-    .special-pricing-toggle input[type="checkbox"] {
-      margin-left: 1px;
-    }
-
-    .buttons button {
-      padding: 10px 18px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 8px;
-      background-color: lightgrey;
-      color: black;
-      border: none;
-      cursor: pointer;
-      margin-right: 5px;
-    }
-
-    a {
-      text-decoration: none;
-      color: white;
-    }
-
-    #top-link-box {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background-color: #007BFF;
-      padding: 10px 15px;
-      border-radius: 8px;
-      z-index: 9999;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-    #top-link-box-a {
-      position: fixed;
-      top: 70px;
-      right: 20px;
-      background-color: #007BFF;
-      padding: 10px 15px;
-      border-radius: 8px;
-      z-index: 9999;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-    #top-link-box-b {
-      position: fixed;
-      top: 20px;
-      right: 200px;
-      background-color: #007BFF;
-      padding: 10px 15px;
-      border-radius: 8px;
-      z-index: 9999;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-
-    .icon-btn {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      font-size: 18px;
-      line-height: 1;
-      padding: 6px;
-      border-radius: 6px;
-    }
-    .icon-btn:hover { background: #f3f3f3; }
-    .delete-cell { width: 40px; }
-
-    /* Customer Management Styles */
-    #customer-section {
-      display: none;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    #customer-section.active { display: block; }
-    #calculator-section.hidden { display: none; }
-
-    .tab-bar {
-      display: flex;
-      gap: 0;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #007BFF;
-    }
-    .tab-bar button {
-      padding: 10px 24px;
-      font-size: 16px;
-      font-weight: bold;
-      border: 2px solid #007BFF;
-      border-bottom: none;
-      border-radius: 8px 8px 0 0;
-      background: #f0f0f0;
-      cursor: pointer;
-      color: #333;
-    }
-    .tab-bar button.active {
-      background: #007BFF;
-      color: white;
-    }
-
-    #customerForm {
-      background: #f9f9f9;
-      border: 1px solid #ccc;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-    }
-    #customerForm label {
-      display: block;
-      font-weight: bold;
-      margin-top: 10px;
-      margin-bottom: 3px;
-      font-size: 14px;
-    }
-    #customerForm input, #customerForm select {
-      width: 100%;
-      max-width: 400px;
-      padding: 6px 8px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    #customerForm .form-actions {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-    }
-    #customerForm .form-actions button {
-      padding: 8px 18px;
-      font-size: 14px;
-      font-weight: bold;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-    }
-    #customerForm .form-actions .btn-save {
-      background: #007BFF;
-      color: white;
-    }
-    #customerForm .form-actions .btn-cancel {
-      background: lightgrey;
-      color: black;
-    }
-
-    #customerTable {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    #customerTable th, #customerTable td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-      font-size: 13px;
-    }
-    #customerTable th {
-      background: #007BFF;
-      color: white;
-    }
-    #customerTable tr:nth-child(even) { background: #f2f2f2; }
-    #customerTable .actions-cell { white-space: nowrap; }
-    #customerTable .actions-cell button {
-      padding: 4px 10px;
-      font-size: 12px;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-      margin-right: 4px;
-    }
-    .btn-edit { background: #ffc107; color: black; }
-    .btn-delete { background: #dc3545; color: white; }
-    .btn-add-customer {
-      padding: 10px 18px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 8px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-bottom: 15px;
-    }
-    #customerSearch {
-      padding: 6px 10px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      width: 300px;
-      margin-bottom: 15px;
-      margin-left: 15px;
-    }
-
-    /* Customer autocomplete in calculator */
-    .customer-lookup-container {
-      position: relative;
-      display: inline-block;
-      width: 100%;
-    }
-    .customer-lookup-list {
-      position: absolute;
-      background: #fff;
-      border: 1px solid #ccc;
-      max-height: 200px;
-      overflow-y: auto;
-      list-style: none;
-      padding: 0;
-      margin-top: 2px;
-      display: none;
-      z-index: 1000;
-      width: 100%;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    }
-    .customer-lookup-list li {
-      padding: 8px 10px;
-      cursor: pointer;
-      font-size: 13px;
-      border-bottom: 1px solid #eee;
-    }
-    .customer-lookup-list li:hover,
-    .customer-lookup-list li.active {
-      background-color: #cce5ff;
-    }
-    .customer-lookup-list li.add-new-customer {
-      color: #28a745;
-      font-weight: bold;
-      font-style: italic;
-    }
-    .customer-lookup-list li .cust-detail {
-      font-size: 11px;
-      color: #666;
-      display: block;
-    }
-    .customer-info-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-      max-width: 750px;
-      flex-wrap: wrap;
-    }
-    .customer-info-row .info-field {
-      flex: 1;
-      min-width: 140px;
-    }
-    .customer-info-row label {
-      display: block;
-      font-size: 14px;
-      font-weight: bold;
-      margin-bottom: 3px;
-    }
-    .customer-info-row input {
-      width: 100%;
-      padding: 5px;
-      font-size: 13px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    .customer-info-row input[readonly] {
-      background: #f0f0f0;
-      color: #555;
-    }
-    #clearCustomerBtn {
-      padding: 5px 12px;
-      font-size: 12px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      background: #f8f8f8;
-      cursor: pointer;
-      margin-left: 5px;
-      vertical-align: bottom;
-    }
-    #clearCustomerBtn:hover {
-      background: #e0e0e0;
-    }
-    /* Import Upload Styles */
-    .btn-upload-customer {
-      padding: 10px 18px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 8px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-bottom: 15px;
-      margin-left: 10px;
-    }
-    .import-modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .import-modal {
-      background: white;
-      padding: 24px;
-      border-radius: 10px;
-      width: 800px;
-      max-width: 95%;
-      max-height: 85vh;
-      overflow-y: auto;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-    .import-modal h3 { margin-top: 0; }
-    .import-modal .column-mapping {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 15px;
-      padding: 12px;
-      background: #f0f8ff;
-      border-radius: 6px;
-      border: 1px solid #b3d7ff;
-    }
-    .import-modal .column-mapping label {
-      font-size: 13px;
-      font-weight: bold;
-      display: block;
-      margin-bottom: 3px;
-    }
-    .import-modal .column-mapping select {
-      padding: 4px 6px;
-      font-size: 13px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      min-width: 120px;
-    }
-    .import-preview-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin-bottom: 15px;
-    }
-    .import-preview-table th, .import-preview-table td {
-      border: 1px solid #ccc;
-      padding: 6px 8px;
-      text-align: left;
-    }
-    .import-preview-table th {
-      background: #007BFF;
-      color: white;
-    }
-    .import-preview-table tr:nth-child(even) { background: #f2f2f2; }
-    .import-preview-table tr.skip-row { opacity: 0.4; text-decoration: line-through; }
-    .import-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .import-actions button {
-      padding: 8px 18px;
-      font-size: 14px;
-      font-weight: bold;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-    }
-    .import-actions .btn-import-confirm {
-      background: #28a745;
-      color: white;
-    }
-    .import-actions .btn-import-cancel {
-      background: lightgrey;
-      color: black;
-    }
-    .import-status {
-      margin-left: 10px;
-      font-size: 14px;
-    }
-    .import-status.success { color: #28a745; font-weight: bold; }
-    .import-status.error { color: #dc3545; font-weight: bold; }
-
-    /* Order number display */
-    .order-number-bar {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 15px;
-      padding: 10px 15px;
-      background: #e8f4fd;
-      border: 1px solid #b3d7ff;
-      border-radius: 8px;
-    }
-    .order-number-bar .order-num {
-      font-size: 20px;
-      font-weight: bold;
-      color: #007BFF;
-    }
-    .order-number-bar .order-label {
-      font-size: 14px;
-      color: #555;
-    }
-    .btn-save-order {
-      padding: 10px 18px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 8px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-right: 5px;
-    }
-    .btn-save-order:disabled {
-      background-color: #aaa;
-      cursor: not-allowed;
-    }
-    .btn-new-order {
-      padding: 10px 18px;
-      font-size: 16px;
-      font-weight: bold;
-      border-radius: 8px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    /* Orders section */
-    #orders-section {
-      display: none;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    #orders-section.active { display: block; }
-    #orderSearch {
-      padding: 6px 10px;
-      font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      width: 350px;
-      margin-bottom: 15px;
-    }
-    #orderTable {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    #orderTable th, #orderTable td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-      font-size: 13px;
-    }
-    #orderTable th {
-      background: #007BFF;
-      color: white;
-    }
-    #orderTable tr:nth-child(even) { background: #f2f2f2; }
-    #orderTable tr { cursor: pointer; }
-    #orderTable tr:hover { background: #cce5ff; }
-    #orderTable .actions-cell button {
-      padding: 4px 10px;
-      font-size: 12px;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-      margin-right: 4px;
-    }
-
-    /* Order detail modal */
-    .order-detail-modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .order-detail-modal {
-      background: white;
-      padding: 24px;
-      border-radius: 10px;
-      width: 800px;
-      max-width: 95%;
-      max-height: 85vh;
-      overflow-y: auto;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    }
-    .order-detail-modal h3 { margin-top: 0; }
-    .order-detail-modal table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0;
-    }
-    .order-detail-modal table th,
-    .order-detail-modal table td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: center;
-      font-size: 13px;
-    }
-    .order-detail-modal table th {
-      background: #007BFF;
-      color: white;
-    }
-    .order-detail-info {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 15px;
-      font-size: 14px;
-    }
-    .order-detail-info div {
-      min-width: 180px;
-    }
-    .order-detail-info strong {
-      display: block;
-      font-size: 12px;
-      color: #666;
-      margin-bottom: 2px;
-    }
-  
-/* ===== KY MPG Modern Shell (SPA) ===== */
-:root{
-  --bg:#f6f7fb;
-  --card:#ffffff;
-  --text:#0f172a;
-  --muted:#64748b;
-  --line:#e5e7eb;
-  --accent:#4f6fad;
-  --accentSoft: rgba(79,111,173,.12);
-  --shadow: 0 10px 30px rgba(2, 6, 23, .10);
-  --shadow2: 0 6px 16px rgba(2, 6, 23, .08);
-  --radius: 16px;
-  --radius2: 12px;
-  --sideW: 272px;
-  --sideWCollapsed: 76px;
-}
-html, body { height: 100%; }
-body{
-  margin:0 !important;
-  background:
-    radial-gradient(1200px 800px at 20% 10%, rgba(255,255,255,.9), rgba(255,255,255,0) 55%),
-    radial-gradient(900px 700px at 85% 20%, rgba(255,255,255,.8), rgba(255,255,255,0) 60%),
-    linear-gradient(135deg, rgba(255,255,255,.55) 25%, transparent 25%) -20px 0/40px 40px,
-    linear-gradient(225deg, rgba(255,255,255,.55) 25%, transparent 25%) -20px 0/40px 40px,
-    linear-gradient(315deg, rgba(255,255,255,.55) 25%, transparent 25%) 0px 0/40px 40px,
-    linear-gradient(45deg, rgba(255,255,255,.55) 25%, var(--bg) 25%) 0px 0/40px 40px !important;
-  color: var(--text);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
-}
-
-/* Hide old navigation/headers (visual only) */
-#top-link-box, #top-link-box-a, #top-link-box-b, .tab-bar { display:none !important; }
-
-/* Shell layout */
-.kympg-shell{ display:flex; min-height:100vh; }
-
-/* Light sidebar */
-.kympg-sidebar{
-  width: var(--sideW);
-  background:#fff;
-  border-right:1px solid var(--line);
-  padding:16px 14px;
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  position: sticky;
-  top:0;
-  height:100vh;
-  transition: width .22s ease;
-  z-index: 50;
-}
-.kympg-sidebar.collapsed{ width: var(--sideWCollapsed); }
-.kympg-topActions{ display:flex; justify-content:flex-end; padding:0 6px; }
-
-.kympg-toggleBtn{
-  border:none;
-  background: rgba(15,23,42,.05);
-  color: #0f172a;
-  height: 40px;
-  width: 40px;
-  border-radius: 12px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow: inset 0 0 0 1px rgba(15,23,42,.06);
-}
-.kympg-toggleBtn:hover{ background: rgba(15,23,42,.08); }
-
-.kympg-brand{
-  padding:10px 10px;
-  border-radius:14px;
-  background: rgba(79,111,173,.08);
-  box-shadow: inset 0 0 0 1px rgba(79,111,173,.18);
-  cursor:pointer;
-}
-.kympg-brand .name{ font-weight: 900; font-size: 14px; letter-spacing:.2px; }
-.kympg-brand .sub{ font-size: 12px; color: rgba(15,23,42,.70); margin-top:2px; }
-.kympg-sidebar.collapsed .kympg-brand .sub{ display:none; }
-.kympg-sidebar.collapsed .kympg-brand{ text-align:center; }
-
-.kympg-sectionLabel{
-  font-size: 11px;
-  letter-spacing:.10em;
-  text-transform: uppercase;
-  color: rgba(15,23,42,.55);
-  padding: 6px 10px 0 10px;
-}
-.kympg-sidebar.collapsed .kympg-sectionLabel{ display:none; }
-.kympg-nav{ display:flex; flex-direction:column; gap:6px; }
-.kympg-navBtn{
-  width:100%;
-  border:none;
-  background: transparent;
-  color:#0f172a;
-  border-radius: 14px;
-  padding: 10px 10px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  transition: background .15s ease, transform .05s ease;
-  position: relative;
-}
-.kympg-navBtn:hover{ background: rgba(15,23,42,.06); }
-.kympg-navBtn:active{ transform: translateY(1px); }
-.kympg-navBtn.active{
-  background: rgba(79,111,173,.12);
-  box-shadow: inset 0 0 0 1px rgba(79,111,173,.25);
-}
-.kympg-ico{ width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; }
-.kympg-ico svg{ width:22px; height:22px; fill:none; stroke:#334155; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-.kympg-label{ font-weight: 800; font-size: 14px; letter-spacing:.1px; }
-.kympg-hint{ display:block; font-weight:600; font-size:12px; color: rgba(15,23,42,.55); margin-top:2px; }
-.kympg-labelWrap{ display:block; }
-
-.kympg-sidebar.collapsed .kympg-navBtn{ justify-content:center; padding: 12px 10px; }
-.kympg-sidebar.collapsed .kympg-labelWrap{ display:none; }
-.kympg-sidebar.collapsed .kympg-navBtn[data-tip]:hover::after{
-  content: attr(data-tip);
-  position:absolute;
-  left: calc(100% + 10px);
-  top: 50%;
-  transform: translateY(-50%);
-  white-space: nowrap;
-  background: rgba(15,23,42,.92);
-  color:#fff;
-  padding: 8px 10px;
-  border-radius: 10px;
-  font-size: 12px;
-  box-shadow: var(--shadow2);
-  z-index: 9999;
-}
-
-.kympg-spacer{ flex:1; }
-
-/* Main */
-.kympg-main{ flex:1; padding:22px; min-width:0; }
-.kympg-shellInner{ max-width: 1400px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
-
-.kympg-topBar{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.kympg-pageTitle h1{ margin:0; font-size: 22px; letter-spacing:.2px; }
-.kympg-pageTitle p{ margin:0; color: var(--muted); font-size: 13px; }
-
-.kympg-pill{
-  background: var(--card);
-  border:1px solid var(--line);
-  border-radius:999px;
-  padding:10px 12px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  box-shadow: var(--shadow2);
-}
-.kympg-pill .dot{ width:10px; height:10px; border-radius:999px; background:#22c55e; box-shadow:0 0 0 4px rgba(34,197,94,.18); }
-.kympg-pill span{ color: var(--muted); font-size: 13px; }
-
-.kympg-card{
-  background: var(--card);
-  border:1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  overflow:hidden;
-}
-.kympg-cardHeader{
-  padding:16px 18px;
-  border-bottom:1px solid var(--line);
-}
-.kympg-cardHeader .h{ font-weight: 900; font-size: 16px; margin:0; }
-.kympg-cardHeader .sub{ color: var(--muted); font-size: 13px; margin-top:2px; }
-.kympg-cardBody{ padding:18px; }
-
-/* Home */
-#landing-section{ display:none; }
-#landing-section.active{ display:block; }
-.kympg-landingWrap{
-  display:flex; flex-direction:column; align-items:center;
-  gap:14px; text-align:center;
-}
-.kympg-landingLogo{ width:min(560px, 92%); display:flex; justify-content:center; }
-.kympg-landingLogo img{ max-width:100%; height:auto; border-radius:18px; box-shadow:0 14px 40px rgba(2,6,23,.12); }
-.kympg-landingTitle{ font-weight: 950; font-size: 26px; letter-spacing:.2px; }
-.kympg-landingSub{ color: var(--muted); font-size: 14px; line-height:1.55; max-width: 760px; }
-
-.kympg-iframeWrap{ border:1px solid var(--line); border-radius: var(--radius2); overflow:hidden; height:min(72vh, 860px); background:#fff; }
-.kympg-iframeWrap iframe{ width:100%; height:100%; border:none; }
-
-/* Put legacy sections inside card nicely */
-#calculator-section, #customer-section, #orders-section{ max-width: none !important; }
-
-</style>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-</head>
-<body>
-
-<div class="kympg-shell">
-  <aside class="kympg-sidebar" id="kympgSidebar">
-    <div class="kympg-topActions">
-      <button class="kympg-toggleBtn" type="button" title="Collapse / expand" onclick="kympgToggleSidebar()">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-        </span>
-      </button>
-    </div>
-
-    <div class="kympg-brand" id="kympgHomeLink" onclick="kympgShowLanding()">
-      <div class="name">Kentucky Mirror</div>
-      <div class="sub">Home</div>
-    </div>
-
-    <div class="kympg-sectionLabel">Work</div>
-    <nav class="kympg-nav">
-      <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">New Quote</span>
-          <span class="kympg-hint">Create a new quote</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">New Order</span>
-          <span class="kympg-hint">Start an order</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="Search / Open Orders" type="button" onclick="kympgOpen('orders', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Search / Open Orders</span>
-          <span class="kympg-hint">Find past orders</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="Open Quotes" type="button" onclick="kympgOpen('quotedb', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M7 7h10"/><path d="M7 11h10"/><path d="M7 15h6"/><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Open Quotes</span>
-          <span class="kympg-hint">Saved quotes</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="Purchase Orders" type="button" onclick="kympgOpen('po', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 3h18v4H3z"/><path d="M3 7v14h18V7"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Purchase Orders</span>
-          <span class="kympg-hint">Vendor POs</span>
-        </span>
-      </button>
-    </nav>
-
-    <div class="kympg-sectionLabel">Tools</div>
-    <nav class="kympg-nav">
-      <button class="kympg-navBtn" data-tip="Breakage Pricing" type="button" onclick="kympgOpen('breakage', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Breakage Pricing</span>
-          <span class="kympg-hint">Open breakage tool</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="Sq Ft Price List" type="button" onclick="kympgOpen('pricelist', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Sq Ft Price List</span>
-          <span class="kympg-hint">Reference pricing</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="Customer Import" type="button" onclick="kympgOpen('customerimport', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Customer Import</span>
-          <span class="kympg-hint">Upload customer list</span>
-        </span>
-      </button>
-    </nav>
-
-    <div class="kympg-spacer"></div>
-  </aside>
-
-  <main class="kympg-main">
-    <div class="kympg-shellInner">
-      <div class="kympg-topBar">
-        <div class="kympg-pageTitle">
-          <h1 id="kympgPageTitle">Kentucky Mirror and Plate Glass</h1>
-          <p id="kympgPageSub">Select an option on the left to get started.</p>
-        </div>
-        <div class="kympg-pill" title="App status">
-          <span class="dot"></span>
-          <span>Ready</span>
-        </div>
-      </div>
-
-      <section class="kympg-card">
-        <div class="kympg-cardHeader">
-          <div class="h" id="kympgCardTitle">Home</div>
-          <div class="sub" id="kympgCardSub">Welcome</div>
-        </div>
-        <div class="kympg-cardBody" id="kympgContentArea">
-          <div id="landing-section" class="active">
-            <div class="kympg-landingWrap">
-              <div class="kympg-landingLogo">
-                <img src="564e4083-db27-4742-b925-737f1faaa333.jpg" alt="Kentucky Mirror and Plate Glass" onerror="this.style.display='none';" />
-              </div>
-              <div class="kympg-landingTitle">Kentucky Mirror and Plate Glass</div>
-              <div class="kympg-landingSub">
-                Use the sidebar to create a new quote or order, search past orders, open quotes, manage purchase orders,
-                or open the pricing tools.
-              </div>
-            </div>
-          </div>
-
-          <div id="quotedb-section" style="display:none;">
-            <h2 style="margin-top:0;">Open Quotes</h2>
-            <p style="color:var(--muted);margin-top:6px;">Placeholder for your Quotes database (search, open, edit, convert to order).</p>
-          </div>
-
-          <div id="po-section" style="display:none;">
-            <h2 style="margin-top:0;">Purchase Orders</h2>
-            <p style="color:var(--muted);margin-top:6px;">Placeholder for Vendor POs (vendor, PO #, status, dates, totals, attachments).</p>
-          </div>
-
-          <div id="breakage-section" style="display:none;">
-            <div class="kympg-iframeWrap">
-              <iframe src="https://breakagepricing.netlify.app" title="Breakage Pricing"></iframe>
-            </div>
-          </div>
-
-          <div id="pricelist-section" style="display:none;">
-            <div class="kympg-iframeWrap">
-              <iframe src="https://kymirrorpricelist.netlify.app" title="Sq Ft Price List"></iframe>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  </main>
-</div>
-
-<div id="top-link-box">
-  <a href="https://breakagepricing.netlify.app">Breakage Pricing</a>
-</div>
-<div id="top-link-box-a">
-  <a href="https://kympg.netlify.app">Return to Landing Page</a>
-</div>
-<div id="top-link-box-b">
-  <a href="https://kymirrorpricelist.netlify.app">View Sq Ft Price List</a>
-</div>
-
-<h1>Kentucky Mirror and Plate Glass</h1>
-
-<div class="tab-bar">
-  <button id="tabCalculator" class="active" onclick="switchTab('calculator')">New Order</button>
-  <button id="tabOrders" onclick="switchTab('orders')">Orders</button>
-  <button id="tabCustomers" onclick="switchTab('customers')">Customers</button>
-</div>
-
-<div id="calculator-section">
-
-    <!-- Order Number -->
-    <div class="order-number-bar">
-      <span class="order-label">Order #:</span>
-      <span class="order-num" id="currentOrderNumber">Will be assigned on save</span>
-      <span class="order-label" id="orderSavedStatus"></span>
-    </div>
-
-    <!-- Customer Info -->
-    <div class="customer-info-row">
-      <div class="info-field" style="min-width: 200px;">
-        <label for="customerName">Customer Name</label>
-        <div class="customer-lookup-container">
-          <input type="text" id="customerName" placeholder="Type customer name..." autocomplete="off">
-          <ul id="customerLookupList" class="customer-lookup-list"></ul>
-        </div>
-      </div>
-      <div class="info-field">
-        <label for="customerPhone">Phone</label>
-        <input type="tel" id="customerPhone" placeholder="(123) 456-7890">
-      </div>
-      <div class="info-field" style="flex: 0 0 auto;">
-        <label>&nbsp;</label>
-        <button id="clearCustomerBtn" type="button" onclick="clearCustomerInfo()">Clear Customer</button>
-      </div>
-    </div>
-    <div class="customer-info-row">
-      <div class="info-field" style="min-width: 220px;">
-        <label for="calcCustAddress">Address</label>
-        <input type="text" id="calcCustAddress" placeholder="Address" readonly>
-      </div>
-      <div class="info-field">
-        <label for="calcCustEmail">Email</label>
-        <input type="email" id="calcCustEmail" placeholder="Email" readonly>
-      </div>
-      <div class="info-field">
-        <label for="calcCustCreditTerms">Credit Terms</label>
-        <input type="text" id="calcCustCreditTerms" placeholder="Credit Terms" readonly>
-      </div>
-    </div>
-
-    <!-- Special Pricing -->
-    <div style="display: flex; align-items: center; margin-bottom: 10px; white-space: nowrap;">
-      <input type="checkbox" id="specialPricingToggle" style="margin-right: 8px;">
-      <label for="specialPricingToggle">
-        Use Special Customer Pricing (J-TOWN/BROWNSBORO/RIGHT HAND MAN)
-      </label>
-    </div>
-
-    <!-- Glass Table -->
-    <table id="glassTable">
-      <thead>
-        <tr>
-          <th>Qty</th>
-          <th>Width (in)</th>
-          <th>Height (in)</th>
-          <th>Glass Type</th>
-          <th>Bevel?</th>
-          <th>Bevel Width</th>
-          <th>Shape?</th>
-          <th>Each Price ($)</th>
-          <th>Line Total ($)</th>
-          <th>Delete</th>
-        </tr>
-      </thead>
-      <tbody id="glassTableBody"></tbody>
-    </table>
-
-    <div class="buttons">
-      <button class="btn-save-order" onclick="saveOrder()">Save Order</button>
-      <button class="btn-new-order" onclick="startNewOrder()">New Order</button>
-      <button onclick="addRow()">Add Line</button>
-      <button type="button" onclick="printDoc('quote')">Print Quote</button>
-<button type="button" onclick="printDoc('ticket')">Print Ticket</button>
-<button type="button" onclick="printDoc('invoice')">Print Invoice</button>
-    </div>
-
-    <h3 id="grandTotal">Grand Total: $0.00</h3>
-    <h3 id="grandTotalTax">Grand Total with Tax (6%): $0.00</h3>
-  </div>
-
-  <!-- Hardware Pricing Section -->
-  <div style="flex: 1; margin-top: 16px;">
-    <h2 style="margin-top: 10px; text-align:left;">Misc Hardware Pricing</h2>
-    <table id="hardwareTable">
-      <thead>
-        <tr>
-          <th>Qty</th>
-          <th>Part</th>
-          <th>Price</th>
-          <th>Total</th>
-        </tr>
-      </thead>
-      <tbody id="hardwareTableBody">
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-        <tr>
-          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
-          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
-          <td class="hw-price">$0.00</td>
-          <td class="hw-total">$0.00</td>
-        </tr>
-      </tbody>
-    </table>
-    <datalist id="hardwarePartsList"></datalist>
-    <h3 id="hardwareGrandTotal">Hardware Total: $0.00</h3>
-    <button onclick="clearHardware()">Clear Hardware</button>
-  </div>
-</div>
-</div><!-- end calculator-section -->
-
-<!-- Customer Management Section -->
-<div id="customer-section">
-  <h2>Customer Database</h2>
-
-  <div id="customerFormWrapper" style="display:none;">
-    <form id="customerForm" onsubmit="saveCustomer(event)">
-      <input type="hidden" id="custEditId" value="">
-      <h3 id="formTitle">Add New Customer</h3>
-
-      <label for="custName">Customer Name *</label>
-      <input type="text" id="custName" required placeholder="Enter customer name">
-
-      <label for="custAddress">Address</label>
-      <input type="text" id="custAddress" placeholder="Enter address">
-
-      <label for="custEmail">Email</label>
-      <input type="email" id="custEmail" placeholder="Enter email address">
-
-      <label for="custPhone">Phone Number</label>
-      <input type="tel" id="custPhone" placeholder="(123) 456-7890">
-
-      <label for="custCreditTerms">Credit Terms</label>
-      <input type="text" id="custCreditTerms" placeholder="e.g. Net 30, COD, Prepaid">
-
-      <div class="form-actions">
-        <button type="submit" class="btn-save">Save Customer</button>
-        <button type="button" class="btn-cancel" onclick="cancelCustomerForm()">Cancel</button>
-      </div>
-    </form>
-  </div>
-
-  <button class="btn-add-customer" onclick="showAddCustomerForm()">+ Add Customer</button>
-  <button class="btn-upload-customer" onclick="document.getElementById('importFileInput').click()">Upload from CSV/Excel</button>
-  <input type="file" id="importFileInput" accept=".csv,.xlsx,.xls" style="display:none;" onchange="handleImportFile(event)">
-  <input type="text" id="customerSearch" placeholder="Search customers..." oninput="filterCustomerTable()">
-
-  <table id="customerTable">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Address</th>
-        <th>Email</th>
-        <th>Phone</th>
-        <th>Credit Terms</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="customerTableBody">
-      <tr><td colspan="6" style="text-align:center;">Loading customers...</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- Orders Section -->
-<div id="orders-section">
-  <h2>Orders</h2>
-  <input type="text" id="orderSearch" placeholder="Search by order number or customer name..." oninput="searchOrders()">
-
-  <table id="orderTable">
-    <thead>
-      <tr>
-        <th>Order #</th>
-        <th>Customer</th>
-        <th>Items</th>
-        <th>Grand Total</th>
-        <th>Total w/ Tax</th>
-        <th>Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="orderTableBody">
-      <tr><td colspan="7" style="text-align:center;">Loading orders...</td></tr>
-    </tbody>
-  </table>
-</div>
-
-<script>
-// ===================== DATA SECTION =====================
-// Pricing is now loaded from Google Sheets (Glass + Hardware).
-// All sizing/minimum/bevel/shape rules remain the same — only the price tables moved out of the code.
-//
-// ✅ HOW TO SET UP YOUR GOOGLE SHEET
-// Create a Google Sheet with these tabs (exact names recommended):
-//   1) Glass_Standard   columns: Glass Type | Price | Min
-//   2) Glass_Special    columns: Glass Type | Price | Min
-//   3) Hardware         columns: Part | Price
-//
-// Then: File → Share → Publish to web → Publish EACH TAB as "CSV"
-// Paste the published CSV links below.
-//
-// Tip: Keep the "Glass Type" text EXACTLY how you want it to appear in the dropdown.
-// The calculator matches the text exactly.
-
-const SHEET_CSV = {
-  glassStandard: "https://docs.google.com/spreadsheets/d/1NJS6RbTqk5JDWKs6xgP3PA6cLYYHMalYXBzclECSw-0/gviz/tq?tqx=out:csv&gid=0",
-  glassSpecial:  "https://docs.google.com/spreadsheets/d/1NJS6RbTqk5JDWKs6xgP3PA6cLYYHMalYXBzclECSw-0/gviz/tq?tqx=out:csv&gid=1205552692",
-  hardware:      "https://docs.google.com/spreadsheets/d/1NJS6RbTqk5JDWKs6xgP3PA6cLYYHMalYXBzclECSw-0/gviz/tq?tqx=out:csv&gid=1473389068"
-};
-
-// These get populated from Google Sheets
-let standardglassPartsData = {};
-let specialGlassPartsData  = {};
-let hardwareParts          = {};
-
-// Active glass dataset (standard vs special)
-let glassPartsData = standardglassPartsData;
-
-// Bevel pricing stays in code (rule-based pricing table)
-const bevelPrices = {
-  "1/4": { "1/2": { price: 0.3, min: 25 }, "1": { price: 0.4, min: 25 }, "1 1/4": { price: 0.5, min: 25 }},
-  "3/8": { "1/2": { price: 0.8, min: 35 }, "1": { price: 0.8, min: 35 }, "1 1/4": { price: 0.8, min: 35 }},
-  "1/2": { "1/2": { price: 0.8, min: 35 }, "1": { price: 0.8, min: 35 }, "1 1/4": { price: 0.8, min: 35 }}
-};
-
-// ------- CSV loader helpers (no dependencies) -------
-function parseCsv(text) {
-  // Handles commas + quotes. Returns array of rows (array of strings).
-  const rows = [];
-  let row = [];
-  let cur = '';
-  let inQuotes = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    const next = text[i + 1];
-
-    if (ch === '"') {
-      if (inQuotes && next === '"') { // escaped quote
-        cur += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-
-    if (!inQuotes && (ch === ',')) {
-      row.push(cur);
-      cur = '';
-      continue;
-    }
-
-    if (!inQuotes && (ch === '\n' || ch === '\r')) {
-      // handle CRLF
-      if (ch === '\r' && next === '\n') i++;
-      row.push(cur);
-      rows.push(row);
-      row = [];
-      cur = '';
-      continue;
-    }
-
-    cur += ch;
-  }
-
-  // last cell
-  if (cur.length || row.length) {
-    row.push(cur);
-    rows.push(row);
-  }
-
-  // trim cells
-  return rows.map(r => r.map(c => (c ?? '').toString().trim()));
-}
-
-async function fetchCsv(url) {
-  if (!url || url.includes("PASTE_")) return null;
-
-  // Force fresh fetch
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Failed to fetch CSV (${res.status}): ${url}`);
-  const text = await res.text();
-
-  // Some Google publish links start with a UTF-8 BOM
-  return text.replace(/^\uFEFF/, '');
-}
-
-function toNumber(val) {
-  if (val === null || val === undefined) return NaN;
-  const cleaned = String(val).replace(/[$,]/g, '').trim();
-  if (!cleaned) return NaN;
-  return Number(cleaned);
-}
-
-function rowsToGlassMap(rows) {
-  // Expect header row containing columns like: Glass Type | Price | Min
-  // We'll find indices by header names (case-insensitive).
-  if (!rows || rows.length < 2) return {};
-
-  const header = rows[0].map(h => h.toLowerCase());
-  const nameIdx  = header.findIndex(h => h.includes('glass') || h.includes('type') || h.includes('part') || h.includes('name'));
-  const priceIdx = header.findIndex(h => h.includes('price'));
-  const minIdx   = header.findIndex(h => h.includes('min'));
-
-  const map = {};
-  for (let r = 1; r < rows.length; r++) {
-    const cols = rows[r];
-    const name = (cols[nameIdx] ?? '').trim();
-    if (!name) continue;
-
-    const price = toNumber(cols[priceIdx]);
-    const min   = toNumber(cols[minIdx]);
-
-    if (Number.isNaN(price)) continue; // skip bad rows
-
-    map[name] = {
-      price: price,
-      min: Number.isNaN(min) ? 0 : min
-    };
-  }
-  return map;
-}
-
-function rowsToHardwareMap(rows) {
-  // Expect header: Part | Price  (or Name | Price)
-  if (!rows || rows.length < 2) return {};
-
-  const header = rows[0].map(h => h.toLowerCase());
-  const nameIdx  = header.findIndex(h => h.includes('part') || h.includes('name') || h.includes('item') || h.includes('hardware'));
-  const priceIdx = header.findIndex(h => h.includes('price'));
-
-  const map = {};
-  for (let r = 1; r < rows.length; r++) {
-    const cols = rows[r];
-    const name = (cols[nameIdx] ?? '').trim();
-    if (!name) continue;
-
-    const price = toNumber(cols[priceIdx]);
-    if (Number.isNaN(price)) continue;
-
-    map[name] = price;
-  }
-  return map;
-}
-
-function setLoadingState(isLoading, msg) {
-  const gt = document.getElementById('grandTotal');
-  if (!gt) return;
-  if (isLoading) {
-    gt.dataset._orig = gt.innerText;
-    gt.innerText = msg || 'Loading pricing from Google Sheets...';
-  } else if (gt.dataset._orig) {
-    gt.innerText = gt.dataset._orig;
-    delete gt.dataset._orig;
-  }
-}
-
-async function loadPricingFromSheets() {
-  // If URLs are not set yet, keep existing maps empty and allow user to still use UI
-  const needsSetup = Object.values(SHEET_CSV).some(u => !u || u.includes("PASTE_"));
-  if (needsSetup) {
-    console.warn("Google Sheet CSV links not set yet in SHEET_CSV. Pricing tables will be empty until you paste them.");
-    return;
-  }
-
-  setLoadingState(true);
-
-  try {
-    const [stdText, spText, hwText] = await Promise.all([
-      fetchCsv(SHEET_CSV.glassStandard),
-      fetchCsv(SHEET_CSV.glassSpecial),
-      fetchCsv(SHEET_CSV.hardware)
-    ]);
-
-    const stdRows = parseCsv(stdText || '');
-    const spRows  = parseCsv(spText || '');
-    const hwRows  = parseCsv(hwText || '');
-
-    standardglassPartsData = rowsToGlassMap(stdRows);
-    specialGlassPartsData  = rowsToGlassMap(spRows);
-    hardwareParts          = rowsToHardwareMap(hwRows);
-    refreshHardwareDatalist();
-
-    // Refresh active pointer after load
-    const specialToggle = document.getElementById('specialPricingToggle');
-    glassPartsData = (specialToggle && specialToggle.checked) ? specialGlassPartsData : standardglassPartsData;
-
-    // Re-render any existing dropdown lists & totals
-    updateTotals();
-
-  } catch (err) {
-    console.error(err);
-    alert("Could not load pricing from Google Sheets. Check your published CSV links and that the tabs are published as CSV.");
-  } finally {
-    setLoadingState(false);
-  }
-}
-
-
-// ===================== BEHAVIOR =====================
-
-// Phone formatter
-document.getElementById('customerPhone').addEventListener('input', function (e) {
-  let input = e.target.value.replace(/\D/g, '');
-  if (input.length > 10) input = input.substring(0, 10);
-
-  let formatted = input;
-  if (input.length > 6) {
-    formatted = `(${input.substring(0,3)}) ${input.substring(3,6)}-${input.substring(6)}`;
-  } else if (input.length > 3) {
-    formatted = `(${input.substring(0,3)}) ${input.substring(3)}`;
-  } else if (input.length > 0) {
-    formatted = `(${input}`;
-  }
-  e.target.value = formatted;
-});
-
-// ✅ Print breakdown WITH each price & line total
-function printBreakdown() {
-  const customerName = document.getElementById('customerName').value || "N/A";
-  const customerPhone = document.getElementById('customerPhone').value || "N/A";
-  const customerAddress = document.getElementById('calcCustAddress').value || "";
-  const customerEmail = document.getElementById('calcCustEmail').value || "";
-  const customerCreditTerms = document.getElementById('calcCustCreditTerms').value || "";
-  const orderNumber = document.getElementById('currentOrderNumber').textContent;
-
-  let breakdownWindow = window.open('', '', 'width=800,height=600');
-
-  breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
-  breakdownWindow.document.write('</head><body>');
-  breakdownWindow.document.write('<h2>Kentucky Mirror and Plate Glass</h2>');
-
-  if (orderNumber && orderNumber !== 'Will be assigned on save') {
-    breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${orderNumber}</h3>`);
-  }
-
-  let custInfoHtml = `<p style="text-align:center; font-size:16px; margin-bottom:20px;">
-    <strong>Customer Name:</strong> ${customerName} &nbsp;&nbsp;
-    <strong>Phone:</strong> ${customerPhone}`;
-  if (customerAddress) custInfoHtml += `<br><strong>Address:</strong> ${customerAddress}`;
-  if (customerEmail) custInfoHtml += ` &nbsp;&nbsp;<strong>Email:</strong> ${customerEmail}`;
-  if (customerCreditTerms) custInfoHtml += `<br><strong>Credit Terms:</strong> ${customerCreditTerms}`;
-  custInfoHtml += `</p>`;
-  breakdownWindow.document.write(custInfoHtml);
-
-  breakdownWindow.document.write('<table>');
-  breakdownWindow.document.write('<thead><tr><th>Qty</th><th>Size (W x H)</th><th>Glass Type</th><th>Each Price</th><th>Line Total</th></tr></thead><tbody>');
-
-  let rows = document.querySelectorAll('#glassTableBody tr');
-  rows.forEach(row => {
-    const qty = row.querySelector('.qty')?.value || '';
-    const width = row.querySelector('.width')?.value || '';
-    const height = row.querySelector('.height')?.value || '';
-    let glassType = row.querySelector('.glassTypeInput')?.value || '';
-    const bevelChecked = row.querySelector('.bevel')?.checked;
-    const bevelWidth = row.querySelector('.bevelWidth')?.value || '';
-    const shapeChecked = row.querySelector('.shape')?.checked;
-    const eachPrice = row.querySelector('.eachPrice')?.innerText || '$0.00';
-    const lineTotal = row.querySelector('.lineTotal')?.innerText || '$0.00';
-
-    if (glassType.trim() !== '') {
-      const bits = [];
-      if (bevelChecked) bits.push(`${bevelWidth}" BEVEL`);
-      if (shapeChecked) bits.push('SHAPE');
-
-      if (bits.length === 1) {
-        glassType += ` WITH ${bits[0]}`;
-      } else if (bits.length === 2) {
-        glassType += ` WITH ${bits[0]} & ${bits[1]}`;
-      }
-
-      breakdownWindow.document.write(`<tr>
-        <td>${qty}</td>
-        <td>${width} x ${height}</td>
-        <td>${glassType}</td>
-        <td>${eachPrice}</td>
-        <td>${lineTotal}</td>
-      </tr>`);
-    }
-  });
-
-  breakdownWindow.document.write('</tbody></table>');
-
-  const grandTotal = document.getElementById('grandTotal').innerText;
-  const grandTotalTax = document.getElementById('grandTotalTax').innerText;
-
-  breakdownWindow.document.write(`<h3>${grandTotal}</h3>`);
-  breakdownWindow.document.write(`<h3>${grandTotalTax}</h3>`);
-
-  breakdownWindow.document.write('</body></html>');
-  breakdownWindow.document.close();
-  breakdownWindow.print();
-}
-
-// Special pricing toggle
-document.getElementById('specialPricingToggle').addEventListener('change', function() {
-  glassPartsData = this.checked ? specialGlassPartsData : standardglassPartsData;
-  updateTotals();
-});
-
-// Clear line (trash icon)
-document.getElementById('glassTableBody').addEventListener('click', function(e) {
-  const btn = e.target.closest('.clear-line');
-  if (!btn) return;
-
-  const row = btn.closest('tr');
-  if (!row) return;
-
-  const qtyEl = row.querySelector('.qty');
-  const widthEl = row.querySelector('.width');
-  const heightEl = row.querySelector('.height');
-  const typeEl = row.querySelector('.glassTypeInput');
-  const bevelEl = row.querySelector('.bevel');
-  const bevelWidthEl = row.querySelector('.bevelWidth');
-  const shapeEl = row.querySelector('.shape');
-  const listEl = row.querySelector('.glassList');
-  const eachEl = row.querySelector('.eachPrice');
-  const lineEl = row.querySelector('.lineTotal');
-
-  if (qtyEl) qtyEl.value = 1;
-  if (widthEl) widthEl.value = '';
-  if (heightEl) heightEl.value = '';
-  if (typeEl) typeEl.value = '';
-  if (bevelEl) bevelEl.checked = false;
-  if (shapeEl) shapeEl.checked = false;
-  if (bevelWidthEl) bevelWidthEl.selectedIndex = 0;
-  if (listEl) { listEl.innerHTML = ''; listEl.style.display = 'none'; }
-  if (eachEl) eachEl.innerText = '$0.00';
-  if (lineEl) lineEl.innerText = '$0.00';
-
-  delete row.dataset.bevelAlerted;
-  delete row.dataset.plexiAlerted;
-
-  updateTotals();
-});
-
-// Hardware table events
-document.getElementById('hardwareTableBody').addEventListener('input', function (event) {
-  const row = event.target.closest('tr');
-  if (!row) return;
-  updateHardwareRow(row);
-  updateHardwareTotals();
-});
-
-// ===================== FUNCTIONS =====================
-function parseInput(value) {
-  if (!value) return 0;
-  value = value.trim();
-  if (value.includes(' ')) {
-    const parts = value.split(' ');
-    const whole = parseFloat(parts[0]);
-    const fractionParts = parts[1].split('/');
-    return whole + (parseFloat(fractionParts[0]) / parseFloat(fractionParts[1]));
-  } else if (value.includes('/')) {
-    const fractionParts = value.split('/');
-    return parseFloat(fractionParts[0]) / parseFloat(fractionParts[1]);
-  } else {
-    return parseFloat(value);
-  }
-}
-function roundEven(num) {
-  if (isNaN(num)) return 0;
-  let rounded = Math.ceil(num);
-  return (rounded % 2 === 0) ? rounded : rounded + 1;
-}
-
-function addRow() {
-  const tbody = document.getElementById('glassTableBody');
-  const tr = document.createElement('tr');
-  tr.innerHTML = `
-    <td><input type="number" class="qty" value="1" min="1" style="width: 60px;"></td>
-    <td><input type="text" class="width"></td>
-    <td><input type="text" class="height"></td>
-    <td style="position:relative;">
-      <input type="text" class="glassTypeInput largeDropdown" placeholder="Type to search glass...">
-      <ul class="glassList"></ul>
-    </td>
-    <td><input type="checkbox" class="bevel"></td>
-    <td>
-      <select class="bevelWidth">
-        <option value="1/2">1/2"</option>
-        <option value="1">1"</option>
-        <option value="1 1/4">1 1/4"</option>
-      </select>
-    </td>
-    <td><input type="checkbox" class="shape"></td>
-    <td class="eachPrice">$0.00</td>
-    <td class="lineTotal">$0.00</td>
-    <td class="delete-cell">
-      <button class="icon-btn clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
-    </td>
-  `;
-
-  tbody.appendChild(tr);
-  setupGlassSearch(tr.querySelector('.glassTypeInput'), tr.querySelector('.glassList'));
-  tr.querySelectorAll('input, select').forEach(el => {
-    el.addEventListener('input', updateTotals);
-    el.addEventListener('change', updateTotals);
-  });
-}
-
-function setupGlassSearch(inputElement, listElement) {
-  let currentIndex = -1;
-
-  function buildList() {
-    const search = inputElement.value.toLowerCase().trim();
-    listElement.innerHTML = '';
-    currentIndex = -1;
-
-    // If nothing typed, don't force a list open
-    if (!search) {
-      listElement.style.display = 'none';
-      return;
-    }
-
-    const matches = Object.keys(glassPartsData).filter(glass =>
-      glass.toLowerCase().includes(search)
-    );
-
-    matches.forEach((glass, idx) => {
-      const li = document.createElement('li');
-      li.textContent = glass;
-      li.dataset.index = idx;
-
-      // Use mousedown so it fires before input loses focus
-      li.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        selectItem(glass);
-      });
-
-      listElement.appendChild(li);
-    });
-
-    listElement.style.display = matches.length ? 'block' : 'none';
-  }
-
-  function setActiveItem(items) {
-    items.forEach((li, idx) => {
-      li.classList.toggle('active', idx === currentIndex);
-    });
-    if (currentIndex >= 0 && items[currentIndex]) {
-      items[currentIndex].scrollIntoView({ block: 'nearest' });
-    }
-  }
-
-  function selectItem(glass) {
-    inputElement.value = glass;
-    listElement.style.display = 'none';
-    currentIndex = -1;
-    updateTotals();
-  }
-
-  // Typing filters the list, but you can just hit Enter now
-  inputElement.addEventListener('input', buildList);
-
-  inputElement.addEventListener('focus', () => {
-    if (inputElement.value.trim()) {
-      buildList();
-    }
-  });
-
-  inputElement.addEventListener('keydown', (e) => {
-    const items = listElement.querySelectorAll('li');
-
-    if (e.key === 'ArrowDown' && items.length) {
-      e.preventDefault();
-      currentIndex = (currentIndex + 1) % items.length;
-      setActiveItem(items);
-    } else if (e.key === 'ArrowUp' && items.length) {
-      e.preventDefault();
-      currentIndex = (currentIndex - 1 + items.length) % items.length;
-      setActiveItem(items);
-    } else if (e.key === 'Enter') {
-      // If list is open and we have matches, Enter will select
-      if (listElement.style.display === 'block' && items.length) {
-        e.preventDefault();
-        const indexToUse = currentIndex >= 0 ? currentIndex : 0;
-        selectItem(items[indexToUse].textContent);
-      }
-    } else if (e.key === 'Escape') {
-      listElement.style.display = 'none';
-      currentIndex = -1;
-    }
-  });
-}
-
-
-
-
-function updateTotals() {
-  let grandTotal = 0;
-  const rows = document.querySelectorAll('#glassTableBody tr');
-
-  rows.forEach(row => {
-    const widthInput = row.querySelector('.width').value;
-    const heightInput = row.querySelector('.height').value;
-    const glassType = row.querySelector('.glassTypeInput').value;
-    const bevelCheckbox = row.querySelector('.bevel');
-    const bevelChecked = bevelCheckbox.checked;
-    const bevelWidth = row.querySelector('.bevelWidth').value;
-    const shapeCheckbox = row.querySelector('.shape');
-    const shapeChecked = shapeCheckbox.checked;
-
-    if (shapeChecked) {
-      bevelCheckbox.checked = false;
-    }
-
-    if (!glassType || !glassPartsData[glassType]) {
-      row.querySelector('.eachPrice').innerText = '$0.00';
-      row.querySelector('.lineTotal').innerText = '$0.00';
-      return;
-    }
-
-    let width = roundEven(parseInput(widthInput));
-    let height = roundEven(parseInput(heightInput));
-    if (isNaN(width) || isNaN(height)) {
-      row.querySelector('.eachPrice').innerText = '$0.00';
-      row.querySelector('.lineTotal').innerText = '$0.00';
-      return;
-    }
-
-    // PLEXI — quote ONLY if the piece cannot be cut from a 48 x 96 sheet (any orientation)
-    const isPlexi = glassType.toUpperCase().includes('PLEXI');
-
-    if (isPlexi) {
-      const fitsNormal  = width <= 48 && height <= 96; // 48 x 96
-      const fitsRotated = width <= 96 && height <= 48; // 96 x 48
-
-      // If it doesn't fit in either orientation, it must be quoted
-      if (!fitsNormal && !fitsRotated) {
-        row.querySelector('.eachPrice').innerText = '$0.00';
-        row.querySelector('.lineTotal').innerText = 'Must be quoted by General Rubber';
-
-        if (row.dataset.plexiAlerted !== 'true') {
-          alert('This size cannot be cut from a 48 x 96 sheet and must be quoted by General Rubber.');
-          row.dataset.plexiAlerted = 'true';
-        }
-
-        return; // stop calculations for this row
-      }
-    }
-
-    // If we get here, either it is not plexi, or plexi fits 48x96 in some orientation
-    delete row.dataset.plexiAlerted;
-
-    let area = (width * height) / 144;
-    const partInfo = glassPartsData[glassType];
-
-    // ================= CUSTOM MINIMUM RULE CHANGES =================
-    // - Polished tempered: minimum 3 sq ft charge
-    // - Polished non-tempered: $15 minimum
-    // - Everything else: use partInfo.min
-    let basePrice;
-
-    const upperType = glassType.toUpperCase();
-    const isTempered = upperType.includes("TEMPERED");
-    const isPolished = upperType.includes("POLISHED");
-
-    // 🚨 TEMPERED + SHAPE = MUST QUOTE BY GLENNY
-if (isTempered && shapeChecked) {
-  row.querySelector('.eachPrice').innerText = '$0.00';
-  row.querySelector('.lineTotal').innerText = 'Needs quoted by Glenny';
-
-  if (row.dataset.temperedShapeAlerted !== "true") {
-    alert("Tempered shapes must be quoted by Glenny.");
-    row.dataset.temperedShapeAlerted = "true";
-  }
-
-  return; // stop calculations for this row
-} else {
-  delete row.dataset.temperedShapeAlerted;
-}
-
-
-    if (isTempered && isPolished) {
-      // Polished tempered -> minimum 3 sq ft
-      const billableArea = area < 3 ? 3 : area;
-      basePrice = billableArea * partInfo.price;
-    } else if (isPolished) {
-      // Polished, not tempered -> $15 minimum
-      basePrice = area * partInfo.price;
-      if (basePrice < 15) basePrice = 15;
-    } else {
-      // All other glass types -> fall back to table minimum
-      basePrice = area * partInfo.price;
-      if (basePrice < partInfo.min) basePrice = partInfo.min;
-    }
-    // ===============================================================
-    let bevelCost = 0;
-    const thickness = glassType.includes('1/4') ? "1/4" :
-                      glassType.includes('3/8') ? "3/8" :
-                      glassType.includes('1/2') ? "1/2" : null;
-
-    if (bevelChecked && thickness && bevelPrices[thickness] && bevelPrices[thickness][bevelWidth]) {
-      const bevelData = bevelPrices[thickness][bevelWidth];
-      const perimeter = 2 * (width + height);
-      bevelCost = perimeter * bevelData.price;
-      if (bevelCost < bevelData.min) bevelCost = bevelData.min;
-      row.dataset.bevelAlerted = "false";
-    } else if (bevelChecked && row.dataset.bevelAlerted !== "true") {
-      alert("This glass type cannot be beveled.");
-      row.dataset.bevelAlerted = "true";
-    }
-
-    const qty = parseInt(row.querySelector('.qty')?.value) || 1;
-
-    let eachPrice = basePrice + bevelCost;
-    if (shapeChecked) {
-      // 25% upcharge for shapes
-      eachPrice *= 1.25;
-
-      // Shape minimums AFTER the 25% upcharge (per piece)
-      let shapeMin = 0;
-      if (glassType.includes('1/8')) shapeMin = 25;
-      else if (glassType.includes('3/16')) shapeMin = 25;
-      else if (glassType.includes('1/4')) shapeMin = 25;
-      else if (glassType.includes('3/8')) shapeMin = 60;
-      else if (glassType.includes('1/2')) shapeMin = 70;
-
-      if (shapeMin > 0 && eachPrice < shapeMin) eachPrice = shapeMin;
-    }
-let total = eachPrice * qty;
-
-    row.querySelector('.eachPrice').innerText = `$${eachPrice.toFixed(2)}`;
-    row.querySelector('.lineTotal').innerText = `$${total.toFixed(2)}`;
-
-    grandTotal += total;
-  });
-
-  document.getElementById('grandTotal').innerText =
-    `Grand Total: $${grandTotal.toFixed(2)}`;
-  document.getElementById('grandTotalTax').innerText =
-    `Grand Total with Tax (6%): $${(grandTotal * 1.06).toFixed(2)}`;
-}
-
-function clearForm() {
-  startNewOrder();
-}
-
-function refreshHardwareDatalist() {
-  const datalist = document.getElementById('hardwarePartsList');
-  if (!datalist) return;
-  datalist.innerHTML = Object.keys(hardwareParts)
-    .sort((a,b) => a.localeCompare(b))
-    .map(part => `<option value="${escapeHtml(part)}"></option>`)
-    .join('');
-}
-
-function updateHardwareRow(row) {
-  const qtyEl = row.querySelector('.hw-qty');
-  const partEl = row.querySelector('.hw-part');
-  const priceEl = row.querySelector('.hw-price');
-  const totalEl = row.querySelector('.hw-total');
-
-  const qty = Math.max(0, parseInt(qtyEl?.value, 10) || 0);
-  if (qtyEl && String(qtyEl.value) !== String(qty)) qtyEl.value = qty;
-
-  const partName = (partEl?.value || '').trim();
-  const unitPrice = hardwareParts[partName] || 0;
-  const lineTotal = unitPrice * qty;
-
-  if (priceEl) priceEl.innerText = `$${unitPrice.toFixed(2)}`;
-  if (totalEl) totalEl.innerText = `$${lineTotal.toFixed(2)}`;
-}
-
-function updateHardwareTotals() {
-  const rows = document.querySelectorAll('#hardwareTableBody tr');
-  let hardwareTotal = 0;
-  rows.forEach(row => {
-    const totalText = row.querySelector('.hw-total')?.innerText || '$0.00';
-    const match = totalText.match(/\$([\d,.]+)/);
-    if (match) hardwareTotal += parseFloat(match[1].replace(/,/g, '')) || 0;
-  });
-
-  const totalEl = document.getElementById('hardwareGrandTotal');
-  if (totalEl) totalEl.innerText = `Hardware Total: $${hardwareTotal.toFixed(2)}`;
-}
-
-function clearHardware() {
-  document.querySelectorAll('#hardwareTableBody tr').forEach(row => {
-    const qtyEl = row.querySelector('.hw-qty');
-    const partEl = row.querySelector('.hw-part');
-    if (qtyEl) qtyEl.value = 0;
-    if (partEl) partEl.value = '';
-    row.querySelector('.hw-price').innerText = '$0.00';
-    row.querySelector('.hw-total').innerText = '$0.00';
-  });
-  updateHardwareTotals();
-}
-
-// ===================== TAB SWITCHING =====================
-function switchTab(tab) {
-  const calcSection = document.getElementById('calculator-section');
-  const custSection = document.getElementById('customer-section');
-  const ordSection = document.getElementById('orders-section');
-  const tabCalc = document.getElementById('tabCalculator');
-  const tabCust = document.getElementById('tabCustomers');
-  const tabOrd = document.getElementById('tabOrders');
-
-  // Hide all
-  calcSection.classList.add('hidden');
-  custSection.classList.remove('active');
-  ordSection.classList.remove('active');
-  tabCalc.classList.remove('active');
-  tabCust.classList.remove('active');
-  tabOrd.classList.remove('active');
-
-  if (tab === 'customers') {
-    custSection.classList.add('active');
-    tabCust.classList.add('active');
-    loadCustomers();
-  } else if (tab === 'orders') {
-    ordSection.classList.add('active');
-    tabOrd.classList.add('active');
-    loadOrders();
-  } else {
-    calcSection.classList.remove('hidden');
-    tabCalc.classList.add('active');
-    // Refresh customer list for autocomplete in case new ones were added
-    loadCalcCustomers();
-  }
-}
-
-// ===================== CUSTOMER CRUD =====================
-let allCustomers = [];
-
-async function loadCustomers() {
-  try {
-    const res = await fetch('/api/customers');
-    if (!res.ok) throw new Error('Failed to load customers');
-    allCustomers = await res.json();
-    renderCustomerTable(allCustomers);
-  } catch (err) {
-    console.error(err);
-    document.getElementById('customerTableBody').innerHTML =
-      '<tr><td colspan="6" style="text-align:center;">Failed to load customers.</td></tr>';
-  }
-}
-
-function renderCustomerTable(customers) {
-  const tbody = document.getElementById('customerTableBody');
-  if (!customers.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No customers found.</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = customers.map(c => `
-    <tr>
-      <td>${escapeHtml(c.name)}</td>
-      <td>${escapeHtml(c.address || '')}</td>
-      <td>${escapeHtml(c.email || '')}</td>
-      <td>${escapeHtml(c.phone || '')}</td>
-      <td>${escapeHtml(c.creditTerms || '')}</td>
-      <td class="actions-cell">
-        <button class="btn-edit" onclick="editCustomer('${c.id}')">Edit</button>
-        <button class="btn-delete" onclick="deleteCustomer('${c.id}')">Delete</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function filterCustomerTable() {
-  const search = document.getElementById('customerSearch').value.toLowerCase();
-  const filtered = allCustomers.filter(c =>
-    (c.name || '').toLowerCase().includes(search) ||
-    (c.address || '').toLowerCase().includes(search) ||
-    (c.email || '').toLowerCase().includes(search) ||
-    (c.phone || '').toLowerCase().includes(search) ||
-    (c.creditTerms || '').toLowerCase().includes(search)
-  );
-  renderCustomerTable(filtered);
-}
-
-function showAddCustomerForm() {
-  document.getElementById('custEditId').value = '';
-  document.getElementById('formTitle').textContent = 'Add New Customer';
-  document.getElementById('custName').value = '';
-  document.getElementById('custAddress').value = '';
-  document.getElementById('custEmail').value = '';
-  document.getElementById('custPhone').value = '';
-  document.getElementById('custCreditTerms').value = '';
-  document.getElementById('customerFormWrapper').style.display = 'block';
-}
-
-function cancelCustomerForm() {
-  document.getElementById('customerFormWrapper').style.display = 'none';
-}
-
-async function editCustomer(id) {
-  const customer = allCustomers.find(c => c.id === id);
-  if (!customer) return;
-
-  document.getElementById('custEditId').value = id;
-  document.getElementById('formTitle').textContent = 'Edit Customer';
-  document.getElementById('custName').value = customer.name || '';
-  document.getElementById('custAddress').value = customer.address || '';
-  document.getElementById('custEmail').value = customer.email || '';
-  document.getElementById('custPhone').value = customer.phone || '';
-  document.getElementById('custCreditTerms').value = customer.creditTerms || '';
-  document.getElementById('customerFormWrapper').style.display = 'block';
-}
-async function saveCustomer(event) {
-  event.preventDefault();
-
-  const id = document.getElementById('custEditId').value;
-  const data = {
-    name: document.getElementById('custName').value.trim(),
-    address: document.getElementById('custAddress').value.trim(),
-    email: document.getElementById('custEmail').value.trim(),
-    phone: document.getElementById('custPhone').value.trim(),
-    creditTerms: document.getElementById('custCreditTerms').value.trim(),
-  };
-
-  if (!data.name) {
-    alert('Customer name is required.');
-    return;
-  }
-
-  try {
-    let res;
-    if (id) {
-      res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-    } else {
-      res = await fetch('/api/customers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-    }
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to save customer');
-    }
-
-    cancelCustomerForm();
-    await loadCustomers();
-  } catch (err) {
-    alert('Error saving customer: ' + err.message);
-  }
-}
-
-async function deleteCustomer(id) {
-  if (!confirm('Are you sure you want to delete this customer?')) return;
-
-  try {
-    const res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, {
-      method: 'DELETE',
-    });
-    if (!res.ok) throw new Error('Failed to delete customer');
-    await loadCustomers();
-  } catch (err) {
-    alert('Error deleting customer: ' + err.message);
-  }
-}
-
-// Phone formatter for customer form
-document.getElementById('custPhone').addEventListener('input', function (e) {
-  let input = e.target.value.replace(/\D/g, '');
-  if (input.length > 10) input = input.substring(0, 10);
-
-  let formatted = input;
-  if (input.length > 6) {
-    formatted = `(${input.substring(0,3)}) ${input.substring(3,6)}-${input.substring(6)}`;
-  } else if (input.length > 3) {
-    formatted = `(${input.substring(0,3)}) ${input.substring(3)}`;
-  } else if (input.length > 0) {
-    formatted = `(${input}`;
-  }
-  e.target.value = formatted;
-});
-
-// ===================== CUSTOMER LOOKUP IN CALCULATOR =====================
-let calcCustomers = []; // customers loaded for calculator autocomplete
-let selectedCalcCustomer = null; // currently selected customer
-let calcLookupIndex = -1; // keyboard nav index
-
-async function loadCalcCustomers() {
-  try {
-    const res = await fetch('/api/customers');
-    if (!res.ok) throw new Error('Failed to load customers');
-    calcCustomers = await res.json();
-  } catch (err) {
-    console.error('Could not load customers for autocomplete:', err);
-    calcCustomers = [];
-  }
-}
-
-function setupCustomerLookup() {
-  const nameInput = document.getElementById('customerName');
-  const lookupList = document.getElementById('customerLookupList');
-
-  nameInput.addEventListener('input', function() {
-    selectedCalcCustomer = null;
-    // Make extra fields editable when no customer is selected
-    setCalcCustomerFieldsReadonly(false);
-    buildCalcLookupList();
-  });
-
-  nameInput.addEventListener('focus', function() {
-    if (nameInput.value.trim()) {
-      buildCalcLookupList();
-    }
-  });
-
-  nameInput.addEventListener('keydown', function(e) {
-    const items = lookupList.querySelectorAll('li');
-    if (e.key === 'ArrowDown' && items.length) {
-      e.preventDefault();
-      calcLookupIndex = (calcLookupIndex + 1) % items.length;
-      highlightCalcItem(items);
-    } else if (e.key === 'ArrowUp' && items.length) {
-      e.preventDefault();
-      calcLookupIndex = (calcLookupIndex - 1 + items.length) % items.length;
-      highlightCalcItem(items);
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (lookupList.style.display === 'block' && items.length) {
-        const idx = calcLookupIndex >= 0 ? calcLookupIndex : 0;
-        items[idx].dispatchEvent(new Event('mousedown'));
-      }
-    } else if (e.key === 'Escape') {
-      lookupList.style.display = 'none';
-      calcLookupIndex = -1;
-    }
-  });
-
-  // Close dropdown when clicking outside
-  document.addEventListener('click', function(e) {
-    if (!nameInput.contains(e.target) && !lookupList.contains(e.target)) {
-      lookupList.style.display = 'none';
-      calcLookupIndex = -1;
-    }
-  });
-}
-
-function buildCalcLookupList() {
-  const nameInput = document.getElementById('customerName');
-  const lookupList = document.getElementById('customerLookupList');
-  const search = nameInput.value.toLowerCase().trim();
-
-  lookupList.innerHTML = '';
-  calcLookupIndex = -1;
-
-  if (!search) {
-    lookupList.style.display = 'none';
-    return;
-  }
-
-  const matches = calcCustomers.filter(c =>
-    (c.name || '').toLowerCase().includes(search)
-  );
-
-  matches.forEach(c => {
-    const li = document.createElement('li');
-    li.innerHTML = `${escapeHtml(c.name)}<span class="cust-detail">${escapeHtml(c.phone || '')}${c.address ? ' — ' + escapeHtml(c.address) : ''}</span>`;
-    li.addEventListener('mousedown', function(e) {
-      e.preventDefault();
-      selectCalcCustomer(c);
-    });
-    lookupList.appendChild(li);
-  });
-
-  // Add "Add New Customer" option at bottom
-  const addLi = document.createElement('li');
-  addLi.className = 'add-new-customer';
-  addLi.textContent = '+ Add "' + nameInput.value.trim() + '" as new customer';
-  addLi.addEventListener('mousedown', function(e) {
-    e.preventDefault();
-    openQuickAddCustomer(nameInput.value.trim());
-  });
-  lookupList.appendChild(addLi);
-
-  lookupList.style.display = 'block';
-}
-
-function highlightCalcItem(items) {
-  items.forEach((li, idx) => {
-    li.classList.toggle('active', idx === calcLookupIndex);
-  });
-  if (calcLookupIndex >= 0 && items[calcLookupIndex]) {
-    items[calcLookupIndex].scrollIntoView({ block: 'nearest' });
-  }
-}
-
-function selectCalcCustomer(customer) {
-  selectedCalcCustomer = customer;
-  document.getElementById('customerName').value = customer.name || '';
-  document.getElementById('customerPhone').value = customer.phone || '';
-  document.getElementById('calcCustAddress').value = customer.address || '';
-  document.getElementById('calcCustEmail').value = customer.email || '';
-  document.getElementById('calcCustCreditTerms').value = customer.creditTerms || '';
-  setCalcCustomerFieldsReadonly(true);
-  document.getElementById('customerLookupList').style.display = 'none';
-  calcLookupIndex = -1;
-}
-
-function setCalcCustomerFieldsReadonly(readonly) {
-  document.getElementById('calcCustAddress').readOnly = readonly;
-  document.getElementById('calcCustEmail').readOnly = readonly;
-  document.getElementById('calcCustCreditTerms').readOnly = readonly;
-}
-
-function clearCustomerInfo() {
-  selectedCalcCustomer = null;
-  document.getElementById('customerName').value = '';
-  document.getElementById('customerPhone').value = '';
-  document.getElementById('calcCustAddress').value = '';
-  document.getElementById('calcCustEmail').value = '';
-  document.getElementById('calcCustCreditTerms').value = '';
-  setCalcCustomerFieldsReadonly(false);
-  document.getElementById('customerLookupList').style.display = 'none';
-}
-
-// ===================== QUICK-ADD CUSTOMER MODAL =====================
-function openQuickAddCustomer(prefillName) {
-  document.getElementById('customerLookupList').style.display = 'none';
-  // Check if modal already exists, if not create it
-  let modal = document.getElementById('quickAddModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'quickAddModal';
-    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;';
-    modal.innerHTML = `
-      <div style="background:white;padding:24px;border-radius:10px;width:420px;max-width:90%;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
-        <h3 style="margin-top:0;">Add New Customer</h3>
-        <div style="margin-bottom:10px;">
-          <label style="font-weight:bold;font-size:13px;display:block;margin-bottom:3px;">Name *</label>
-          <input type="text" id="qaName" style="width:100%;padding:6px;font-size:14px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;">
-        </div>
-        <div style="margin-bottom:10px;">
-          <label style="font-weight:bold;font-size:13px;display:block;margin-bottom:3px;">Address</label>
-          <input type="text" id="qaAddress" style="width:100%;padding:6px;font-size:14px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;">
-        </div>
-        <div style="margin-bottom:10px;">
-          <label style="font-weight:bold;font-size:13px;display:block;margin-bottom:3px;">Email</label>
-          <input type="email" id="qaEmail" style="width:100%;padding:6px;font-size:14px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;">
-        </div>
-        <div style="margin-bottom:10px;">
-          <label style="font-weight:bold;font-size:13px;display:block;margin-bottom:3px;">Phone</label>
-          <input type="tel" id="qaPhone" style="width:100%;padding:6px;font-size:14px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;">
-        </div>
-        <div style="margin-bottom:15px;">
-          <label style="font-weight:bold;font-size:13px;display:block;margin-bottom:3px;">Credit Terms</label>
-          <input type="text" id="qaCreditTerms" style="width:100%;padding:6px;font-size:14px;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;" placeholder="e.g. Net 30, COD, Prepaid">
-        </div>
-        <div style="display:flex;gap:10px;">
-          <button id="qaSaveBtn" style="padding:8px 18px;font-size:14px;font-weight:bold;background:#28a745;color:white;border:none;border-radius:6px;cursor:pointer;">Save & Use</button>
-          <button id="qaCancelBtn" style="padding:8px 18px;font-size:14px;font-weight:bold;background:lightgrey;color:black;border:none;border-radius:6px;cursor:pointer;">Cancel</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    // Phone formatter for modal
-    document.getElementById('qaPhone').addEventListener('input', function(e) {
-      let input = e.target.value.replace(/\D/g, '');
-      if (input.length > 10) input = input.substring(0, 10);
-      let formatted = input;
-      if (input.length > 6) formatted = '(' + input.substring(0,3) + ') ' + input.substring(3,6) + '-' + input.substring(6);
-      else if (input.length > 3) formatted = '(' + input.substring(0,3) + ') ' + input.substring(3);
-      else if (input.length > 0) formatted = '(' + input;
-      e.target.value = formatted;
-    });
-
-    document.getElementById('qaSaveBtn').addEventListener('click', saveQuickAddCustomer);
-    document.getElementById('qaCancelBtn').addEventListener('click', closeQuickAddModal);
-  }
-
-  // Reset and prefill
-  document.getElementById('qaName').value = prefillName || '';
-  document.getElementById('qaAddress').value = '';
-  document.getElementById('qaEmail').value = '';
-  document.getElementById('qaPhone').value = '';
-  document.getElementById('qaCreditTerms').value = '';
-  modal.style.display = 'flex';
-  document.getElementById('qaName').focus();
-}
-
-function closeQuickAddModal() {
-  const modal = document.getElementById('quickAddModal');
-  if (modal) modal.style.display = 'none';
-}
-
-async function saveQuickAddCustomer() {
-  const name = document.getElementById('qaName').value.trim();
-  if (!name) {
-    alert('Customer name is required.');
-    return;
-  }
-
-  const data = {
-    name: name,
-    address: document.getElementById('qaAddress').value.trim(),
-    email: document.getElementById('qaEmail').value.trim(),
-    phone: document.getElementById('qaPhone').value.trim(),
-    creditTerms: document.getElementById('qaCreditTerms').value.trim(),
-  };
-
-  try {
-    const res = await fetch('/api/customers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to save customer');
-    }
-
-    const newCustomer = await res.json();
-    // Add to local cache
-    calcCustomers.push(newCustomer);
-    // Also refresh the allCustomers list so the Customers tab is in sync
-    allCustomers = [...calcCustomers];
-
-    // Select the new customer in the calculator
-    selectCalcCustomer(newCustomer);
-    closeQuickAddModal();
-  } catch (err) {
-    alert('Error saving customer: ' + err.message);
-  }
-}
-
-
-// ===================== ORDER MANAGEMENT =====================
-let currentOrderId = null;      // currently loaded order in the form (null = unsaved / new)
-let lastSavedOrderId = null;    // last saved order id (kept even after clearing the form)
-
-function startNewOrder() {
-  currentOrderId = null;
-  document.getElementById('currentOrderNumber').textContent = 'Will be assigned on save';
-  document.getElementById('orderSavedStatus').textContent = '';
-
-  // Clear the form
-  document.getElementById('glassTableBody').innerHTML = '';
-  for (let i = 0; i < 5; i++) addRow();
-  updateTotals();
-  clearCustomerInfo();
-  clearHardware();
-}
-function printDoc(type) {
-  const idToPrint = currentOrderId || lastSavedOrderId;
-
-  if (!idToPrint) {
-    alert("Please save the order first, then print.");
-    return;
-  }
-
-  const url = `/api/orders?id=${encodeURIComponent(idToPrint)}&print=${encodeURIComponent(type)}`;
-  window.open(url, "_blank");
-}
-
-function gatherOrderData() {
-  // Gather customer info
-  const customer = {
-    name: document.getElementById('customerName').value.trim(),
-    phone: document.getElementById('customerPhone').value.trim(),
-    address: document.getElementById('calcCustAddress').value.trim(),
-    email: document.getElementById('calcCustEmail').value.trim(),
-    creditTerms: document.getElementById('calcCustCreditTerms').value.trim(),
-  };
-  if (selectedCalcCustomer) {
-    customer.customerId = selectedCalcCustomer.id;
-  }
-
-  // Gather glass line items
-  const items = [];
-  const rows = document.querySelectorAll('#glassTableBody tr');
-  rows.forEach(row => {
-    const glassType = row.querySelector('.glassTypeInput')?.value || '';
-    if (!glassType.trim()) return; // skip empty rows
-
-    items.push({
-      qty: parseInt(row.querySelector('.qty')?.value) || 1,
-      width: row.querySelector('.width')?.value || '',
-      height: row.querySelector('.height')?.value || '',
-      glassType: glassType,
-      bevel: row.querySelector('.bevel')?.checked || false,
-      bevelWidth: row.querySelector('.bevelWidth')?.value || '1/2',
-      shape: row.querySelector('.shape')?.checked || false,
-      eachPrice: row.querySelector('.eachPrice')?.innerText || '$0.00',
-      lineTotal: row.querySelector('.lineTotal')?.innerText || '$0.00',
-    });
-  });
-
-  // Gather hardware rows
-  const hardwareItems = Array.from(document.querySelectorAll('#hardwareTableBody tr')).map(row => {
-    const qty = parseInt(row.querySelector('.hw-qty')?.value, 10) || 0;
-    const name = (row.querySelector('.hw-part')?.value || '').trim();
-    const unitPriceText = row.querySelector('.hw-price')?.innerText || '$0.00';
-    const lineTotalText = row.querySelector('.hw-total')?.innerText || '$0.00';
-    const unitMatch = unitPriceText.match(/\$([\d.]+)/);
-    const lineMatch = lineTotalText.match(/\$([\d.]+)/);
-    return {
-      qty,
-      name,
-      price: unitMatch ? parseFloat(unitMatch[1]) : 0,
-      total: lineMatch ? parseFloat(lineMatch[1]) : 0,
-    };
-  }).filter(item => item.qty > 0 && item.name);
-
-  const hardwareTotal = hardwareItems.reduce((sum, item) => sum + item.total, 0);
-  const hardware = hardwareItems.length
-    ? { name: hardwareItems.length === 1 ? hardwareItems[0].name : 'Multiple hardware items', price: hardwareTotal }
-    : null;
-
-  // Totals
-  const grandTotalText = document.getElementById('grandTotal').innerText;
-  const grandTotalTaxText = document.getElementById('grandTotalTax').innerText;
-  const gtMatch = grandTotalText.match(/\$([\d,.]+)/);
-  const gttMatch = grandTotalTaxText.match(/\$([\d,.]+)/);
-  const grandTotal = gtMatch ? parseFloat(gtMatch[1].replace(/,/g, '')) : 0;
-  const grandTotalWithTax = gttMatch ? parseFloat(gttMatch[1].replace(/,/g, '')) : 0;
-
-  const specialPricing = document.getElementById('specialPricingToggle').checked;
-
-  return { customer, items, hardware, hardwareItems, specialPricing, grandTotal, grandTotalWithTax };
-}
-
-async function saveOrder() {
-  const data = gatherOrderData();
-
-  if (!data.customer.name) {
-    alert('Please enter a customer name before saving the order.');
-    return;
-  }
-
-  if (data.items.length === 0) {
-    alert('Please add at least one glass line item before saving the order.');
-    return;
-  }
-
-  const saveBtn = document.querySelector('.btn-save-order');
-  saveBtn.disabled = true;
+diff --git a/index.html b/index.html
+index 971d625826bbcf9111fff642d171d72d02b862e6..3c0b7fb596c721718d8c535bbe06de830da88ff0 100644
+--- a/index.html
++++ b/index.html
+@@ -1,42 +1,39 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head><meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <title>Kentucky Mirror and Plate Glass - New Order</title>
+   <style>
+     body { font-family: Arial, sans-serif; margin: 20px; }
+     h1 { text-align: center; }
+     .container { display: flex; }
+     .section { width: 50%; padding: 10px; }
+     table { width: 100%; border-collapse: collapse; }
+     th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
+     input, select { width: 90%; }
+     .buttons { margin-top: 15px; }
+-    #hardwareList { overflow-y: auto; max-height: 200px; border: 1px solid #ccc; padding: 5px; list-style: none; }
+-    #hardwareList li { cursor: pointer; margin: 5px 0; }
+-    #hardwareDropdownBtn { margin-left: 5px; }
+ 
+ .glassList li.active {
+   background-color: #cce5ff;
+ }
+     .glassTypeInput {
+       width: 100%;
+       max-width: 750px;
+       height: 12px;
+       font-size: 16px;
+       padding: 1px;
+     }
+ 
+     .glassList {
+       position: absolute;
+       background: #fff;
+       border: 1px solid #ccc;
+       max-height: 200px;
+       overflow-y: auto;
+       list-style: none;
+       padding: 0;
+       margin-top: 2px;
+       display: none;
+       z-index: 1000;
+     }
+     .glassList li {
+@@ -813,161 +810,86 @@ body{
+           <span class="kympg-hint">Find past orders</span>
+         </span>
+       </button>
+ 
+       <button class="kympg-navBtn" data-tip="Open Quotes" type="button" onclick="kympgOpen('quotedb', this)">
+         <span class="kympg-ico" aria-hidden="true">
+           <svg viewBox="0 0 24 24"><path d="M7 7h10"/><path d="M7 11h10"/><path d="M7 15h6"/><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>
+         </span>
+         <span class="kympg-labelWrap">
+           <span class="kympg-label">Open Quotes</span>
+           <span class="kympg-hint">Saved quotes</span>
+         </span>
+       </button>
+ 
+       <button class="kympg-navBtn" data-tip="Purchase Orders" type="button" onclick="kympgOpen('po', this)">
+         <span class="kympg-ico" aria-hidden="true">
+           <svg viewBox="0 0 24 24"><path d="M3 3h18v4H3z"/><path d="M3 7v14h18V7"/></svg>
+         </span>
+         <span class="kympg-labelWrap">
+           <span class="kympg-label">Purchase Orders</span>
+           <span class="kympg-hint">Vendor POs</span>
+         </span>
+       </button>
+     </nav>
+ 
+-    <div class="kympg-sectionLabel">Tools</div>
+-    <nav class="kympg-nav">
+-      <button class="kympg-navBtn" data-tip="Breakage Pricing" type="button" onclick="kympgOpen('breakage', this)">
+-        <span class="kympg-ico" aria-hidden="true">
+-          <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+-        </span>
+-        <span class="kympg-labelWrap">
+-          <span class="kympg-label">Breakage Pricing</span>
+-          <span class="kympg-hint">Open breakage tool</span>
+-        </span>
+-      </button>
+-
+-      <button class="kympg-navBtn" data-tip="Sq Ft Price List" type="button" onclick="kympgOpen('pricelist', this)">
+-        <span class="kympg-ico" aria-hidden="true">
+-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+-        </span>
+-        <span class="kympg-labelWrap">
+-          <span class="kympg-label">Sq Ft Price List</span>
+-          <span class="kympg-hint">Reference pricing</span>
+-        </span>
+-      </button>
+-    </nav>
+-        </span>
+-      </button>
+-    </nav>
+-
+     <div class="kympg-sectionLabel">Tools</div>
+     <nav class="kympg-nav">
+       <button class="kympg-navBtn" data-tip="Breakage Pricing" type="button" onclick="kympgOpen('breakage', this)">
+         <span class="kympg-ico" aria-hidden="true">
+           <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+         </span>
+         <span class="kympg-labelWrap">
+           <span class="kympg-label">Breakage Pricing</span>
+           <span class="kympg-hint">Open breakage tool</span>
+         </span>
+       </button>
+ 
+       <button class="kympg-navBtn" data-tip="Sq Ft Price List" type="button" onclick="kympgOpen('pricelist', this)">
+         <span class="kympg-ico" aria-hidden="true">
+           <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+         </span>
+         <span class="kympg-labelWrap">
+           <span class="kympg-label">Sq Ft Price List</span>
+           <span class="kympg-hint">Reference pricing</span>
+         </span>
+       </button>
+ 
+       <button class="kympg-navBtn" data-tip="Customer Import" type="button" onclick="kympgOpen('customerimport', this)">
+         <span class="kympg-ico" aria-hidden="true">
+           <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
+         </span>
+         <span class="kympg-labelWrap">
+           <span class="kympg-label">Customer Import</span>
+           <span class="kympg-hint">Upload customer list</span>
+         </span>
+       </button>
+     </nav>
+ 
+     <div class="kympg-spacer"></div>
+   </aside>
+ 
+-  <main class="kympg-main">
+-    <div class="kympg-shellInner">
+-      <div class="kympg-topBar">
+-        <div class="kympg-pageTitle">
+-          <h1 id="kympgPageTitle">Kentucky Mirror and Plate Glass</h1>
+-          <p id="kympgPageSub">Select an option on the left to get started.</p>
+-        </div>
+-        <div class="kympg-pill" title="App status">
+-          <span class="dot"></span>
+-          <span>Ready</span>
+-        </div>
+-      </div>
+-
+-      <section class="kympg-card">
+-        <div class="kympg-cardHeader">
+-          <div class="h" id="kympgCardTitle">Home</div>
+-          <div class="sub" id="kympgCardSub">Welcome</div>
+-        </div>
+-        <div class="kympg-cardBody" id="kympgContentArea">
+-          <div id="landing-section" class="active">
+-@@ -3061,45 +3071,52 @@ document.addEventListener("DOMContentLoaded", async function () {
+-  const p = document.getElementById('po-section');
+-  if (p){ p.style.display = 'block'; }
+-
+-  kympgSetHeader(
+-    'Purchase Orders',
+-    'Track vendor purchase orders.',
+-    'Purchase Orders',
+-    'Vendor POs'
+-  );
+-
+-  loadPurchaseOrders();   // ← THIS LINE loads the database
+-  return;
+-}
+-    if (which === 'breakage'){
+-      const b = document.getElementById('breakage-section');
+-      if (b){ b.style.display = 'block'; }
+-      kympgSetHeader('Breakage Pricing', 'Open the breakage calculator inside the app.', 'Breakage Pricing', 'Tool');
+-      return;
+-    }
+-    if (which === 'pricelist'){
+-      const p = document.getElementById('pricelist-section');
+-      if (p){ p.style.display = 'block'; }
+-      kympgSetHeader('Sq Ft Price List', 'Reference pricing inside the app.', 'Sq Ft Price List', 'Tool');
+-      return;
+-    }
+-    <div class="kympg-spacer"></div>
+-  </aside>
+-
+   <main class="kympg-main">
+     <div class="kympg-shellInner">
+       <div class="kympg-topBar">
+         <div class="kympg-pageTitle">
+           <h1 id="kympgPageTitle">Kentucky Mirror and Plate Glass</h1>
+           <p id="kympgPageSub">Select an option on the left to get started.</p>
+         </div>
+         <div class="kympg-pill" title="App status">
+           <span class="dot"></span>
+           <span>Ready</span>
+         </div>
+       </div>
+ 
+       <section class="kympg-card">
+         <div class="kympg-cardHeader">
+           <div class="h" id="kympgCardTitle">Home</div>
+           <div class="sub" id="kympgCardSub">Welcome</div>
+         </div>
+         <div class="kympg-cardBody" id="kympgContentArea">
+           <div id="landing-section" class="active">
+             <div class="kympg-landingWrap">
+               <div class="kympg-landingLogo">
+                 <img src="564e4083-db27-4742-b925-737f1faaa333.jpg" alt="Kentucky Mirror and Plate Glass" onerror="this.style.display='none';" />
+               </div>
+               <div class="kympg-landingTitle">Kentucky Mirror and Plate Glass</div>
+@@ -1084,58 +1006,96 @@ body{
+           <th>Bevel?</th>
+           <th>Bevel Width</th>
+           <th>Shape?</th>
+           <th>Each Price ($)</th>
+           <th>Line Total ($)</th>
+           <th>Delete</th>
+         </tr>
+       </thead>
+       <tbody id="glassTableBody"></tbody>
+     </table>
+ 
+     <div class="buttons">
+       <button class="btn-save-order" onclick="saveOrder()">Save Order</button>
+       <button class="btn-new-order" onclick="startNewOrder()">New Order</button>
+       <button onclick="addRow()">Add Line</button>
+       <button type="button" onclick="printDoc('quote')">Print Quote</button>
+ <button type="button" onclick="printDoc('ticket')">Print Ticket</button>
+ <button type="button" onclick="printDoc('invoice')">Print Invoice</button>
+     </div>
+ 
+     <h3 id="grandTotal">Grand Total: $0.00</h3>
+     <h3 id="grandTotalTax">Grand Total with Tax (6%): $0.00</h3>
+   </div>
+ 
+   <!-- Hardware Pricing Section -->
+-  <div style="flex: 1;">
+-    <h2 style="margin-top: 10px;">Misc Hardware Pricing</h2>
+-    <div id="hardwareDropdown" class="dropdown-container">
+-      <input id="hardwareSearch" type="text" placeholder="Search hardware..." />
+-      <button id="hardwareDropdownBtn" type="button">&#9662;</button>
+-      <ul id="hardwareList" class="dropdown-list"></ul>
+-    </div>
+-    <h3 id="hardwarePrice">Hardware Price: $0.00</h3>
++  <div style="flex: 1; margin-top: 16px;">
++    <h2 style="margin-top: 10px; text-align:left;">Misc Hardware Pricing</h2>
++    <table id="hardwareTable">
++      <thead>
++        <tr>
++          <th>Qty</th>
++          <th>Part</th>
++          <th>Price</th>
++          <th>Total</th>
++        </tr>
++      </thead>
++      <tbody id="hardwareTableBody">
++        <tr>
++          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
++          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
++          <td class="hw-price">$0.00</td>
++          <td class="hw-total">$0.00</td>
++        </tr>
++        <tr>
++          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
++          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
++          <td class="hw-price">$0.00</td>
++          <td class="hw-total">$0.00</td>
++        </tr>
++        <tr>
++          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
++          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
++          <td class="hw-price">$0.00</td>
++          <td class="hw-total">$0.00</td>
++        </tr>
++        <tr>
++          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
++          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
++          <td class="hw-price">$0.00</td>
++          <td class="hw-total">$0.00</td>
++        </tr>
++        <tr>
++          <td><input type="number" class="hw-qty" min="0" value="0" style="width:70px;"></td>
++          <td><input type="text" class="hw-part" placeholder="Type to search part..." list="hardwarePartsList"></td>
++          <td class="hw-price">$0.00</td>
++          <td class="hw-total">$0.00</td>
++        </tr>
++      </tbody>
++    </table>
++    <datalist id="hardwarePartsList"></datalist>
++    <h3 id="hardwareGrandTotal">Hardware Total: $0.00</h3>
+     <button onclick="clearHardware()">Clear Hardware</button>
+   </div>
+ </div>
+ </div><!-- end calculator-section -->
+ 
+ <!-- Customer Management Section -->
+ <div id="customer-section">
+   <h2>Customer Database</h2>
+ 
+   <div id="customerFormWrapper" style="display:none;">
+     <form id="customerForm" onsubmit="saveCustomer(event)">
+       <input type="hidden" id="custEditId" value="">
+       <h3 id="formTitle">Add New Customer</h3>
+ 
+       <label for="custName">Customer Name *</label>
+       <input type="text" id="custName" required placeholder="Enter customer name">
+ 
+       <label for="custAddress">Address</label>
+       <input type="text" id="custAddress" placeholder="Enter address">
+ 
+       <label for="custEmail">Email</label>
+       <input type="email" id="custEmail" placeholder="Enter email address">
+ 
+       <label for="custPhone">Phone Number</label>
+       <input type="tel" id="custPhone" placeholder="(123) 456-7890">
+@@ -1368,50 +1328,51 @@ function setLoadingState(isLoading, msg) {
+ 
+ async function loadPricingFromSheets() {
+   // If URLs are not set yet, keep existing maps empty and allow user to still use UI
+   const needsSetup = Object.values(SHEET_CSV).some(u => !u || u.includes("PASTE_"));
+   if (needsSetup) {
+     console.warn("Google Sheet CSV links not set yet in SHEET_CSV. Pricing tables will be empty until you paste them.");
+     return;
+   }
+ 
+   setLoadingState(true);
+ 
+   try {
+     const [stdText, spText, hwText] = await Promise.all([
+       fetchCsv(SHEET_CSV.glassStandard),
+       fetchCsv(SHEET_CSV.glassSpecial),
+       fetchCsv(SHEET_CSV.hardware)
+     ]);
+ 
+     const stdRows = parseCsv(stdText || '');
+     const spRows  = parseCsv(spText || '');
+     const hwRows  = parseCsv(hwText || '');
+ 
+     standardglassPartsData = rowsToGlassMap(stdRows);
+     specialGlassPartsData  = rowsToGlassMap(spRows);
+     hardwareParts          = rowsToHardwareMap(hwRows);
++    refreshHardwareDatalist();
+ 
+     // Refresh active pointer after load
+     const specialToggle = document.getElementById('specialPricingToggle');
+     glassPartsData = (specialToggle && specialToggle.checked) ? specialGlassPartsData : standardglassPartsData;
+ 
+     // Re-render any existing dropdown lists & totals
+     updateTotals();
+ 
+   } catch (err) {
+     console.error(err);
+     alert("Could not load pricing from Google Sheets. Check your published CSV links and that the tabs are published as CSV.");
+   } finally {
+     setLoadingState(false);
+   }
+ }
+ 
+ 
+ // ===================== BEHAVIOR =====================
+ 
+ // Phone formatter
+ document.getElementById('customerPhone').addEventListener('input', function (e) {
+   let input = e.target.value.replace(/\D/g, '');
+   if (input.length > 10) input = input.substring(0, 10);
+ 
+   let formatted = input;
+@@ -1522,81 +1483,74 @@ document.getElementById('glassTableBody').addEventListener('click', function(e)
+   const typeEl = row.querySelector('.glassTypeInput');
+   const bevelEl = row.querySelector('.bevel');
+   const bevelWidthEl = row.querySelector('.bevelWidth');
+   const shapeEl = row.querySelector('.shape');
+   const listEl = row.querySelector('.glassList');
+   const eachEl = row.querySelector('.eachPrice');
+   const lineEl = row.querySelector('.lineTotal');
+ 
+   if (qtyEl) qtyEl.value = 1;
+   if (widthEl) widthEl.value = '';
+   if (heightEl) heightEl.value = '';
+   if (typeEl) typeEl.value = '';
+   if (bevelEl) bevelEl.checked = false;
+   if (shapeEl) shapeEl.checked = false;
+   if (bevelWidthEl) bevelWidthEl.selectedIndex = 0;
+   if (listEl) { listEl.innerHTML = ''; listEl.style.display = 'none'; }
+   if (eachEl) eachEl.innerText = '$0.00';
+   if (lineEl) lineEl.innerText = '$0.00';
+ 
+   delete row.dataset.bevelAlerted;
+   delete row.dataset.plexiAlerted;
+ 
+   updateTotals();
+ });
+ 
+-// Hardware search events
+-document.getElementById('hardwareSearch').addEventListener('input', showHardwareList);
+-document.getElementById('hardwareDropdownBtn').addEventListener('click', toggleHardwareList);
+-document.addEventListener('click', function(event) {
+-  if (!document.getElementById('hardwareDropdown').contains(event.target)) hideHardwareList();
++// Hardware table events
++document.getElementById('hardwareTableBody').addEventListener('input', function (event) {
++  const row = event.target.closest('tr');
++  if (!row) return;
++  updateHardwareRow(row);
++  updateHardwareTotals();
+ });
+ 
+ // ===================== FUNCTIONS =====================
+ function parseInput(value) {
+   if (!value) return 0;
+   value = value.trim();
+   if (value.includes(' ')) {
+     const parts = value.split(' ');
+     const whole = parseFloat(parts[0]);
+     const fractionParts = parts[1].split('/');
+     return whole + (parseFloat(fractionParts[0]) / parseFloat(fractionParts[1]));
+   } else if (value.includes('/')) {
+     const fractionParts = value.split('/');
+     return parseFloat(fractionParts[0]) / parseFloat(fractionParts[1]);
+   } else {
+     return parseFloat(value);
+   }
+ }
+-function printDoc(type) {
+-  if (!currentOrderId) {
+-    alert("Please save the order first, then print.");
+-    return;
+-  }
+-  const url = `/api/orders?id=${encodeURIComponent(currentOrderId)}&print=${encodeURIComponent(type)}`;
+-  window.open(url, "_blank");
+-}
+ function roundEven(num) {
+   if (isNaN(num)) return 0;
+   let rounded = Math.ceil(num);
+   return (rounded % 2 === 0) ? rounded : rounded + 1;
+ }
+ 
+ function addRow() {
+   const tbody = document.getElementById('glassTableBody');
+   const tr = document.createElement('tr');
+   tr.innerHTML = `
+     <td><input type="number" class="qty" value="1" min="1" style="width: 60px;"></td>
+     <td><input type="text" class="width"></td>
+     <td><input type="text" class="height"></td>
+     <td style="position:relative;">
+       <input type="text" class="glassTypeInput largeDropdown" placeholder="Type to search glass...">
+       <ul class="glassList"></ul>
+     </td>
+     <td><input type="checkbox" class="bevel"></td>
+     <td>
+       <select class="bevelWidth">
+         <option value="1/2">1/2"</option>
+         <option value="1">1"</option>
+         <option value="1 1/4">1 1/4"</option>
+       </select>
+     </td>
+@@ -1714,75 +1668,74 @@ function updateTotals() {
+     const glassType = row.querySelector('.glassTypeInput').value;
+     const bevelCheckbox = row.querySelector('.bevel');
+     const bevelChecked = bevelCheckbox.checked;
+     const bevelWidth = row.querySelector('.bevelWidth').value;
+     const shapeCheckbox = row.querySelector('.shape');
+     const shapeChecked = shapeCheckbox.checked;
+ 
+     if (shapeChecked) {
+       bevelCheckbox.checked = false;
+     }
+ 
+     if (!glassType || !glassPartsData[glassType]) {
+       row.querySelector('.eachPrice').innerText = '$0.00';
+       row.querySelector('.lineTotal').innerText = '$0.00';
+       return;
+     }
+ 
+     let width = roundEven(parseInput(widthInput));
+     let height = roundEven(parseInput(heightInput));
+     if (isNaN(width) || isNaN(height)) {
+       row.querySelector('.eachPrice').innerText = '$0.00';
+       row.querySelector('.lineTotal').innerText = '$0.00';
+       return;
+     }
+ 
+-// PLEXI — quote ONLY if the piece cannot be cut from a 48 x 96 sheet (any orientation)
+-const isPlexi = glassType.toUpperCase().includes('PLEXI');
+-
+-if (isPlexi) {
+-  const fitsNormal  = width  <= 48 && height <= 96; // 48 x 96
+-  const fitsRotated = width  <= 96 && height <= 48; // 96 x 48
++    // PLEXI — quote ONLY if the piece cannot be cut from a 48 x 96 sheet (any orientation)
++    const isPlexi = glassType.toUpperCase().includes('PLEXI');
+ 
+-  // If it doesn't fit in either orientation, it must be quoted
+-  if (!fitsNormal && !fitsRotated) {
+-    row.querySelector('.eachPrice').innerText = '$0.00';
+-    row.querySelector('.lineTotal').innerText = 'Must be quoted by General Rubber';
++    if (isPlexi) {
++      const fitsNormal  = width <= 48 && height <= 96; // 48 x 96
++      const fitsRotated = width <= 96 && height <= 48; // 96 x 48
+ 
+-    if (row.dataset.plexiAlerted !== "true") {
+-      alert("This size cannot be cut from a 48 x 96 sheet and must be quoted by General Rubber.");
+-      row.dataset.plexiAlerted = "true";
+-    }
+-
+-    return; // stop calculations for this row
+-  }
++      // If it doesn't fit in either orientation, it must be quoted
++      if (!fitsNormal && !fitsRotated) {
++        row.querySelector('.eachPrice').innerText = '$0.00';
++        row.querySelector('.lineTotal').innerText = 'Must be quoted by General Rubber';
+ 
++        if (row.dataset.plexiAlerted !== 'true') {
++          alert('This size cannot be cut from a 48 x 96 sheet and must be quoted by General Rubber.');
++          row.dataset.plexiAlerted = 'true';
++        }
+ 
+-// If we get here, the piece fits in 48 x 96 somehow → continue with normal pricing...    } else {
+-      delete row.dataset.plexiAlerted;
++        return; // stop calculations for this row
++      }
+     }
+ 
++    // If we get here, either it is not plexi, or plexi fits 48x96 in some orientation
++    delete row.dataset.plexiAlerted;
++
+     let area = (width * height) / 144;
+     const partInfo = glassPartsData[glassType];
+ 
+     // ================= CUSTOM MINIMUM RULE CHANGES =================
+     // - Polished tempered: minimum 3 sq ft charge
+     // - Polished non-tempered: $15 minimum
+     // - Everything else: use partInfo.min
+     let basePrice;
+ 
+     const upperType = glassType.toUpperCase();
+     const isTempered = upperType.includes("TEMPERED");
+     const isPolished = upperType.includes("POLISHED");
+ 
+     // 🚨 TEMPERED + SHAPE = MUST QUOTE BY GLENNY
+ if (isTempered && shapeChecked) {
+   row.querySelector('.eachPrice').innerText = '$0.00';
+   row.querySelector('.lineTotal').innerText = 'Needs quoted by Glenny';
+ 
+   if (row.dataset.temperedShapeAlerted !== "true") {
+     alert("Tempered shapes must be quoted by Glenny.");
+     row.dataset.temperedShapeAlerted = "true";
+   }
+ 
+   return; // stop calculations for this row
+ } else {
+@@ -1834,87 +1787,99 @@ if (isTempered && shapeChecked) {
+       else if (glassType.includes('3/16')) shapeMin = 25;
+       else if (glassType.includes('1/4')) shapeMin = 25;
+       else if (glassType.includes('3/8')) shapeMin = 60;
+       else if (glassType.includes('1/2')) shapeMin = 70;
+ 
+       if (shapeMin > 0 && eachPrice < shapeMin) eachPrice = shapeMin;
+     }
+ let total = eachPrice * qty;
+ 
+     row.querySelector('.eachPrice').innerText = `$${eachPrice.toFixed(2)}`;
+     row.querySelector('.lineTotal').innerText = `$${total.toFixed(2)}`;
+ 
+     grandTotal += total;
+   });
+ 
+   document.getElementById('grandTotal').innerText =
+     `Grand Total: $${grandTotal.toFixed(2)}`;
+   document.getElementById('grandTotalTax').innerText =
+     `Grand Total with Tax (6%): $${(grandTotal * 1.06).toFixed(2)}`;
+ }
+ 
+ function clearForm() {
+   startNewOrder();
+ }
+ 
+-function showHardwareList() {
+-  const list = document.getElementById('hardwareList');
+-  const search = document.getElementById('hardwareSearch').value.toLowerCase();
+-  list.innerHTML = '';
+-  Object.keys(hardwareParts).forEach(part => {
+-    if (part.toLowerCase().includes(search)) {
+-      const li = document.createElement('li');
+-      li.textContent = part;
+-      li.onclick = () => {
+-        document.getElementById('hardwareSearch').value = part;
+-        document.getElementById('hardwarePrice').innerText =
+-          `Hardware Price: $${hardwareParts[part].toFixed(2)}`;
+-        hideHardwareList();
+-      };
+-
+-      list.appendChild(li);
+-    }
+-  });
+-  list.style.display = 'block';
++function refreshHardwareDatalist() {
++  const datalist = document.getElementById('hardwarePartsList');
++  if (!datalist) return;
++  datalist.innerHTML = Object.keys(hardwareParts)
++    .sort((a,b) => a.localeCompare(b))
++    .map(part => `<option value="${escapeHtml(part)}"></option>`)
++    .join('');
+ }
+ 
+-function hideHardwareList() {
+-  document.getElementById('hardwareList').style.display = 'none';
++function updateHardwareRow(row) {
++  const qtyEl = row.querySelector('.hw-qty');
++  const partEl = row.querySelector('.hw-part');
++  const priceEl = row.querySelector('.hw-price');
++  const totalEl = row.querySelector('.hw-total');
++
++  const qty = Math.max(0, parseInt(qtyEl?.value, 10) || 0);
++  if (qtyEl && String(qtyEl.value) !== String(qty)) qtyEl.value = qty;
++
++  const partName = (partEl?.value || '').trim();
++  const unitPrice = hardwareParts[partName] || 0;
++  const lineTotal = unitPrice * qty;
++
++  if (priceEl) priceEl.innerText = `$${unitPrice.toFixed(2)}`;
++  if (totalEl) totalEl.innerText = `$${lineTotal.toFixed(2)}`;
+ }
+-function clearHardware() {
+-  document.getElementById('hardwareSearch').value = '';
+-  document.getElementById('hardwareList').innerHTML = '';
+-  document.getElementById('hardwarePrice').innerText = 'Hardware Price: $0.00';
++
++function updateHardwareTotals() {
++  const rows = document.querySelectorAll('#hardwareTableBody tr');
++  let hardwareTotal = 0;
++  rows.forEach(row => {
++    const totalText = row.querySelector('.hw-total')?.innerText || '$0.00';
++    const match = totalText.match(/\$([\d,.]+)/);
++    if (match) hardwareTotal += parseFloat(match[1].replace(/,/g, '')) || 0;
++  });
++
++  const totalEl = document.getElementById('hardwareGrandTotal');
++  if (totalEl) totalEl.innerText = `Hardware Total: $${hardwareTotal.toFixed(2)}`;
+ }
+ 
+-function toggleHardwareList() {
+-  const list = document.getElementById('hardwareList');
+-  if (list.style.display === 'block') {
+-    hideHardwareList();
+-  } else {
+-    showHardwareList();
+-  }
++function clearHardware() {
++  document.querySelectorAll('#hardwareTableBody tr').forEach(row => {
++    const qtyEl = row.querySelector('.hw-qty');
++    const partEl = row.querySelector('.hw-part');
++    if (qtyEl) qtyEl.value = 0;
++    if (partEl) partEl.value = '';
++    row.querySelector('.hw-price').innerText = '$0.00';
++    row.querySelector('.hw-total').innerText = '$0.00';
++  });
++  updateHardwareTotals();
+ }
+ 
+ // ===================== TAB SWITCHING =====================
+ function switchTab(tab) {
+   const calcSection = document.getElementById('calculator-section');
+   const custSection = document.getElementById('customer-section');
+   const ordSection = document.getElementById('orders-section');
+   const tabCalc = document.getElementById('tabCalculator');
+   const tabCust = document.getElementById('tabCustomers');
+   const tabOrd = document.getElementById('tabOrders');
+ 
+   // Hide all
+   calcSection.classList.add('hidden');
+   custSection.classList.remove('active');
+   ordSection.classList.remove('active');
+   tabCalc.classList.remove('active');
+   tabCust.classList.remove('active');
+   tabOrd.classList.remove('active');
+ 
+   if (tab === 'customers') {
+     custSection.classList.add('active');
+     tabCust.classList.add('active');
+     loadCustomers();
+   } else if (tab === 'orders') {
+     ordSection.classList.add('active');
+@@ -2382,68 +2347,82 @@ function gatherOrderData() {
+   };
+   if (selectedCalcCustomer) {
+     customer.customerId = selectedCalcCustomer.id;
+   }
+ 
+   // Gather glass line items
+   const items = [];
+   const rows = document.querySelectorAll('#glassTableBody tr');
+   rows.forEach(row => {
+     const glassType = row.querySelector('.glassTypeInput')?.value || '';
+     if (!glassType.trim()) return; // skip empty rows
+ 
+     items.push({
+       qty: parseInt(row.querySelector('.qty')?.value) || 1,
+       width: row.querySelector('.width')?.value || '',
+       height: row.querySelector('.height')?.value || '',
+       glassType: glassType,
+       bevel: row.querySelector('.bevel')?.checked || false,
+       bevelWidth: row.querySelector('.bevelWidth')?.value || '1/2',
+       shape: row.querySelector('.shape')?.checked || false,
+       eachPrice: row.querySelector('.eachPrice')?.innerText || '$0.00',
+       lineTotal: row.querySelector('.lineTotal')?.innerText || '$0.00',
+     });
+   });
+ 
+-  // Gather hardware
+-  const hwName = document.getElementById('hardwareSearch').value.trim();
+-  const hwPriceText = document.getElementById('hardwarePrice').innerText;
+-  const hwMatch = hwPriceText.match(/\$([\d.]+)/);
+-  const hwPrice = hwMatch ? parseFloat(hwMatch[1]) : 0;
+-  const hardware = hwName ? { name: hwName, price: hwPrice } : null;
++  // Gather hardware rows
++  const hardwareItems = Array.from(document.querySelectorAll('#hardwareTableBody tr')).map(row => {
++    const qty = parseInt(row.querySelector('.hw-qty')?.value, 10) || 0;
++    const name = (row.querySelector('.hw-part')?.value || '').trim();
++    const unitPriceText = row.querySelector('.hw-price')?.innerText || '$0.00';
++    const lineTotalText = row.querySelector('.hw-total')?.innerText || '$0.00';
++    const unitMatch = unitPriceText.match(/\$([\d.]+)/);
++    const lineMatch = lineTotalText.match(/\$([\d.]+)/);
++    return {
++      qty,
++      name,
++      price: unitMatch ? parseFloat(unitMatch[1]) : 0,
++      total: lineMatch ? parseFloat(lineMatch[1]) : 0,
++    };
++  }).filter(item => item.qty > 0 && item.name);
++
++  const hardwareTotal = hardwareItems.reduce((sum, item) => sum + item.total, 0);
++  const hardware = hardwareItems.length
++    ? { name: hardwareItems.length === 1 ? hardwareItems[0].name : 'Multiple hardware items', price: hardwareTotal }
++    : null;
+ 
+   // Totals
+   const grandTotalText = document.getElementById('grandTotal').innerText;
+   const grandTotalTaxText = document.getElementById('grandTotalTax').innerText;
+   const gtMatch = grandTotalText.match(/\$([\d,.]+)/);
+   const gttMatch = grandTotalTaxText.match(/\$([\d,.]+)/);
+   const grandTotal = gtMatch ? parseFloat(gtMatch[1].replace(/,/g, '')) : 0;
+   const grandTotalWithTax = gttMatch ? parseFloat(gttMatch[1].replace(/,/g, '')) : 0;
+ 
+   const specialPricing = document.getElementById('specialPricingToggle').checked;
+ 
+-  return { customer, items, hardware, specialPricing, grandTotal, grandTotalWithTax };
++  return { customer, items, hardware, hardwareItems, specialPricing, grandTotal, grandTotalWithTax };
+ }
+ 
+ async function saveOrder() {
+   const data = gatherOrderData();
+ 
+   if (!data.customer.name) {
+     alert('Please enter a customer name before saving the order.');
+     return;
+   }
+ 
+   if (data.items.length === 0) {
+     alert('Please add at least one glass line item before saving the order.');
+     return;
+   }
+ 
+   const saveBtn = document.querySelector('.btn-save-order');
+   saveBtn.disabled = true;
+   saveBtn.textContent = 'Saving...';
+ 
+   try {
+     const res = await fetch('/api/orders', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify(data),
+     });
+@@ -2727,56 +2706,69 @@ function populateCalculatorFromOrder(order) {
+   // Clear and rebuild glass rows
+   document.getElementById('glassTableBody').innerHTML = '';
+   const items = order.items || [];
+ 
+   if (items.length === 0) {
+     for (let i = 0; i < 5; i++) addRow();
+   } else {
+     items.forEach(item => {
+       addRow();
+       const rows = document.querySelectorAll('#glassTableBody tr');
+       const row = rows[rows.length - 1];
+ 
+       row.querySelector('.qty').value = item.qty || 1;
+       row.querySelector('.width').value = item.width || '';
+       row.querySelector('.height').value = item.height || '';
+       row.querySelector('.glassTypeInput').value = item.glassType || '';
+       row.querySelector('.bevel').checked = item.bevel || false;
+       row.querySelector('.bevelWidth').value = item.bevelWidth || '1/2';
+       row.querySelector('.shape').checked = item.shape || false;
+     });
+     // Add a few blank rows at the end
+     for (let i = 0; i < 2; i++) addRow();
+   }
+ 
+   // Set hardware
+-  if (order.hardware && order.hardware.name) {
+-    document.getElementById('hardwareSearch').value = order.hardware.name;
+-    document.getElementById('hardwarePrice').innerText =
+-      `Hardware Price: $${(order.hardware.price || 0).toFixed(2)}`;
+-  } else {
+-    clearHardware();
++  clearHardware();
++  const savedHardwareItems = Array.isArray(order.hardwareItems) ? order.hardwareItems : [];
++  if (savedHardwareItems.length) {
++    const rows = document.querySelectorAll('#hardwareTableBody tr');
++    savedHardwareItems.slice(0, rows.length).forEach((item, idx) => {
++      const row = rows[idx];
++      row.querySelector('.hw-qty').value = item.qty || 0;
++      row.querySelector('.hw-part').value = item.name || '';
++      updateHardwareRow(row);
++    });
++    updateHardwareTotals();
++  } else if (order.hardware && order.hardware.name) {
++    const firstRow = document.querySelector('#hardwareTableBody tr');
++    if (firstRow) {
++      firstRow.querySelector('.hw-qty').value = 1;
++      firstRow.querySelector('.hw-part').value = order.hardware.name;
++      updateHardwareRow(firstRow);
++      updateHardwareTotals();
++    }
+   }
+ 
+   updateTotals();
+ }
+ 
+ // ===================== CSV/EXCEL IMPORT =====================
+ let importParsedRows = []; // raw parsed rows (array of arrays)
+ let importHeaders = [];    // first row (column headers)
+ 
+ function handleImportFile(event) {
+   const file = event.target.files[0];
+   if (!file) return;
+   event.target.value = ''; // reset so same file can be re-selected
+ 
+   const ext = file.name.split('.').pop().toLowerCase();
+ 
+   if (ext === 'csv') {
+     const reader = new FileReader();
+     reader.onload = function(e) {
+       const rows = parseCsv(e.target.result);
+       if (rows.length < 2) {
+         alert('The CSV file appears to be empty or has no data rows.');
+         return;
+       }
+       importHeaders = rows[0];
+@@ -3007,210 +2999,203 @@ async function confirmImport() {
+ 
+ // ===================== STARTUP =====================
+ document.addEventListener("DOMContentLoaded", async function () {
+   const specialToggle = document.getElementById('specialPricingToggle');
+   specialToggle.checked = false;
+ 
+   // Load pricing tables from Google Sheets (Glass + Hardware)
+   await loadPricingFromSheets();
+ 
+   // Set the active table (standard by default)
+   glassPartsData = standardglassPartsData;
+ 
+   for (let i = 0; i < 5; i++) addRow();
+   updateTotals();
+ 
+   // Load customers for autocomplete in calculator
+   await loadCalcCustomers();
+   setupCustomerLookup();
+ });
+ </script>
+ 
+ <script>
+   function kympgToggleSidebar(){
+     document.getElementById('kympgSidebar')?.classList.toggle('collapsed');
+   }
++
+   function kympgClearActiveNav(){
+     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
+   }
++
+   function kympgHideAllSections(){
+     const ids = ['landing-section','calculator-section','customer-section','orders-section',
+                  'quotedb-section','po-section','breakage-section','pricelist-section'];
+     ids.forEach(id => {
+       const el = document.getElementById(id);
+       if (!el) return;
+       el.style.display = 'none';
+       el.classList.remove('active');
+     });
+   }
++
+   function kympgSetHeader(title, sub, cardTitle, cardSub){
+     const t = document.getElementById('kympgPageTitle');
+     const s = document.getElementById('kympgPageSub');
+     const ct = document.getElementById('kympgCardTitle');
+     const cs = document.getElementById('kympgCardSub');
+     if (t) t.textContent = title || '';
+     if (s) s.textContent = sub || '';
+     if (ct) ct.textContent = cardTitle || '';
+     if (cs) cs.textContent = cardSub || '';
+   }
++
+   function kympgShowLanding(){
+     kympgClearActiveNav();
+     kympgHideAllSections();
+     const el = document.getElementById('landing-section');
+-    if (el){ el.style.display = 'block'; el.classList.add('active'); }
+-    kympgSetHeader('Kentucky Mirror and Plate Glass', 'Select an option on the left to get started.', 'Home', 'Welcome');
++    if (el){
++      el.style.display = 'block';
++      el.classList.add('active');
++    }
++    kympgSetHeader(
++      'Kentucky Mirror and Plate Glass',
++      'Select an option on the left to get started.',
++      'Home',
++      'Welcome'
++    );
+   }
+-  async function loadPurchaseOrders() {
+-  try {
+-    const res = await fetch('/.netlify/functions/purchase-orders');
+-    if (!res.ok) throw new Error('Failed to load Purchase Orders');
+ 
+-    const data = await res.json();
+-
+-    const container = document.getElementById('po-section');
++  async function loadPurchaseOrders(){
++    try {
++      const res = await fetch('/.netlify/functions/purchase-orders');
++      if (!res.ok) throw new Error('Failed to load Purchase Orders');
+ 
+-    // Clear existing content
+-    container.innerHTML = '<h2>Purchase Orders</h2>';
++      const data = await res.json();
++      const container = document.getElementById('po-section');
++      if (!container) return;
+ 
+-    if (!data || data.length === 0) {
+-      container.innerHTML += '<p>No purchase orders found.</p>';
+-      return;
+-    }
++      container.innerHTML = '<h2>Purchase Orders</h2>';
+ 
+-    const table = document.createElement('table');
+-    table.style.width = '100%';
+-    table.style.borderCollapse = 'collapse';
++      if (!data || data.length === 0) {
++        container.innerHTML += '<p>No purchase orders found.</p>';
++        return;
++      }
+ 
+-    table.innerHTML = `
+-      <thead>
+-        <tr>
+-          <th>PO #</th>
+-          <th>Vendor</th>
+-          <th>Date</th>
+-          <th>Total</th>
+-        </tr>
+-      </thead>
+-      <tbody>
+-        ${data.map(po => `
++      const table = document.createElement('table');
++      table.style.width = '100%';
++      table.style.borderCollapse = 'collapse';
++      table.innerHTML = `
++        <thead>
+           <tr>
+-            <td>${po.poNumber || ''}</td>
+-            <td>${po.vendor || ''}</td>
+-            <td>${po.date || ''}</td>
+-            <td>${po.total || ''}</td>
++            <th>PO #</th>
++            <th>Vendor</th>
++            <th>Date</th>
++            <th>Total</th>
+           </tr>
+-        `).join('')}
+-      </tbody>
+-    `;
+- if (which === 'customerimport'){
+-      const c = document.getElementById('customer-section');
+-      if (c){ c.style.display = 'block'; }
+-      kympgSetHeader('Customer Import', 'Upload and manage customer records.', 'Customer Import', 'Customer tools');
+-      try{ if (typeof loadCustomers === 'function') loadCustomers(); }catch(e){}
+-      return;
+-    }
+-    kympgShowLanding();
+-  }
++        </thead>
++        <tbody>
++          ${data.map(po => `
++            <tr>
++              <td>${po.poNumber || ''}</td>
++              <td>${po.vendor || ''}</td>
++              <td>${po.date || ''}</td>
++              <td>${po.total || ''}</td>
++            </tr>
++          `).join('')}
++        </tbody>
++      `;
++      container.appendChild(table);
+ 
+-  window.addEventListener('DOMContentLoaded', () => {
+-    const content = document.getElementById('kympgContentArea');
+-    if (content){
+-      ['calculator-section','customer-section','orders-section'].forEach(id => {
+-        const el = document.getElementById(id);
+-        if (el && el.parentElement !== content){
+-          content.appendChild(el);
+-        }
+-        if (el) el.style.display = 'none';
+-      });
++    } catch (err) {
++      console.error(err);
++      const container = document.getElementById('po-section');
++      if (container) {
++        container.innerHTML = '<p style="color:red;">Error loading purchase orders.</p>';
++      }
+     }
+-    kympgShowLanding();
+-  });
+-</script>
+-
+-</body>
+-</html>
+-    container.appendChild(table);
+-
+-  } catch (err) {
+-    console.error(err);
+-    document.getElementById('po-section').innerHTML =
+-      '<p style="color:red;">Error loading purchase orders.</p>';
+   }
+-}
++
+   function kympgOpen(which, btn){
+     if (btn){
+       kympgClearActiveNav();
+       btn.classList.add('active');
+     }
+     kympgHideAllSections();
+ 
+     if (which === 'quote'){
+       const calc = document.getElementById('calculator-section');
+-      if (calc){ calc.style.display = 'block'; }
++      if (calc) calc.style.display = 'block';
+       kympgSetHeader('New Quote', 'Create and print a quote.', 'New Quote', 'Quote builder');
+       return;
+     }
++
+     if (which === 'order'){
+       const calc = document.getElementById('calculator-section');
+-      if (calc){ calc.style.display = 'block'; }
++      if (calc) calc.style.display = 'block';
+       kympgSetHeader('New Order', 'Create an order and print ticket/invoice.', 'New Order', 'Order form');
+-      try{ if (typeof startNewOrder === 'function') startNewOrder(); }catch(e){}
++      try { if (typeof startNewOrder === 'function') startNewOrder(); } catch(e) {}
+       return;
+     }
++
+     if (which === 'orders'){
+       const ord = document.getElementById('orders-section');
+-      if (ord){ ord.style.display = 'block'; }
++      if (ord) ord.style.display = 'block';
+       kympgSetHeader('Search / Open Orders', 'Find and open past orders.', 'Orders', 'Search and open orders');
+-      try{ if (typeof loadOrders === 'function') loadOrders(); }catch(e){}
++      try { if (typeof loadOrders === 'function') loadOrders(); } catch(e) {}
+       return;
+     }
++
+     if (which === 'quotedb'){
+       const q = document.getElementById('quotedb-section');
+-      if (q){ q.style.display = 'block'; }
++      if (q) q.style.display = 'block';
+       kympgSetHeader('Open Quotes', 'Search and open saved quotes.', 'Quotes', 'Quotes database');
+       return;
+     }
+-  if (which === 'po') {
+-  const p = document.getElementById('po-section');
+-  if (p){ p.style.display = 'block'; }
+ 
+-  kympgSetHeader(
+-    'Purchase Orders',
+-    'Track vendor purchase orders.',
+-    'Purchase Orders',
+-    'Vendor POs'
+-  );
++    if (which === 'po'){
++      const p = document.getElementById('po-section');
++      if (p) p.style.display = 'block';
++      kympgSetHeader('Purchase Orders', 'Track vendor purchase orders.', 'Purchase Orders', 'Vendor POs');
++      loadPurchaseOrders();
++      return;
++    }
+ 
+-  loadPurchaseOrders();   // ← THIS LINE loads the database
+-  return;
+-}
+     if (which === 'breakage'){
+       const b = document.getElementById('breakage-section');
+-      if (b){ b.style.display = 'block'; }
++      if (b) b.style.display = 'block';
+       kympgSetHeader('Breakage Pricing', 'Open the breakage calculator inside the app.', 'Breakage Pricing', 'Tool');
+       return;
+     }
++
+     if (which === 'pricelist'){
+       const p = document.getElementById('pricelist-section');
+-      if (p){ p.style.display = 'block'; }
++      if (p) p.style.display = 'block';
+       kympgSetHeader('Sq Ft Price List', 'Reference pricing inside the app.', 'Sq Ft Price List', 'Tool');
+       return;
+     }
++
++    if (which === 'customerimport'){
++      const c = document.getElementById('customer-section');
++      if (c) c.style.display = 'block';
++      kympgSetHeader('Customer Import', 'Upload and manage customer records.', 'Customer Import', 'Customer tools');
++      try { if (typeof loadCustomers === 'function') loadCustomers(); } catch(e) {}
++      return;
++    }
++
+     kympgShowLanding();
+   }
+ 
+   window.addEventListener('DOMContentLoaded', () => {
+     const content = document.getElementById('kympgContentArea');
+     if (content){
+       ['calculator-section','customer-section','orders-section'].forEach(id => {
+         const el = document.getElementById(id);
+-        if (el && el.parentElement !== content){
+-          content.appendChild(el);
+-        }
++        if (el && el.parentElement !== content) content.appendChild(el);
+         if (el) el.style.display = 'none';
+       });
+     }
+     kympgShowLanding();
+   });
+ </script>
+ 
+ </body>
+ </html>
