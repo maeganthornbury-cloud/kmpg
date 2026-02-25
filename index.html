@@ -1001,7 +1001,7 @@ body{
     <!-- Glass Table -->
     <table id="glassTable">
       <thead>
-        <tr>
+     <tr>
           <th>Qty</th>
           <th>Width (in)</th>
           <th>Height (in)</th>
@@ -1026,6 +1026,8 @@ body{
 <button type="button" onclick="printDoc('invoice')">Print Invoice</button>
     </div>
 
+    <h3 id="glassPricing">Glass Pricing: $0.00</h3>
+    <h3 id="hardwarePrice">Hardware Pricing: $0.00</h3>
     <h3 id="grandTotal">Grand Total: $0.00</h3>
     <h3 id="grandTotalTax">Grand Total with Tax (6%): $0.00</h3>
   </div>
@@ -1064,7 +1066,6 @@ body{
 
       <label for="custPhone">Phone Number</label>
       <input type="tel" id="custPhone" placeholder="(123) 456-7890">
-
       <label for="custCreditTerms">Credit Terms</label>
       <input type="text" id="custCreditTerms" placeholder="e.g. Net 30, COD, Prepaid">
 
@@ -1605,7 +1606,7 @@ function setupGlassSearch(inputElement, listElement) {
     const items = listElement.querySelectorAll('li');
 
     if (e.key === 'ArrowDown' && items.length) {
-      e.preventDefault();
+          e.preventDefault();
       currentIndex = (currentIndex + 1) % items.length;
       setActiveItem(items);
     } else if (e.key === 'ArrowUp' && items.length) {
@@ -1631,6 +1632,7 @@ function setupGlassSearch(inputElement, listElement) {
 
 function updateTotals() {
   let grandTotal = 0;
+  let glassTotal = 0;
   const rows = document.querySelectorAll('#glassTableBody tr');
 
   rows.forEach(row => {
@@ -1656,6 +1658,7 @@ function updateTotals() {
     let width = roundEven(parseInput(widthInput));
     let height = roundEven(parseInput(heightInput));
     if (isNaN(width) || isNaN(height)) {
+    
       row.querySelector('.eachPrice').innerText = '$0.00';
       row.querySelector('.lineTotal').innerText = '$0.00';
       return;
@@ -1743,7 +1746,7 @@ if (isTempered && shapeChecked) {
       row.dataset.bevelAlerted = "false";
     } else if (bevelChecked && row.dataset.bevelAlerted !== "true") {
       alert("This glass type cannot be beveled.");
-      row.dataset.bevelAlerted = "true";
+ row.dataset.bevelAlerted = "true";
     }
 
     const qty = parseInt(row.querySelector('.qty')?.value) || 1;
@@ -1769,7 +1772,18 @@ let total = eachPrice * qty;
     row.querySelector('.lineTotal').innerText = `$${total.toFixed(2)}`;
 
     grandTotal += total;
+    glassTotal += total;
   });
+
+  const hardwareText = document.getElementById('hardwarePrice').innerText;
+  const hardwareMatch = hardwareText.match(/\$([\d,.]+)/);
+  const hardwareTotal = hardwareMatch ? parseFloat(hardwareMatch[1].replace(/,/g, '')) : 0;
+  const grandTotal = glassTotal + hardwareTotal;
+
+  document.getElementById('glassPricing').innerText =
+    `Glass Pricing: $${glassTotal.toFixed(2)}`;
+  document.getElementById('hardwarePrice').innerText =
+    `Hardware Pricing: $${hardwareTotal.toFixed(2)}`;
 
   document.getElementById('grandTotal').innerText =
     `Grand Total: $${grandTotal.toFixed(2)}`;
@@ -1793,6 +1807,8 @@ function showHardwareList() {
         document.getElementById('hardwareSearch').value = part;
         document.getElementById('hardwarePrice').innerText =
           `Hardware Price: $${hardwareParts[part].toFixed(2)}`;
+          `Hardware Pricing: $${hardwareParts[part].toFixed(2)}`;
+        updateTotals();
         hideHardwareList();
       };
 
@@ -1809,6 +1825,8 @@ function clearHardware() {
   document.getElementById('hardwareSearch').value = '';
   document.getElementById('hardwareList').innerHTML = '';
   document.getElementById('hardwarePrice').innerText = 'Hardware Price: $0.00';
+  document.getElementById('hardwarePrice').innerText = 'Hardware Pricing: $0.00';
+  updateTotals();
 }
 
 function toggleHardwareList() {
@@ -1834,8 +1852,6 @@ function switchTab(tab) {
   custSection.classList.remove('active');
   ordSection.classList.remove('active');
   tabCalc.classList.remove('active');
-  tabCust.classList.remove('active');
-  tabOrd.classList.remove('active');
 
   if (tab === 'customers') {
     custSection.classList.add('active');
@@ -2652,7 +2668,6 @@ function populateCalculatorFromOrder(order) {
   // Clear and rebuild glass rows
   document.getElementById('glassTableBody').innerHTML = '';
   const items = order.items || [];
-
   if (items.length === 0) {
     for (let i = 0; i < 5; i++) addRow();
   } else {
@@ -2678,6 +2693,7 @@ function populateCalculatorFromOrder(order) {
     document.getElementById('hardwareSearch').value = order.hardware.name;
     document.getElementById('hardwarePrice').innerText =
       `Hardware Price: $${(order.hardware.price || 0).toFixed(2)}`;
+      `Hardware Pricing: $${(order.hardware.price || 0).toFixed(2)}`;
   } else {
     clearHardware();
   }
@@ -2703,6 +2719,8 @@ function handleImportFile(event) {
       if (rows.length < 2) {
         alert('The CSV file appears to be empty or has no data rows.');
         return;
+
+  
       }
       importHeaders = rows[0];
       importParsedRows = rows.slice(1);
