@@ -80,7 +80,7 @@ function renderItemsTable(order) {
 }
 
 function renderTotals(order) {
-  // You currently store grandTotal + grandTotalWithTax :contentReference[oaicite:4]{index=4}
+  // Stored totals: grandTotal (subtotal) and grandTotalWithTax (total with tax).
   const subtotal = order.grandTotal ?? 0;
   const total = order.grandTotalWithTax ?? order.grandTotal ?? 0;
   const tax = Math.max(0, Number(total) - Number(subtotal));
@@ -256,6 +256,71 @@ function renderTicketHTML(order) {
 </html>`;
 }
 
+function renderPackingListHTML(order) {
+  const savedISO = order.createdAt || new Date().toISOString();
+  const cust = order.customer || {};
+  const items = Array.isArray(order.items) ? order.items : [];
+
+  const rows = items
+    .map((it, idx) => {
+      const qty = it.qty ?? it.quantity ?? "";
+      const size = it.width && it.height ? `${it.width} x ${it.height}` : (it.size || "");
+      const glass = it.glassType || it.type || "";
+      const notes = it.notes || it.instructions || "";
+
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td class="right">${escapeHtml(qty)}</td>
+          <td>${escapeHtml(size)}</td>
+          <td>${escapeHtml(glass)}</td>
+          <td>${escapeHtml(notes)}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Packing List ${escapeHtml(order.orderNumber || "")}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { margin: 0; }
+    .meta { margin-top: 8px; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #000; padding: 8px; font-size: 13px; }
+    .right { text-align: right; }
+    @page { margin: 12mm; }
+  </style>
+</head>
+<body>
+  <h1>PACKING LIST</h1>
+  <div class="meta">
+    Order #: <b>${escapeHtml(order.orderNumber || "")}</b> &nbsp; | &nbsp;
+    Date Saved: ${escapeHtml(fmtDate(savedISO))} &nbsp; | &nbsp;
+    Customer: ${escapeHtml(cust.name || cust.company || "")}
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40px;">#</th>
+        <th style="width:80px;">Qty</th>
+        <th style="width:180px;">Size</th>
+        <th style="width:220px;">Glass Type</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows || `<tr><td colspan="5">No line items</td></tr>`}
+    </tbody>
+  </table>
+</body>
+</html>`;
+}
+
 function renderInvoiceHTML(order) {
   const invoiceDateISO = order.invoiceDate || order.createdAt || new Date().toISOString();
   const cust = order.customer || {};
@@ -308,7 +373,7 @@ export default async (req) => {
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
   const search = url.searchParams.get("search");
-  const print = url.searchParams.get("print"); // <-- NEW: quote | ticket | invoice
+  const print = url.searchParams.get("print"); // quote | ticket | packing-list | invoice
 
   const jsonHeaders = {
     "Content-Type": "application/json",
@@ -346,6 +411,7 @@ export default async (req) => {
           let html = "";
           if (p === "quote") html = renderQuoteHTML(order);
           else if (p === "ticket") html = renderTicketHTML(order);
+          else if (p === "packing-list" || p === "packinglist") html = renderPackingListHTML(order);
           else if (p === "invoice") html = renderInvoiceHTML(order);
           else {
             return new Response(JSON.stringify({ error: "Invalid print type" }), {

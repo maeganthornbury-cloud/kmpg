@@ -17,7 +17,7 @@
   background-color: #cce5ff;
 }
     .glassTypeInput {
-      width: 100%;Upload and manage customer records
+      width: 100%;
       max-width: 750px;
       height: 12px;
       font-size: 16px;
@@ -1028,36 +1028,31 @@ body{
       </thead>
       <tbody id="hardwareTableBody">
         <tr style="border-bottom:1px solid #ccc;">
-  <td ...><input type="number" class="hw-qty" ...></td>
-  <td ...><input type="text" class="hw-part" ...></td>
-  <td class="hw-price" ...>$0.00</td>
-  <td class="hw-total" ...>$0.00</td>
-
-  <!-- ADD THIS -->
-  <td class="delete-cell" style="border:1px solid #ccc; text-align:center;">
-    <button class="icon-btn hw-clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
-  </td>
-</tr><tr style="border-bottom:1px solid #ccc;">
-  <td ...><input type="number" class="hw-qty" ...></td>
-  <td ...><input type="text" class="hw-part" ...></td>
-  <td class="hw-price" ...>$0.00</td>
-  <td class="hw-total" ...>$0.00</td>
-
-  <!-- ADD THIS -->
-  <td class="delete-cell" style="border:1px solid #ccc; text-align:center;">
-    <button class="icon-btn hw-clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
-  </td>
-</tr><tr style="border-bottom:1px solid #ccc;">
-  <td ...><input type="number" class="hw-qty" ...></td>
-  <td ...><input type="text" class="hw-part" ...></td>
-  <td class="hw-price" ...>$0.00</td>
-  <td class="hw-total" ...>$0.00</td>
-
-  <!-- ADD THIS -->
-  <td class="delete-cell" style="border:1px solid #ccc; text-align:center;">
-    <button class="icon-btn hw-clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
-  </td>
-</tr>
+          <td style="border:1px solid #ccc;"><input type="number" class="hw-qty" min="0" value="0" style="width:80px;"></td>
+          <td style="border:1px solid #ccc;"><input type="text" class="hw-part" list="hardwarePartsList" placeholder="Start typing part name" style="width:95%;"></td>
+          <td class="hw-price" style="border:1px solid #ccc;">$0.00</td>
+          <td class="hw-total" style="border:1px solid #ccc;">$0.00</td>
+          <td class="delete-cell" style="border:1px solid #ccc; text-align:center;">
+            <button class="icon-btn hw-clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
+          </td>
+        </tr>
+        <tr style="border-bottom:1px solid #ccc;">
+          <td style="border:1px solid #ccc;"><input type="number" class="hw-qty" min="0" value="0" style="width:80px;"></td>
+          <td style="border:1px solid #ccc;"><input type="text" class="hw-part" list="hardwarePartsList" placeholder="Start typing part name" style="width:95%;"></td>
+          <td class="hw-price" style="border:1px solid #ccc;">$0.00</td>
+          <td class="hw-total" style="border:1px solid #ccc;">$0.00</td>
+          <td class="delete-cell" style="border:1px solid #ccc; text-align:center;">
+            <button class="icon-btn hw-clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
+          </td>
+        </tr>
+        <tr style="border-bottom:1px solid #ccc;">
+          <td style="border:1px solid #ccc;"><input type="number" class="hw-qty" min="0" value="0" style="width:80px;"></td>
+          <td style="border:1px solid #ccc;"><input type="text" class="hw-part" list="hardwarePartsList" placeholder="Start typing part name" style="width:95%;"></td>
+          <td class="hw-price" style="border:1px solid #ccc;">$0.00</td>
+          <td class="hw-total" style="border:1px solid #ccc;">$0.00</td>
+          <td class="delete-cell" style="border:1px solid #ccc; text-align:center;">
+            <button class="icon-btn hw-clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -1067,18 +1062,18 @@ body{
     <div class="buttons">
         <!-- QUOTE BUTTONS -->
   <div id="quoteButtons">
-    <button onclick="saveQuote()">Save Quote</button>
-    <button onclick="printQuote()">Print Quote</button>
-    <button onclick="convertToOrder()">Convert to Order</button>
+    <button type="button" onclick="saveQuote()">Save Quote</button>
+    <button type="button" onclick="printQuote()">Print Quote</button>
+    <button type="button" onclick="convertToOrder()">Convert to Order</button>
   </div>
    <!-- ORDER BUTTONS -->
-  <div id="orderButtons">
-      <button class="btn-save-order" onclick="saveOrder()">Save Order</button>
-      <button class="btn-new-order" onclick="startNewOrder()">New Order</button>
-      <button onclick="addRow()">Add Line</button>
-      <button type="button" onclick="printDoc('quote')">Print Quote</button>
+  <div id="orderButtons" style="display:none;">
+      <button class="btn-new-order" type="button" onclick="startNewOrder()">New Order</button>
+      <button class="btn-save-order" type="button" onclick="saveOrder()">Save Order</button>
       <button type="button" onclick="printDoc('ticket')">Print Ticket</button>
+      <button type="button" onclick="printDoc('packing-list')">Print Packing List</button>
       <button type="button" onclick="printDoc('invoice')">Print Invoice</button>
+      <button type="button" onclick="deleteCurrentOrder()">Delete Order</button>
     </div>
 
     <h3 id="grandTotal">Grand Total: $0.00</h3>
@@ -2392,6 +2387,28 @@ async function saveQuickAddCustomer() {
 }
 
 
+let calculatorMode = 'quote';
+
+function setCalculatorMode(mode) {
+  calculatorMode = mode === 'order' ? 'order' : 'quote';
+  const quoteButtons = document.getElementById('quoteButtons');
+  const orderButtons = document.getElementById('orderButtons');
+  if (quoteButtons) quoteButtons.style.display = calculatorMode === 'quote' ? 'block' : 'none';
+  if (orderButtons) orderButtons.style.display = calculatorMode === 'order' ? 'block' : 'none';
+}
+
+async function saveQuote() {
+  await saveOrder();
+}
+
+function printQuote() {
+  printDoc('quote');
+}
+
+function convertToOrder() {
+  setCalculatorMode('order');
+}
+
 // ===================== ORDER MANAGEMENT =====================
 let currentOrderId = null;      // currently loaded order in the form (null = unsaved / new)
 let lastSavedOrderId = null;    // last saved order id (kept even after clearing the form)
@@ -2418,6 +2435,20 @@ function printDoc(type) {
 
   const url = `/api/orders?id=${encodeURIComponent(idToPrint)}&print=${encodeURIComponent(type)}`;
   window.open(url, "_blank");
+}
+
+async function deleteCurrentOrder() {
+  const idToDelete = currentOrderId || lastSavedOrderId;
+  if (!idToDelete) {
+    alert('No saved order available to delete.');
+    return;
+  }
+  const deleted = await deleteOrder(idToDelete);
+  if (deleted && (currentOrderId === idToDelete || lastSavedOrderId === idToDelete)) {
+    currentOrderId = null;
+    lastSavedOrderId = null;
+    startNewOrder();
+  }
 }
 
 function gatherOrderData() {
@@ -2601,7 +2632,7 @@ async function searchOrders() {
 }
 
 async function deleteOrder(id) {
-  if (!confirm('Are you sure you want to delete this order?')) return;
+  if (!confirm('Are you sure you want to delete this order?')) return false;
 
   try {
     const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`, {
@@ -2609,8 +2640,10 @@ async function deleteOrder(id) {
     });
     if (!res.ok) throw new Error('Failed to delete order');
     await loadOrders();
+    return true;
   } catch (err) {
     alert('Error deleting order: ' + err.message);
+    return false;
   }
 }
 
@@ -2762,6 +2795,7 @@ async function loadOrderIntoCalculator(id) {
 
 function populateCalculatorFromOrder(order) {
   switchTab('calculator');
+  setCalculatorMode('order');
 
   currentOrderId = order.id;
   document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
@@ -3165,12 +3199,14 @@ document.addEventListener("DOMContentLoaded", async function () {
       const calc = document.getElementById('calculator-section');
       if (calc){ calc.style.display = 'block'; }
       kympgSetHeader('New Quote', 'Create and print a quote.', 'New Quote', 'Quote builder');
+      setCalculatorMode('quote');
       return;
     }
     if (which === 'order'){
       const calc = document.getElementById('calculator-section');
       if (calc){ calc.style.display = 'block'; }
       kympgSetHeader('New Order', 'Create an order and print ticket/invoice.', 'New Order', 'Order form');
+      setCalculatorMode('order');
       try{ if (typeof startNewOrder === 'function') startNewOrder(); }catch(e){}
       return;
     }
@@ -3213,6 +3249,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       try{ if (typeof loadCustomers === 'function') loadCustomers(); }catch(e){}
       return;
     }
+    setCalculatorMode('quote');
     kympgShowLanding();
   }
 
