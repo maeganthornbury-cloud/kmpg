@@ -857,12 +857,12 @@ body{
         </span>
       </button>
 
-      <button class="kympg-navBtn" data-tip="Customer Import" type="button" onclick="kympgOpen('customerimport', this)">
+      <button class="kympg-navBtn" data-tip="Customers" type="button" onclick="kympgOpen('customerimport', this)">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
         </span>
         <span class="kympg-labelWrap">
-          <span class="kympg-label">Customer Import</span>
+          <span class="kympg-label">Customers</span>
           <span class="kympg-hint">Upload customer list</span>
         </span>
       </button>
@@ -3109,7 +3109,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (which === 'customerimport'){
       const c = document.getElementById('customer-section');
       if (c) c.style.display = 'block';
-      kympgSetHeader('Customer Import', 'Upload and manage customer records.', 'Customer Import', 'Customer tools');
+      kympgSetHeader('Customers', 'Customer List.', 'Customer Import', 'Customer tools');
       try { if (typeof loadCustomers === 'function') loadCustomers(); } catch(e) {}
       return;
     }
