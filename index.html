@@ -2058,11 +2058,17 @@ function escapeHtml(text) {
 
 async function fetchApi(path, options) {
   const primary = await fetch(path, options);
-  if (primary.ok || !path.startsWith('/api/')) return primary;
+  if (!path.startsWith('/api/')) return primary;
+
+  const contentType = (primary.headers.get('content-type') || '').toLowerCase();
+  const looksLikeJson = contentType.includes('application/json');
+
+  // Some hosts return index.html (200) for unknown /api/* routes.
+  // In that case, retry via Netlify Functions so JSON endpoints still load.
+  if (primary.ok && looksLikeJson) return primary;
 
   const fallbackPath = `/.netlify/functions/${path.slice(5)}`;
-  const fallback = await fetch(fallbackPath, options);
-  return fallback;
+  return fetch(fallbackPath, options);
 }
 
 function filterCustomerTable() {
@@ -2460,18 +2466,6 @@ async function saveQuote() {
   }
 
   prepareForNewQuote();
-  const printNow = confirm(
-    `Quote ${quoteLabel} saved successfully.
-
-Select OK to Print or Cancel for No (save only).`
-  );
-
-  if (printNow) {
-    printQuote(savedQuote.id);
-    return;
-  }
-
-  alert(`Quote ${quoteLabel} saved. No print copy was created.`);
 }
 
 
