@@ -3555,6 +3555,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   for (let i = 0; i < 5; i++) addRow();
   updateTotals();
+  // Ensure calculator always starts with visible editable lines.
+  try { if (typeof startNewOrder === 'function') startNewOrder(); } catch (e) {}
 
   await loadCalcCustomers();
   setupCustomerLookup();
@@ -3600,7 +3602,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const tbody = document.getElementById('poTableBody');
     if (!tbody) return;
     try {
-      const res = await fetch('/api/purchase-orders');
+      const res = await fetchApi('/api/purchase-orders');
       if (!res.ok) throw new Error('Failed to load Purchase Orders');
       const data = await res.json();
 
@@ -3720,16 +3722,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    const content = document.getElementById('kympgContentArea');
-    if (content){
-      ['calculator-section','customer-section','orders-section'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.parentElement !== content){
-          content.appendChild(el);
-        }
-        if (el) el.style.display = 'none';
-      });
-    }
+    // Keep existing section structure intact; just initialize on landing.
     kympgShowLanding();
   });
 </script>
