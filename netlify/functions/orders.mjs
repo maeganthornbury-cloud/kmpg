@@ -378,7 +378,7 @@ export default async (req) => {
   const jsonHeaders = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
 
@@ -480,6 +480,7 @@ export default async (req) => {
 
       const order = {
         orderNumber,
+        status: body.status || "shop production",
         customer: body.customer || {},
         items: body.items || [],
         hardware: body.hardware || null,
@@ -494,6 +495,39 @@ export default async (req) => {
 
       return new Response(JSON.stringify({ id: newId, ...order }), {
         status: 201,
+        headers: jsonHeaders,
+      });
+    }
+
+    // PUT — update order details (e.g. status)
+    if (req.method === "PUT") {
+      if (!id) {
+        return new Response(JSON.stringify({ error: "Order id is required" }), {
+          status: 400,
+          headers: jsonHeaders,
+        });
+      }
+
+      const existing = await store.get(id, { type: "json" });
+      if (!existing) {
+        return new Response(JSON.stringify({ error: "Order not found" }), {
+          status: 404,
+          headers: jsonHeaders,
+        });
+      }
+
+      const body = await req.json();
+      const updatedOrder = {
+        ...existing,
+        ...body,
+        status: body.status || existing.status || "shop production",
+        updatedAt: new Date().toISOString(),
+      };
+
+      await store.setJSON(id, updatedOrder);
+
+      return new Response(JSON.stringify({ id, ...updatedOrder }), {
+        status: 200,
         headers: jsonHeaders,
       });
     }
