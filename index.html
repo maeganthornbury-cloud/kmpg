@@ -3139,6 +3139,20 @@ async function saveOrder() {
     }
   } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').includes('(vendor)')) {
     sourceType = 'on order (vendor)';
+  if (isNewOrder) {
+    const isVendorPO = confirm('Create purchase order? Click OK for PURCHASE ORDER, Cancel for SHOP TICKET.');
+    if (isVendorPO) {
+      sourceType = 'vendor';
+      vendorName = prompt('Enter vendor name:') || '';
+      vendorPoNumber = prompt('Enter vendor PO #:') || '';
+      requestedDate = prompt('Enter requested date (YYYY-MM-DD):', new Date().toISOString().slice(0, 10)) || '';
+      if (!vendorName.trim() || !vendorPoNumber.trim()) {
+        alert('Vendor and PO # are required for purchase orders.');
+        return;
+      }
+    }
+  } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').startsWith('vendor')) {
+    sourceType = 'vendor';
     vendorName = allOrders.find(o => o.id === currentOrderId)?.vendorName || '';
     vendorPoNumber = allOrders.find(o => o.id === currentOrderId)?.vendorPoNumber || '';
     requestedDate = allOrders.find(o => o.id === currentOrderId)?.requestedDate || '';
@@ -3188,6 +3202,7 @@ async function saveOrder() {
     }
 
     if (poType === 'external' || poType === 'internal') {
+    if (sourceType === 'vendor') {
       const poPayload = {
         orderId: savedOrder.id,
         orderNumber: savedOrder.orderNumber,
@@ -4061,6 +4076,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
           if (el) el.style.display = 'none';
         });
     }
+    // Keep existing section structure intact; just initialize on landing.
     kympgShowLanding();
   });
 </script>

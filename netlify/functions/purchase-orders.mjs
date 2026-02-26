@@ -80,6 +80,7 @@ export default async (req) => {
           await ordersStore.setJSON(order.orderId, {
             ...linkedOrder,
             status: mappedOrderStatus(order.poType, order.status),
+            status: "vendor",
             vendorName: order.vendor,
             vendorPoNumber: order.poNumber,
             requestedDate: order.requestedDate,
@@ -117,6 +118,7 @@ export default async (req) => {
           await ordersStore.setJSON(updated.orderId, {
             ...linkedOrder,
             status: mappedOrderStatus(updated.poType, updated.status),
+            status: updated.status === "Received" ? "vendor received" : "vendor",
             vendorName: updated.vendor || linkedOrder.vendorName || "",
             vendorPoNumber: updated.poNumber || linkedOrder.vendorPoNumber || "",
             requestedDate: updated.requestedDate || linkedOrder.requestedDate || "",
