@@ -46,6 +46,23 @@ function money(n) {
   return num.toFixed(2);
 }
 
+function renderCompanyHeader(docTitle) {
+  return `
+    <div class="row" style="align-items:center;">
+      <div style="display:flex; gap:12px; align-items:center;">
+        <img src="/good%20logo.jpg" alt="Kentucky Mirror and Plate Glass logo" style="height:62px; width:auto;" />
+        <div>
+          <h1>Kentucky Mirror and Plate Glass</h1>
+          <div class="small">822 W Main St, Louisville KY 40202</div>
+          <div class="small">502-583-5541</div>
+          <div class="small">info@kymirror.com</div>
+        </div>
+      </div>
+      <div class="box"><b>${escapeHtml(docTitle)}</b></div>
+    </div>
+  `;
+}
+
 function renderItemsTable(order) {
   const items = Array.isArray(order.items) ? order.items : [];
   const rows = items
@@ -144,14 +161,10 @@ function renderQuoteHTML(order) {
   ${baseStyles()}
 </head>
 <body>
-  <div class="row">
-    <div>
-      <h1>Kentucky Mirror &amp; Plate Glass</h1>
-      <div class="small">Louisville, KY</div>
-      <div class="small">Phone: ____________________</div>
-    </div>
+  ${renderCompanyHeader("QUOTE")}
+  <div class="row" style="margin-top:12px;">
+    <div></div>
     <div class="box">
-      <div><b>QUOTE</b></div>
       <div>Quote #: <b>${escapeHtml(order.orderNumber || "")}</b></div>
       <div>Date Saved: ${escapeHtml(fmtDate(savedISO))}</div>
       <div>Valid Through: <b>${escapeHtml(fmtDate(validThroughISO))}</b></div>
@@ -241,7 +254,7 @@ function renderTicketHTML(order) {
   </style>
 </head>
 <body>
-  <h1>SHOP TICKET</h1>
+  ${renderCompanyHeader("SHOP TICKET")}
   <div class="meta">
     Order #: <b>${escapeHtml(order.orderNumber || "")}</b> &nbsp; | &nbsp;
     Date Saved: ${escapeHtml(fmtDate(savedISO))} &nbsp; | &nbsp;
@@ -303,22 +316,16 @@ function renderPackingListHTML(order) {
 <head>
   <meta charset="utf-8" />
   <title>Packing List ${escapeHtml(order.orderNumber || "")}</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { margin: 0; }
-    .meta { margin-top: 8px; font-size: 13px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #000; padding: 8px; font-size: 13px; }
-    .right { text-align: right; }
-    @page { margin: 12mm; }
-  </style>
+  ${baseStyles()}
 </head>
 <body>
-  <h1>PACKING LIST</h1>
-  <div class="meta">
+  ${renderCompanyHeader("PACKING LIST")}
+  <div class="meta" style="margin-top:10px;font-size:13px;">
     Order #: <b>${escapeHtml(order.orderNumber || "")}</b> &nbsp; | &nbsp;
-    Date Saved: ${escapeHtml(fmtDate(savedISO))} &nbsp; | &nbsp;
-    Customer: ${escapeHtml(cust.name || cust.company || "")}
+    Order Date: ${escapeHtml(fmtDate(savedISO))} &nbsp; | &nbsp;
+    Customer: ${escapeHtml(cust.name || cust.company || "")} &nbsp; | &nbsp;
+    Source: <b>${escapeHtml(order.status === "vendor" ? "Vendor" : "Shop")}</b>
+    ${order.status === "vendor" ? ` &nbsp; | &nbsp; Vendor: <b>${escapeHtml(order.vendorName || "")}</b> &nbsp; | &nbsp; PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b>` : ""}
   </div>
 
   <table>
@@ -335,6 +342,38 @@ function renderPackingListHTML(order) {
       ${rows || `<tr><td colspan="5">No line items</td></tr>`}
     </tbody>
   </table>
+
+  ${renderTotals(order)}
+</body>
+</html>`;
+}
+
+
+function renderPurchaseOrderHTML(order) {
+  const requestedDate = order.requestedDate || order.createdAt || new Date().toISOString();
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Purchase Order ${escapeHtml(order.orderNumber || "")}</title>
+  ${baseStyles()}
+</head>
+<body>
+  ${renderCompanyHeader("PURCHASE ORDER")}
+  <div class="row" style="margin-top:12px;">
+    <div class="box" style="flex:1;">
+      <b>Vendor</b><br/>
+      ${escapeHtml(order.vendorName || "")}
+    </div>
+    <div class="box" style="flex:1;">
+      <div>Order #: <b>${escapeHtml(order.orderNumber || "")}</b></div>
+      <div>PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b></div>
+      <div>Requested Date: <b>${escapeHtml(fmtDate(requestedDate))}</b></div>
+      <div>Order Date: ${escapeHtml(fmtDate(order.createdAt))}</div>
+    </div>
+  </div>
+  ${renderItemsTable(order)}
+  ${renderTotals(order)}
 </body>
 </html>`;
 }
@@ -352,13 +391,9 @@ function renderInvoiceHTML(order) {
   ${baseStyles()}
 </head>
 <body>
-  <div class="row">
-    <div>
-      <h1>Kentucky Mirror &amp; Plate Glass</h1>
-      <div class="small">Louisville, KY</div>
-      <div class="small">Phone: ____________________</div>
-      <div class="small">Address: ________________________________</div>
-    </div>
+  ${renderCompanyHeader("INVOICE")}
+  <div class="row" style="margin-top:12px;">
+    <div></div>
     <div class="box">
       <div><b>INVOICE</b></div>
       <div>Invoice #: <b>${escapeHtml(invoiceNumber)}</b></div>
@@ -432,6 +467,7 @@ export default async (req) => {
           else if (p === "ticket") html = renderTicketHTML(order);
           else if (p === "packing-list" || p === "packinglist") html = renderPackingListHTML(order);
           else if (p === "invoice") html = renderInvoiceHTML(order);
+          else if (p === "purchase-order" || p === "purchaseorder" || p === "po") html = renderPurchaseOrderHTML(order);
           else {
             return new Response(JSON.stringify({ error: "Invalid print type" }), {
               status: 400,
@@ -489,6 +525,11 @@ export default async (req) => {
         sequenceNumber,
         orderNumber,
         status: body.status || "shop production",
+        vendorName: body.vendorName || "",
+        vendorPoNumber: body.vendorPoNumber || "",
+        requestedDate: body.requestedDate || "",
+        vendorDeliveryDate: body.vendorDeliveryDate || "",
+        vendorReceivedAt: body.vendorReceivedAt || "",
         customer: body.customer || {},
         items: body.items || [],
         hardware: body.hardware || null,
