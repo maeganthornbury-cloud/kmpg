@@ -75,7 +75,7 @@ function renderItemsTable(order) {
           it.glassType || it.type,
           it.thickness,
           it.width && it.height ? `${it.width} x ${it.height}` : "",
-          it.edgework || it.bevelWidth ? `Edge/Bevel: ${it.edgework || ""} ${it.bevelWidth || ""}` : "",
+          it.edgework || it.bevel ? `Edge/Bevel: ${it.edgework || ""} ${it.bevel ? (it.bevelWidth || "") : ""}` : "",
           it.notes,
         ]
           .filter(Boolean)
@@ -109,6 +109,50 @@ function renderItemsTable(order) {
       </thead>
       <tbody>
         ${rows || `<tr><td colspan="5">No line items</td></tr>`}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderItemsTableNoMoney(order) {
+  const items = Array.isArray(order.items) ? order.items : [];
+  const rows = items
+    .map((it, idx) => {
+      const qty = it.qty ?? it.quantity ?? "";
+      const desc =
+        it.description ??
+        it.name ??
+        [
+          it.glassType || it.type,
+          it.thickness,
+          it.width && it.height ? `${it.width} x ${it.height}` : "",
+          it.edgework || it.bevel ? `Edge/Bevel: ${it.edgework || ""} ${it.bevel ? (it.bevelWidth || "") : ""}` : "",
+          it.notes,
+        ]
+          .filter(Boolean)
+          .join(" • ");
+
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(desc)}</td>
+          <td class="right">${escapeHtml(qty)}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px;">#</th>
+          <th>Description</th>
+          <th style="width:70px;">Qty</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows || `<tr><td colspan="3">No line items</td></tr>`}
       </tbody>
     </table>
   `;
@@ -186,8 +230,7 @@ function renderQuoteHTML(order) {
     </div>
   </div>
 
-  ${renderItemsTable(order)}
-  ${renderTotals(order)}
+  ${renderItemsTableNoMoney(order)}
 
   <p class="small" style="margin-top:12px;">
     This quote is good for <b>30 days</b> from <b>${escapeHtml(fmtDate(savedISO))}</b>.
@@ -218,7 +261,7 @@ function renderTicketHTML(order) {
         it.width && it.height ? `${it.width} x ${it.height}` : (it.size || "");
       const glass = it.glassType || it.type || "";
       const thk = it.thickness || it.thk || "";
-      const edge = it.edgework || (it.bevelWidth ? `Bevel ${it.bevelWidth}` : "") || "";
+      const edge = it.edgework || (it.bevel ? `Bevel ${it.bevelWidth || ""}` : "") || "";
       const temper = it.tempered ? "YES" : (it.temp ? "YES" : "");
       const notes = it.notes || it.instructions || it.descNotes || it.description || "";
 
@@ -372,6 +415,7 @@ function renderPurchaseOrderHTML(order) {
       <div>Order Date: ${escapeHtml(fmtDate(order.createdAt))}</div>
     </div>
   </div>
+  ${renderItemsTableNoMoney(order)}
   ${renderItemsTable(order)}
   ${renderTotals(order)}
 </body>
