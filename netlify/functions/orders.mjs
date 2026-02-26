@@ -1,5 +1,23 @@
 import { getStore } from "@netlify/blobs";
 
+async function nextSequenceNumber() {
+  const sequenceStore = getStore({ name: "document-sequences", consistency: "strong" });
+  const counterKey = "main";
+  let counter = 999;
+  try {
+    const existing = await sequenceStore.get(counterKey, { type: "json" });
+    if (existing && Number.isFinite(existing.value)) {
+      counter = existing.value;
+    }
+  } catch (e) {
+    // first use
+  }
+
+  const nextValue = counter + 1;
+  await sequenceStore.setJSON(counterKey, { value: nextValue });
+  return nextValue;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -324,6 +342,7 @@ function renderPackingListHTML(order) {
 function renderInvoiceHTML(order) {
   const invoiceDateISO = order.invoiceDate || order.createdAt || new Date().toISOString();
   const cust = order.customer || {};
+  const invoiceNumber = order.sequenceNumber ? `i${order.sequenceNumber}` : (order.orderNumber || "").replace(/^o/i, "i");
 
   return `<!doctype html>
 <html>
@@ -342,7 +361,7 @@ function renderInvoiceHTML(order) {
     </div>
     <div class="box">
       <div><b>INVOICE</b></div>
-      <div>Invoice #: <b>${escapeHtml(order.orderNumber || "")}</b></div>
+      <div>Invoice #: <b>${escapeHtml(invoiceNumber)}</b></div>
       <div>Invoice Date: ${escapeHtml(fmtDate(invoiceDateISO))}</div>
       <div>Order Date: ${escapeHtml(fmtDate(order.createdAt))}</div>
     </div>
@@ -460,25 +479,14 @@ export default async (req) => {
     // POST — create a new order with auto-assigned order number
     if (req.method === "POST") {
       const body = await req.json();
-
-      // Get and increment the counter
-      let counter = 1;
-      try {
-        const existing = await store.get("_counter", { type: "json" });
-        if (existing && existing.value) counter = existing.value + 1;
-      } catch (e) {
-        // counter doesn't exist yet, start at 1
-      }
-
-      // Save updated counter
-      await store.setJSON("_counter", { value: counter });
-
-      const orderNumber = `ORD-${String(counter).padStart(4, "0")}`;
+      const sequenceNumber = Number(body.sequenceNumber) || (await nextSequenceNumber());
+      const orderNumber = `o${sequenceNumber}`;
       const newId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
       const nowISO = new Date().toISOString();
 
       const order = {
+        sequenceNumber,
         orderNumber,
         status: body.status || "shop production",
         customer: body.customer || {},
@@ -517,9 +525,12 @@ export default async (req) => {
       }
 
       const body = await req.json();
+      const sequenceNumber = Number(body.sequenceNumber) || Number(existing.sequenceNumber) || null;
       const updatedOrder = {
         ...existing,
         ...body,
+        sequenceNumber,
+        orderNumber: sequenceNumber ? `o${sequenceNumber}` : existing.orderNumber,
         status: body.status || existing.status || "shop production",
         updatedAt: new Date().toISOString(),
       };

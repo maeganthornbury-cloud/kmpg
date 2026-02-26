@@ -2440,13 +2440,14 @@ async function saveQuote() {
   const savedQuote = await saveQuoteToDatabase();
   if (!savedQuote) return;
 
-  const printNow = confirm(`Quote ${savedQuote.id} saved. Print a copy now?`);
+  const quoteLabel = savedQuote.quoteNumber || savedQuote.id;
+  const printNow = confirm(`Quote ${quoteLabel} saved. Print a copy now?`);
   if (printNow) {
     printQuote(savedQuote.id);
   }
 
-  prepareForNewQuote();
 }
+
 
 async function printQuote(quoteId) {
   const idToPrint = quoteId || currentQuoteId || lastSavedQuoteId;
@@ -2469,7 +2470,7 @@ async function printQuote(quoteId) {
     printWindow.document.write('<html><head><title>Quote</title>');
     printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #000;padding:8px;text-align:center;}h2,h3{margin:0 0 8px 0;}</style>');
     printWindow.document.write('</head><body>');
-    printWindow.document.write(`<h2>Quote ${escapeHtml(quote.id || '')}</h2>`);
+    printWindow.document.write(`<h2>Quote ${escapeHtml(quote.quoteNumber || quote.id || '')}</h2>`);
     printWindow.document.write(`<p><strong>Customer:</strong> ${escapeHtml(cust.name || quote.customerName || '')} &nbsp; <strong>Phone:</strong> ${escapeHtml(cust.phone || quote.customerPhone || '')}</p>`);
     printWindow.document.write('<table><thead><tr><th>Qty</th><th>Size</th><th>Glass Type</th><th>Each</th><th>Total</th></tr></thead><tbody>');
     items.forEach(item => {
@@ -2645,7 +2646,8 @@ async function saveQuoteToDatabase() {
   const savedQuote = await res.json();
   currentQuoteId = savedQuote.id;
   lastSavedQuoteId = savedQuote.id;
-  document.getElementById('orderSavedStatus').textContent = `Quote saved: ${savedQuote.id}`;
+  document.getElementById('orderSavedStatus').textContent = `Quote saved: ${savedQuote.quoteNumber || savedQuote.id}`;
+  document.getElementById('currentOrderNumber').textContent = savedQuote.quoteNumber || savedQuote.id;
 
   try { await loadQuotes(); } catch (e) {}
   return savedQuote;
@@ -2658,6 +2660,7 @@ async function convertCurrentQuoteToOrder() {
 
     const data = gatherOrderData();
     data.status = 'shop production';
+    data.sequenceNumber = savedQuote.sequenceNumber;
 
     const orderRes = await fetch('/api/orders', {
       method: 'POST',
@@ -2715,8 +2718,10 @@ async function saveOrder() {
   saveBtn.textContent = 'Saving...';
 
   try {
-    const res = await fetch('/api/orders', {
-      method: 'POST',
+    const method = currentOrderId ? 'PUT' : 'POST';
+    const url = currentOrderId ? `/api/orders?id=${encodeURIComponent(currentOrderId)}` : '/api/orders';
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
@@ -2728,7 +2733,8 @@ async function saveOrder() {
 
     const savedOrder = await res.json();
 
-    // Remember what we just saved (so Print works even after clearing)
+    // Remember what we just saved (so Print works)
+    currentOrderId = savedOrder.id;
     lastSavedOrderId = savedOrder.id;
 
     // Briefly show confirmation
@@ -2738,8 +2744,6 @@ async function saveOrder() {
     // Refresh Orders tab list
     try { await loadOrders(); } catch (e) {}
 
-    // Clear the form for the next order
-    startNewOrder();
 
   } catch (err) {
     alert('Error saving order: ' + err.message);
@@ -2993,10 +2997,13 @@ async function loadOrderIntoCalculator(id) {
   populateCalculatorFromOrder(order);
 }
 
-function populateCalculatorFromOrder(order) {
-  showCalculatorWorkspace('order');
+function populateCalculatorFromOrder(order, mode = 'order') {
+  const isQuoteMode = mode === 'quote';
+  showCalculatorWorkspace(isQuoteMode ? 'quote' : 'order');
+  setCalculatorMode(isQuoteMode ? 'quote' : 'order');
 
-  currentOrderId = order.id;
+  currentOrderId = isQuoteMode ? null : order.id;
+  currentQuoteId = isQuoteMode ? order.id : null;
   document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
   document.getElementById('orderSavedStatus').textContent = '';
 
@@ -3073,7 +3080,7 @@ function renderQuoteTable(quotes) {
     const custName = q.customer?.name || q.customerName || '';
     return `
       <tr>
-        <td><strong>${escapeHtml(q.id || '')}</strong></td>
+        <td><strong>${escapeHtml(q.quoteNumber || q.id || '')}</strong></td>
         <td>${escapeHtml(custName)}</td>
         <td>${escapeHtml(q.status || 'quote')}</td>
         <td>$${(q.grandTotal || 0).toFixed(2)}</td>
@@ -3096,7 +3103,7 @@ function searchQuotes() {
   }
   const filtered = allQuotes.filter(q => {
     const custName = (q.customer?.name || q.customerName || '').toLowerCase();
-    return (q.id || '').toLowerCase().includes(query) || custName.includes(query);
+    return (q.id || '').toLowerCase().includes(query) || (q.quoteNumber || '').toLowerCase().includes(query) || custName.includes(query);
   });
   renderQuoteTable(filtered);
 }
@@ -3111,16 +3118,9 @@ async function loadQuoteIntoCalculator(id) {
   }
 
   kympgOpen('quote');
-  populateCalculatorFromOrder({ ...quote, id: null, orderNumber: `Quote ${quote.id}` });
-  setCalculatorMode('quote');
-  currentOrderId = null;
+  populateCalculatorFromOrder({ ...quote, id: quote.id, orderNumber: quote.quoteNumber || quote.id }, 'quote');
   currentQuoteId = quote.id;
-  document.getElementById('currentOrderNumber').textContent = `Quote ${quote.id}`;
-  document.getElementById('orderSavedStatus').textContent = 'Loaded quote';
-  showCalculatorWorkspace('quote');
-  populateCalculatorFromOrder({ ...quote, id: null, orderNumber: `Quote ${quote.id}` });
-  setCalculatorMode('quote');
-  currentQuoteId = quote.id;
+  document.getElementById('orderSavedStatus').textContent = `Loaded ${quote.quoteNumber || quote.id}`;
 }
 
 async function convertSavedQuoteToOrder(id) {
@@ -3128,6 +3128,7 @@ async function convertSavedQuoteToOrder(id) {
   if (!quote) return;
 
   const orderPayload = {
+    sequenceNumber: quote.sequenceNumber,
     customer: quote.customer || { name: quote.customerName, phone: quote.customerPhone },
     items: quote.items || [],
     hardware: quote.hardware || null,

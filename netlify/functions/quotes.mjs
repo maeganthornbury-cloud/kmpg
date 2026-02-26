@@ -1,5 +1,23 @@
 import { getStore } from "@netlify/blobs";
 
+async function nextSequenceNumber() {
+  const sequenceStore = getStore({ name: "document-sequences", consistency: "strong" });
+  const counterKey = "main";
+  let counter = 999;
+  try {
+    const existing = await sequenceStore.get(counterKey, { type: "json" });
+    if (existing && Number.isFinite(existing.value)) {
+      counter = existing.value;
+    }
+  } catch (e) {
+    // first use
+  }
+
+  const nextValue = counter + 1;
+  await sequenceStore.setJSON(counterKey, { value: nextValue });
+  return nextValue;
+}
+
 export default async (req) => {
   const store = getStore({ name: "quotes", consistency: "strong" });
   const url = new URL(req.url);
@@ -46,8 +64,11 @@ export default async (req) => {
     if (req.method === "POST") {
       const body = await req.json();
       const quoteId = `quote-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const sequenceNumber = Number(body.sequenceNumber) || (await nextSequenceNumber());
       const quote = {
         id: quoteId,
+        sequenceNumber,
+        quoteNumber: `q${sequenceNumber}`,
         status: body.status || "quote",
         closedReason: body.closedReason || null,
         convertedOrderId: body.convertedOrderId || null,
@@ -83,7 +104,15 @@ export default async (req) => {
         });
       }
       const body = await req.json();
-      const updated = { ...existing, ...body, id, updatedAt: new Date().toISOString() };
+      const sequenceNumber = Number(body.sequenceNumber) || Number(existing.sequenceNumber) || null;
+      const updated = {
+        ...existing,
+        ...body,
+        id,
+        sequenceNumber,
+        quoteNumber: sequenceNumber ? `q${sequenceNumber}` : existing.quoteNumber,
+        updatedAt: new Date().toISOString(),
+      };
       await store.setJSON(id, updated);
       return new Response(JSON.stringify(updated), { headers });
     }
