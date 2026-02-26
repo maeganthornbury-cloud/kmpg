@@ -2204,6 +2204,7 @@ async function saveVendor(event) {
 async function deleteVendor(id) {
   if (!confirm('Delete this vendor?')) return;
   const res = await fetchApi(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+  const res = await fetch(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   if (!res.ok) {
     alert('Failed to delete vendor');
     return;
@@ -2249,6 +2250,7 @@ async function handleVendorImportFile(event) {
   }
 
   const res = await fetchApi('/api/vendors-import', {
+  const res = await fetch('/api/vendors-import', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ vendors }),
@@ -3139,6 +3141,20 @@ async function saveOrder() {
     }
   } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').includes('(vendor)')) {
     sourceType = 'on order (vendor)';
+  if (isNewOrder) {
+    const isVendorPO = confirm('Create purchase order? Click OK for PURCHASE ORDER, Cancel for SHOP TICKET.');
+    if (isVendorPO) {
+      sourceType = 'vendor';
+      vendorName = prompt('Enter vendor name:') || '';
+      vendorPoNumber = prompt('Enter vendor PO #:') || '';
+      requestedDate = prompt('Enter requested date (YYYY-MM-DD):', new Date().toISOString().slice(0, 10)) || '';
+      if (!vendorName.trim() || !vendorPoNumber.trim()) {
+        alert('Vendor and PO # are required for purchase orders.');
+        return;
+      }
+    }
+  } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').startsWith('vendor')) {
+    sourceType = 'vendor';
     vendorName = allOrders.find(o => o.id === currentOrderId)?.vendorName || '';
     vendorPoNumber = allOrders.find(o => o.id === currentOrderId)?.vendorPoNumber || '';
     requestedDate = allOrders.find(o => o.id === currentOrderId)?.requestedDate || '';
@@ -3176,6 +3192,7 @@ async function saveOrder() {
       const poNumberGenerated = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}`;
       vendorPoNumber = poNumberGenerated;
       await fetchApi(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
+      await fetch(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3188,6 +3205,7 @@ async function saveOrder() {
     }
 
     if (poType === 'external' || poType === 'internal') {
+    if (sourceType === 'vendor') {
       const poPayload = {
         orderId: savedOrder.id,
         orderNumber: savedOrder.orderNumber,
@@ -3199,6 +3217,7 @@ async function saveOrder() {
         status: 'Pending',
       };
       await fetchApi('/api/purchase-orders', {
+      await fetch('/api/purchase-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(poPayload),
@@ -3963,6 +3982,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
 
     const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
+    const res = await fetch(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deliveryDate, status, receivedAt }),
@@ -4061,6 +4081,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
           if (el) el.style.display = 'none';
         });
     }
+    // Keep existing section structure intact; just initialize on landing.
     kympgShowLanding();
   });
 </script>

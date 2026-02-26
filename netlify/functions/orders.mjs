@@ -416,6 +416,8 @@ function renderPurchaseOrderHTML(order) {
     </div>
   </div>
   ${renderItemsTableNoMoney(order)}
+  ${renderItemsTable(order)}
+  ${renderTotals(order)}
 </body>
 </html>`;
 }
