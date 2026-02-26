@@ -752,6 +752,24 @@ body{
 .kympg-landingLogo img{ max-width:100%; height:auto; border-radius:18px; box-shadow:0 14px 40px rgba(2,6,23,.12); }
 .kympg-landingTitle{ font-weight: 950; font-size: 26px; letter-spacing:.2px; }
 .kympg-landingSub{ color: var(--muted); font-size: 14px; line-height:1.55; max-width: 760px; }
+.kympg-quickSearch{
+  margin-top: 12px;
+  width:min(760px, 96%);
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  box-shadow: var(--shadow2);
+  text-align:left;
+}
+.kympg-quickSearch h3{ margin:0 0 8px 0; font-size:16px; }
+.kympg-quickSearch .row{ display:flex; gap:8px; align-items:center; }
+.kympg-quickSearch input{ flex:1; padding:10px 12px; font-size:14px; border:1px solid #cfd4dc; border-radius:8px; }
+.kympg-quickSearch button{ padding:10px 14px; border:none; border-radius:8px; background:#007BFF; color:#fff; font-weight:700; cursor:pointer; }
+.kympg-quickResults{ margin-top:10px; max-height:220px; overflow:auto; border-top:1px solid #eef1f4; }
+.kympg-quickItem{ padding:10px 4px; border-bottom:1px solid #f0f2f5; cursor:pointer; }
+.kympg-quickItem:hover{ background:#f7fbff; }
+.kympg-quickMeta{ color:#666; font-size:12px; }
 
 .kympg-iframeWrap{ border:1px solid var(--line); border-radius: var(--radius2); overflow:hidden; height:min(72vh, 860px); background:#fff; }
 .kympg-iframeWrap iframe{ width:100%; height:100%; border:none; }
@@ -902,12 +920,21 @@ body{
           <div id="landing-section" class="active">
             <div class="kympg-landingWrap">
               <div class="kympg-landingLogo">
-                <img src="564e4083-db27-4742-b925-737f1faaa333.jpg" alt="Kentucky Mirror and Plate Glass" onerror="this.style.display='none';" />
+                <img src="good%20logo.jpg" alt="Kentucky Mirror and Plate Glass" onerror="this.style.display='none';" />
               </div>
               <div class="kympg-landingTitle">Kentucky Mirror and Plate Glass</div>
               <div class="kympg-landingSub">
                 Use the sidebar to create a new quote or order, search past orders, open quotes, manage purchase orders,
                 or open the pricing tools.
+              </div>
+
+              <div class="kympg-quickSearch">
+                <h3>Quick Search (Orders / Quotes / POs)</h3>
+                <div class="row">
+                  <input id="homeQuickSearchInput" type="text" placeholder="Enter # (ex: o1000, q1000, PO1000)">
+                  <button type="button" onclick="runHomeQuickSearch()">Search</button>
+                </div>
+                <div id="homeQuickResults" class="kympg-quickResults"></div>
               </div>
             </div>
           </div>
@@ -1284,6 +1311,7 @@ body{
     const targetId = map[which] || 'landing-section';
     const target = document.getElementById(targetId);
     if (target) target.style.display = 'block';
+    if (which === 'po' && typeof loadPurchaseOrders === 'function') loadPurchaseOrders();
     if (which === 'po') loadPurchaseOrders();
   }
 
@@ -2185,6 +2213,7 @@ async function saveVendor(event) {
 
   const method = id ? 'PUT' : 'POST';
   const url = id ? `/api/vendors?id=${encodeURIComponent(id)}` : '/api/vendors';
+  const res = await fetchApi(url, {
   const res = await fetch(url, {
     method,
     headers: { 'Content-Type': 'application/json' },
@@ -3938,6 +3967,86 @@ document.addEventListener("DOMContentLoaded", async function () {
     kympgSetHeader('Kentucky Mirror and Plate Glass', 'Select an option on the left to get started.', 'Home', 'Welcome');
   }
 
+  async function runHomeQuickSearch() {
+    const input = document.getElementById('homeQuickSearchInput');
+    const resultsEl = document.getElementById('homeQuickResults');
+    if (!input || !resultsEl) return;
+
+    const q = (input.value || '').trim().toLowerCase();
+    if (!q) {
+      resultsEl.innerHTML = '<div class="kympg-quickMeta" style="padding:8px 4px;">Enter an order #, quote #, or PO #.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = '<div class="kympg-quickMeta" style="padding:8px 4px;">Searching…</div>';
+
+    try {
+      const [ordersRes, quotesRes, poRes] = await Promise.all([
+        fetchApi('/api/orders'),
+        fetchApi('/api/quotes'),
+        fetchApi('/api/purchase-orders'),
+      ]);
+
+      const orders = ordersRes.ok ? await ordersRes.json() : [];
+      const quotes = quotesRes.ok ? await quotesRes.json() : [];
+      const pos = poRes.ok ? await poRes.json() : [];
+
+      const orderHits = (orders || []).filter(o => (o.orderNumber || '').toLowerCase().includes(q));
+      const quoteHits = (quotes || []).filter(x => (x.quoteNumber || '').toLowerCase().includes(q));
+      const poHits = (pos || []).filter(p => ((p.poNumber || '').toLowerCase().includes(q) || (p.orderNumber || '').toLowerCase().includes(q)));
+
+      const html = [];
+      orderHits.forEach(o => {
+        html.push(`<div class="kympg-quickItem" onclick="openQuickSearchResult('order','${o.id}')"><strong>Order ${escapeHtml(o.orderNumber || '')}</strong><div class="kympg-quickMeta">Customer: ${escapeHtml(o.customer?.name || '')}</div></div>`);
+      });
+      quoteHits.forEach(x => {
+        html.push(`<div class="kympg-quickItem" onclick="openQuickSearchResult('quote','${x.id}')"><strong>Quote ${escapeHtml(x.quoteNumber || '')}</strong><div class="kympg-quickMeta">Customer: ${escapeHtml(x.customer?.name || x.customerName || '')}</div></div>`);
+      });
+      poHits.forEach(p => {
+        html.push(`<div class="kympg-quickItem" onclick="openQuickSearchResult('po','${p.id}')"><strong>PO ${escapeHtml(p.poNumber || '')}</strong><div class="kympg-quickMeta">Order: ${escapeHtml(p.orderNumber || '')} • Vendor: ${escapeHtml(p.vendor || '')}</div></div>`);
+      });
+
+      resultsEl.innerHTML = html.length ? html.join('') : '<div class="kympg-quickMeta" style="padding:8px 4px;">No matching orders, quotes, or POs found.</div>';
+    } catch (err) {
+      resultsEl.innerHTML = `<div class="kympg-quickMeta" style="padding:8px 4px;color:#b00020;">Search failed: ${escapeHtml(err.message || 'Unknown error')}</div>`;
+    }
+  }
+
+  async function openQuickSearchResult(type, id) {
+    if (type === 'order') {
+      try { await loadOrderIntoCalculator(id); } catch (e) {}
+      return;
+    }
+
+    if (type === 'quote') {
+      try {
+        const res = await fetchApi(`/api/quotes?id=${encodeURIComponent(id)}`);
+        if (!res.ok) throw new Error('Quote not found');
+        const quote = await res.json();
+        kympgOpen('quote');
+        populateCalculatorFromOrder({ ...quote, id, orderNumber: quote.quoteNumber || id }, 'quote');
+      } catch (err) {
+        alert('Could not open quote: ' + err.message);
+      }
+      return;
+    }
+
+    if (type === 'po') {
+      try {
+        const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`);
+        if (!res.ok) throw new Error('PO not found');
+        const po = await res.json();
+        if (po.orderId) {
+          await loadOrderIntoCalculator(po.orderId);
+          return;
+        }
+      } catch (err) {
+        alert('Could not open PO: ' + err.message);
+      }
+      kympgOpen('po');
+    }
+  }
+
   async function loadPurchaseOrders() {
     const tbody = document.getElementById('poTableBody');
     if (!tbody) return;
@@ -3983,6 +4092,26 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
     const res = await fetch(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deliveryDate, status, receivedAt }),
+    });
+
+    if (!res.ok) {
+      alert('Failed to update purchase order.');
+      return;
+    }
+
+    await loadPurchaseOrders();
+    try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
+  }
+
+  async function updatePurchaseOrder(id) {
+    const deliveryDate = document.getElementById(`po_delivery_${id}`)?.value || '';
+    const status = document.getElementById(`po_status_${id}`)?.value || 'Pending';
+    const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
+
+    const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deliveryDate, status, receivedAt }),
@@ -4080,6 +4209,17 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
           if (el && el.parentElement !== content) content.appendChild(el);
           if (el) el.style.display = 'none';
         });
+    }
+    kympgShowLanding();
+
+    const quickInput = document.getElementById('homeQuickSearchInput');
+    if (quickInput) {
+      quickInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          runHomeQuickSearch();
+        }
+      });
     }
     // Keep existing section structure intact; just initialize on landing.
     kympgShowLanding();
