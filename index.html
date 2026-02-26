@@ -3811,9 +3811,11 @@ async function saveOrder() {
           }
         }
 
-        if (hasAnyOrderChanges && !poReprintedFromChange) {
+        if (hasAnyOrderChanges) {
           await queuePrintUrl(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=purchase-order`);
-          showCenteredMessage(`ORDER CHANGED: REPRINTED PO FOR ${savedOrder.orderNumber}.`);
+          if (!poReprintedFromChange) {
+            showCenteredMessage(`ORDER CHANGED: REPRINTED PO FOR ${savedOrder.orderNumber}.`);
+          }
         }
       } catch (poSyncErr) {
         console.warn('PO sync after order save failed:', poSyncErr);
