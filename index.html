@@ -2421,6 +2421,8 @@ async function saveQuote() {
   if (printNow) {
     printQuote(savedQuote.id);
   }
+
+  prepareForNewQuote();
 }
 
 async function printQuote(quoteId) {
@@ -2483,6 +2485,12 @@ function startNewOrder() {
   updateTotals();
   clearCustomerInfo();
   clearHardware();
+}
+
+function prepareForNewQuote() {
+  startNewOrder();
+  setCalculatorMode('quote');
+  lastSavedOrderId = null;
 }
 function printDoc(type) {
   const idToPrint = currentOrderId || lastSavedOrderId;
@@ -2647,15 +2655,10 @@ async function convertCurrentQuoteToOrder() {
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
     });
 
-    alert(`Quote converted to order ${createdOrder.orderNumber}.`);
-    setCalculatorMode('order');
-    currentOrderId = createdOrder.id;
-    lastSavedOrderId = createdOrder.id;
-    document.getElementById('currentOrderNumber').textContent = createdOrder.orderNumber;
-    document.getElementById('orderSavedStatus').textContent = `Converted from quote ${savedQuote.id}`;
-
+    alert(`Quote converted to order ${createdOrder.orderNumber}. Quote has been closed as ordered.`);
     try { await loadOrders(); } catch (e) {}
     try { await loadQuotes(); } catch (e) {}
+    prepareForNewQuote();
   } catch (err) {
     alert('Error converting quote: ' + err.message);
   }
@@ -3104,6 +3107,10 @@ async function convertSavedQuoteToOrder(id) {
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
     });
 
+    alert(`Quote converted to order ${createdOrder.orderNumber}. Quote has been closed as ordered.`);
+    await loadQuotes();
+    await loadOrders();
+    prepareForNewQuote();
     alert(`Quote converted to order ${createdOrder.orderNumber}.`);
     await loadQuotes();
     await loadOrders();
