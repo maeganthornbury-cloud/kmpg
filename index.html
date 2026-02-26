@@ -3112,6 +3112,11 @@ async function loadQuoteIntoCalculator(id) {
   currentQuoteId = quote.id;
   document.getElementById('currentOrderNumber').textContent = `Quote ${quote.id}`;
   document.getElementById('orderSavedStatus').textContent = 'Loaded saved quote';
+  const quote = allQuotes.find(q => q.id === id);
+  if (!quote) return;
+  populateCalculatorFromOrder({ ...quote, id: null, orderNumber: `Quote ${quote.id}` });
+  setCalculatorMode('quote');
+  currentQuoteId = quote.id;
 }
 
 async function convertSavedQuoteToOrder(id) {
@@ -3147,6 +3152,9 @@ async function convertSavedQuoteToOrder(id) {
     await loadQuotes();
     await loadOrders();
     prepareForNewQuote();
+    alert(`Quote converted to order ${createdOrder.orderNumber}.`);
+    await loadQuotes();
+    await loadOrders();
   } catch (err) {
     alert('Error converting quote: ' + err.message);
   }
