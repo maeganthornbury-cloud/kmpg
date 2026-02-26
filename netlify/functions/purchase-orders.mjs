@@ -2,6 +2,7 @@ import { getStore } from "@netlify/blobs";
 
 export default async (req) => {
   const store = getStore({ name: "purchase-orders", consistency: "strong" });
+  const ordersStore = getStore({ name: "orders", consistency: "strong" });
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
 
@@ -15,6 +16,17 @@ export default async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204, headers });
   }
+
+  const mappedOrderStatus = (poType, poStatus) => {
+    const type = String(poType || "external").toLowerCase();
+    const status = String(poStatus || "pending").toLowerCase();
+    if (type === "internal") {
+      if (status === "completed by shop") return "completed";
+      return "shop production";
+    }
+    if (status === "received") return "received (vendor)";
+    return "on order (vendor)";
+  };
 
   try {
     // GET - list all or get one
@@ -48,14 +60,35 @@ export default async (req) => {
       const poId = `po-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const order = {
         id: poId,
+        orderId: body.orderId || "",
         orderNumber: body.orderNumber || "",
         dateOrdered: body.dateOrdered || "",
+        requestedDate: body.requestedDate || body.dateOrdered || "",
         poNumber: body.poNumber || "",
         vendor: body.vendor || "",
+        poType: body.poType || "external",
+        deliveryDate: body.deliveryDate || "",
+        receivedAt: body.receivedAt || "",
         status: body.status || "Pending",
         createdAt: new Date().toISOString(),
       };
       await store.setJSON(poId, order);
+
+      if (order.orderId) {
+        const linkedOrder = await ordersStore.get(order.orderId, { type: "json" });
+        if (linkedOrder) {
+          await ordersStore.setJSON(order.orderId, {
+            ...linkedOrder,
+            status: mappedOrderStatus(order.poType, order.status),
+            vendorName: order.vendor,
+            vendorPoNumber: order.poNumber,
+            requestedDate: order.requestedDate,
+            vendorDeliveryDate: order.deliveryDate,
+            vendorReceivedAt: order.receivedAt,
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      }
       return new Response(JSON.stringify(order), { status: 201, headers });
     }
 
@@ -77,6 +110,23 @@ export default async (req) => {
       const body = await req.json();
       const updated = { ...existing, ...body, id, updatedAt: new Date().toISOString() };
       await store.setJSON(id, updated);
+
+      if (updated.orderId) {
+        const linkedOrder = await ordersStore.get(updated.orderId, { type: "json" });
+        if (linkedOrder) {
+          await ordersStore.setJSON(updated.orderId, {
+            ...linkedOrder,
+            status: mappedOrderStatus(updated.poType, updated.status),
+            vendorName: updated.vendor || linkedOrder.vendorName || "",
+            vendorPoNumber: updated.poNumber || linkedOrder.vendorPoNumber || "",
+            requestedDate: updated.requestedDate || linkedOrder.requestedDate || "",
+            vendorDeliveryDate: updated.deliveryDate || linkedOrder.vendorDeliveryDate || "",
+            vendorReceivedAt: updated.receivedAt || linkedOrder.vendorReceivedAt || "",
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      }
+
       return new Response(JSON.stringify(updated), { headers });
     }
 
