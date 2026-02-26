@@ -2450,6 +2450,18 @@ async function saveQuote() {
   }
 
   prepareForNewQuote();
+  const printNow = confirm(
+    `Quote ${quoteLabel} saved successfully.
+
+Select OK to Print or Cancel for No (save only).`
+  );
+
+  if (printNow) {
+    printQuote(savedQuote.id);
+    return;
+  }
+
+  alert(`Quote ${quoteLabel} saved. No print copy was created.`);
 }
 
 
