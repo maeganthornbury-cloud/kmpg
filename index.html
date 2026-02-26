@@ -4,13 +4,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Kentucky Mirror and Plate Glass - New Order</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
+    body { font-family: Arial, sans-serif; margin: 20px; text-transform: uppercase; }
     h1 { text-align: center; }
     .container { display: flex; }
     .section { width: 50%; padding: 10px; }
     table { width: 100%; border-collapse: collapse; }
     th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
     input, select { width: 90%; }
+    input, select, textarea, button { text-transform: uppercase; }
     .buttons { margin-top: 15px; }
 
 .glassList li.active {
@@ -752,6 +753,44 @@ body{
 .kympg-landingLogo img{ max-width:100%; height:auto; border-radius:18px; box-shadow:0 14px 40px rgba(2,6,23,.12); }
 .kympg-landingTitle{ font-weight: 950; font-size: 26px; letter-spacing:.2px; }
 .kympg-landingSub{ color: var(--muted); font-size: 14px; line-height:1.55; max-width: 760px; }
+.kympg-quickSearch{
+  margin-top: 12px;
+  width:min(860px, 96%);
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  box-shadow: var(--shadow2);
+  text-align:left;
+}
+.kympg-quickSearch h3{ margin:0 0 8px 0; font-size:16px; }
+.kympg-quickSearch .row{ display:flex; gap:8px; align-items:center; }
+.kympg-quickSearch input{ width:100%; flex:1; padding:10px 12px; font-size:14px; border:1px solid #cfd4dc; border-radius:8px; }
+.kympg-quickSearch button{ width:auto; padding:10px 18px; border:none; border-radius:10px; background:#0d78f0; color:#fff; font-weight:700; cursor:pointer; }
+.kympg-quickResults{ margin-top:10px; max-height:220px; overflow:auto; border-top:1px solid #eef1f4; }
+.kympg-quickItem{ position:relative; padding:10px 4px; border-bottom:1px solid #f0f2f5; cursor:pointer; }
+.kympg-quickItem:hover{ background:#f7fbff; }
+.kympg-quickMeta{ color:#666; font-size:12px; }
+.kympg-quickPreview{ display:none; position:absolute; left:8px; right:8px; top:calc(100% - 4px); background:#fff; border:1px solid #d7dee6; border-radius:10px; box-shadow:0 8px 24px rgba(2,6,23,.18); z-index:20; padding:10px; }
+.kympg-quickItem:hover .kympg-quickPreview{ display:block; }
+.kympg-quickPreviewTitle{ font-weight:700; font-size:12px; margin-bottom:6px; color:#1f2937; }
+.kympg-quickPreviewLine{ font-size:12px; color:#374151; padding:2px 0; }
+
+.kympg-logPO{
+  margin-top: 12px;
+  width:min(860px, 96%);
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  box-shadow: var(--shadow2);
+  text-align:left;
+}
+.kympg-logPO h3{ margin:0 0 8px 0; font-size:16px; }
+.kympg-logPO .row{ display:flex; gap:8px; align-items:center; }
+.kympg-logPO input{ width:100%; flex:1; padding:10px 12px; font-size:14px; border:1px solid #cfd4dc; border-radius:8px; }
+.kympg-logPO button{ width:auto; padding:10px 18px; border:none; border-radius:10px; background:#198f42; color:#fff; font-weight:700; cursor:pointer; }
+.kympg-logPOStatus{ margin-top:8px; font-size:13px; color:#444; }
 
 .kympg-iframeWrap{ border:1px solid var(--line); border-radius: var(--radius2); overflow:hidden; height:min(72vh, 860px); background:#fff; }
 .kympg-iframeWrap iframe{ width:100%; height:100%; border:none; }
@@ -854,6 +893,16 @@ body{
         </span>
       </button>
 
+      <button class="kympg-navBtn" data-tip="Invoiced Orders" type="button" onclick="kympgOpen('invoiced', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M16 4v4h4"/><path d="M8 12h8"/><path d="M8 16h8"/></svg>
+        </span>
+        <span class="kympg-text">
+          <span class="kympg-label">Invoiced List</span>
+          <span class="kympg-hint">Closed / invoiced orders</span>
+        </span>
+      </button>
+
       <button class="kympg-navBtn" data-tip="Customer List" type="button" onclick="kympgOpen('customerimport', this)">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
@@ -902,12 +951,30 @@ body{
           <div id="landing-section" class="active">
             <div class="kympg-landingWrap">
               <div class="kympg-landingLogo">
-                <img src="564e4083-db27-4742-b925-737f1faaa333.jpg" alt="Kentucky Mirror and Plate Glass" onerror="this.style.display='none';" />
+                <img src="good%20logo.jpg" alt="Kentucky Mirror and Plate Glass" onerror="this.style.display='none';" />
               </div>
               <div class="kympg-landingTitle">Kentucky Mirror and Plate Glass</div>
               <div class="kympg-landingSub">
                 Use the sidebar to create a new quote or order, search past orders, open quotes, manage purchase orders,
                 or open the pricing tools.
+              </div>
+
+              <div class="kympg-quickSearch">
+                <h3>Quick Search (Orders / Quotes / POs)</h3>
+                <div class="row">
+                  <input id="homeQuickSearchInput" type="text" placeholder="Search by #, customer, or phone">
+                  <button type="button" onclick="runHomeQuickSearch()">Search</button>
+                </div>
+                <div id="homeQuickResults" class="kympg-quickResults"></div>
+              </div>
+
+              <div class="kympg-logPO">
+                <h3>Log Received PO's</h3>
+                <div class="row">
+                  <input id="homeLogPoInput" type="text" placeholder="Enter PO # (ex: PO1000)">
+                  <button type="button" onclick="logReceivedPO()">Log Received</button>
+                </div>
+                <div id="homeLogPoStatus" class="kympg-logPOStatus"></div>
               </div>
             </div>
           </div>
@@ -932,6 +999,27 @@ body{
             </table>
           </div>
 
+          <div id="invoiced-section" style="display:none;">
+            <h2 style="margin-top:0;">Invoiced Orders</h2>
+            <input type="text" id="invoicedSearch" placeholder="Search by invoice #, order #, or customer..." oninput="searchInvoicedOrders()" style="width:100%;max-width:420px;margin:10px 0;padding:8px;border:1px solid #ccc;border-radius:4px;">
+            <table id="invoicedTable" style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Order #</th>
+                  <th>Customer</th>
+                  <th>Terms</th>
+                  <th>Total</th>
+                  <th>Invoiced Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invoicedTableBody">
+                <tr><td colspan="7" style="text-align:center;">Loading invoices...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
           <div id="po-section" style="display:none;">
             <h2 style="margin-top:0;">Purchase Orders</h2>
             <p style="color:var(--muted);margin-top:6px;">Vendor purchase orders. Updates here sync back to the linked order.</p>
@@ -942,7 +1030,7 @@ body{
                   <th>Vendor</th>
                   <th>PO #</th>
                   <th>Requested Date</th>
-                  <th>Delivery Date</th>
+                  <th>Estimated Delivery</th>
                   <th>Status</th>
                   <th>Received</th>
                   <th>Actions</th>
@@ -1099,6 +1187,17 @@ body{
       </tbody>
     </table>
     <datalist id="hardwarePartsList"></datalist>
+  </div>
+
+  <div class="customer-info-row" style="align-items:flex-start; gap:12px; margin-top:12px;">
+    <div class="info-field" style="flex:1;min-width:280px;">
+      <label for="customerNotes">Customer Notes</label>
+      <textarea id="customerNotes" placeholder="Notes for customer docs" style="width:100%;min-height:70px;resize:vertical;"></textarea>
+    </div>
+    <div class="info-field" id="shopNotesField" style="flex:1;min-width:280px;display:none;">
+      <label for="shopNotes">Shop Notes (Internal PO only)</label>
+      <textarea id="shopNotes" placeholder="Shop-only notes for internal PO" style="width:100%;min-height:70px;resize:vertical;"></textarea>
+    </div>
   </div>
 
     <div class="buttons">
@@ -1258,7 +1357,7 @@ body{
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1266,7 +1365,7 @@ body{
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['landing-section','calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
@@ -1278,13 +1377,14 @@ body{
       breakage: 'breakage-section',
       pricelist: 'pricelist-section',
       quotedb: 'quotedb-section',
+      invoiced: 'invoiced-section',
       po: 'po-section',
     };
 
     const targetId = map[which] || 'landing-section';
     const target = document.getElementById(targetId);
     if (target) target.style.display = 'block';
-    if (which === 'po') loadPurchaseOrders();
+    if (which === 'po' && typeof loadPurchaseOrders === 'function') loadPurchaseOrders();
   }
 
   // Ignore noisy browser-extension promise rejections unrelated to app logic.
@@ -1541,8 +1641,7 @@ function printBreakdown() {
 
   breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
   breakdownWindow.document.write('</head><body>');
-  breakdownWindow.document.write('<h2>Kentucky Mirror and Plate Glass</h2>');
-
+  
   if (orderNumber && orderNumber !== 'Will be assigned on save') {
     breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${orderNumber}</h3>`);
   }
@@ -2185,7 +2284,7 @@ async function saveVendor(event) {
 
   const method = id ? 'PUT' : 'POST';
   const url = id ? `/api/vendors?id=${encodeURIComponent(id)}` : '/api/vendors';
-  const res = await fetch(url, {
+  const res = await fetchApi(url, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -2204,7 +2303,6 @@ async function saveVendor(event) {
 async function deleteVendor(id) {
   if (!confirm('Delete this vendor?')) return;
   const res = await fetchApi(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-  const res = await fetch(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   if (!res.ok) {
     alert('Failed to delete vendor');
     return;
@@ -2250,7 +2348,6 @@ async function handleVendorImportFile(event) {
   }
 
   const res = await fetchApi('/api/vendors-import', {
-  const res = await fetch('/api/vendors-import', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ vendors }),
@@ -2311,12 +2408,31 @@ function escapeHtml(text) {
 
 
 async function fetchApi(path, options) {
-  const primary = await fetch(path, options);
-  if (primary.ok || !path.startsWith('/api/')) return primary;
+  if (!path.startsWith('/api/')) {
+    return fetch(path, options);
+  }
 
   const fallbackPath = `/.netlify/functions/${path.slice(5)}`;
-  const fallback = await fetch(fallbackPath, options);
-  return fallback;
+
+  try {
+    const primary = await fetch(path, options);
+    if (primary.ok) return primary;
+  } catch (e) {
+    // fall through to function-path fallback
+  }
+
+  return fetch(fallbackPath, options);
+}
+
+
+async function parseJsonSafe(response) {
+  const raw = await response.text();
+  if (!raw) return {};
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    return { error: raw };
+  }
 }
 
 function filterCustomerTable() {
@@ -2694,12 +2810,14 @@ function setCalculatorMode(mode) {
   calculatorMode = mode === 'order' ? 'order' : 'quote';
   const quoteButtons = document.getElementById('quoteButtons');
   const orderButtons = document.getElementById('orderButtons');
+  const shopNotesField = document.getElementById('shopNotesField');
   if (quoteButtons) quoteButtons.style.display = calculatorMode === 'quote' ? 'block' : 'none';
   if (orderButtons) orderButtons.style.display = calculatorMode === 'order' ? 'block' : 'none';
+  if (shopNotesField) shopNotesField.style.display = calculatorMode === 'order' ? 'block' : 'none';
 }
 
 async function saveQuote() {
-  const savedQuote = await saveQuoteToDatabase();
+  const savedQuote = await saveQuoteToDatabase({ showMessage: false });
   if (!savedQuote) return;
 
   const quoteLabel = savedQuote.quoteNumber || savedQuote.id;
@@ -2761,6 +2879,33 @@ function showYesNoModal(message, yesLabel = 'Yes', noLabel = 'No') {
   });
 }
 
+function showCenteredMessage(message, timeoutMs = 2200) {
+  const existing = document.getElementById('kympg-centered-message');
+  if (existing) existing.remove();
+
+  const box = document.createElement('div');
+  box.id = 'kympg-centered-message';
+  box.style.cssText = [
+    'position:fixed',
+    'left:50%',
+    'top:50%',
+    'transform:translate(-50%,-50%)',
+    'background:rgba(0,0,0,0.82)',
+    'color:#fff',
+    'padding:14px 20px',
+    'border-radius:10px',
+    'font-size:16px',
+    'font-weight:700',
+    'z-index:20000',
+    'box-shadow:0 10px 30px rgba(0,0,0,0.3)',
+    'max-width:80vw',
+    'text-align:center'
+  ].join(';');
+  box.textContent = String(message || '');
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), timeoutMs);
+}
+
 function showPOTypeModal() {
   return new Promise(resolve => {
     const overlay = document.createElement('div');
@@ -2800,7 +2945,7 @@ function showPODetailsModal(poType, vendors = []) {
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999;';
 
     const modal = document.createElement('div');
-    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:10px;max-width:520px;width:calc(100% - 32px);text-align:left;box-shadow:0 12px 30px rgba(0,0,0,0.22);';
+    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:10px;max-width:560px;width:calc(100% - 32px);text-align:left;box-shadow:0 12px 30px rgba(0,0,0,0.22);';
 
     const vendorOptions = vendors.map(v => `<option value="${escapeHtml(v.name)}">${escapeHtml(v.name)}</option>`).join('');
     const isExternal = poType === 'external';
@@ -2811,8 +2956,17 @@ function showPODetailsModal(poType, vendors = []) {
         <option value="">-- Select Vendor --</option>
         ${vendorOptions}
       </select>
-      <label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Or Enter New Vendor</label>
-      <input id="poVendorInput" type="text" style="width:100%;padding:8px;" placeholder="Vendor name">` : `<p style="margin:6px 0 10px 0;">Internal PO number will be generated from order # (example: PO1000).</p>`}
+      <button id="poAddVendorBtn" type="button" style="margin-top:8px;">+ Add Vendor</button>
+      <div id="poAddVendorFields" style="display:none;margin-top:8px;border:1px solid #ddd;border-radius:8px;padding:10px;">
+        <label style="display:block;font-weight:bold;margin:4px 0;">Name *</label>
+        <input id="newVendorName" type="text" style="width:100%;padding:8px;" placeholder="Vendor name">
+        <label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Address *</label>
+        <input id="newVendorAddress" type="text" style="width:100%;padding:8px;" placeholder="Address">
+        <label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Email *</label>
+        <input id="newVendorEmail" type="email" style="width:100%;padding:8px;" placeholder="Email">
+        <label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Phone *</label>
+        <input id="newVendorPhone" type="text" style="width:100%;padding:8px;" placeholder="Phone">
+      </div>` : `<p style="margin:6px 0 10px 0;">Internal PO number will be generated from order # (example: PO1000).</p>`}
       ${isExternal ? `<label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Vendor PO #</label>
       <input id="poNumberInput" type="text" style="width:100%;padding:8px;" placeholder="Enter vendor PO #">` : ''}
       <label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Requested Date</label>
@@ -2828,8 +2982,15 @@ function showPODetailsModal(poType, vendors = []) {
       resolve(value);
     }
 
+    if (isExternal) {
+      modal.querySelector('#poAddVendorBtn')?.addEventListener('click', () => {
+        const fields = modal.querySelector('#poAddVendorFields');
+        if (fields) fields.style.display = fields.style.display === 'none' ? 'block' : 'none';
+      });
+    }
+
     modal.querySelector('#poDetailsCancel').addEventListener('click', () => close(null));
-    modal.querySelector('#poDetailsSave').addEventListener('click', () => {
+    modal.querySelector('#poDetailsSave').addEventListener('click', async () => {
       const requestedDate = modal.querySelector('#poRequestedDate')?.value || '';
       if (!requestedDate) {
         alert('Requested date is required.');
@@ -2837,11 +2998,38 @@ function showPODetailsModal(poType, vendors = []) {
       }
       if (isExternal) {
         const selected = modal.querySelector('#poVendorSelect')?.value?.trim() || '';
-        const typed = modal.querySelector('#poVendorInput')?.value?.trim() || '';
-        const vendorName = typed || selected;
         const vendorPoNumber = modal.querySelector('#poNumberInput')?.value?.trim() || '';
+
+        let vendorName = selected;
+        const addFieldsVisible = modal.querySelector('#poAddVendorFields')?.style.display !== 'none';
+        if (!vendorName && addFieldsVisible) {
+          const payload = {
+            name: (modal.querySelector('#newVendorName')?.value || '').trim(),
+            address: (modal.querySelector('#newVendorAddress')?.value || '').trim(),
+            email: (modal.querySelector('#newVendorEmail')?.value || '').trim(),
+            phone: (modal.querySelector('#newVendorPhone')?.value || '').trim(),
+          };
+          if (!payload.name || !payload.address || !payload.email || !payload.phone) {
+            alert('New vendor requires Name, Address, Email, and Phone.');
+            return;
+          }
+          const saveRes = await fetchApi('/api/vendors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (!saveRes.ok) {
+            const err = await parseJsonSafe(saveRes);
+            alert(err.error || 'Failed to add vendor.');
+            return;
+          }
+          const savedVendor = await parseJsonSafe(saveRes);
+          vendorName = savedVendor.name || payload.name;
+          try { await loadVendors(); } catch (e) {}
+        }
+
         if (!vendorName || !vendorPoNumber) {
-          alert('Vendor and Vendor PO # are required.');
+          alert('Vendor (from list) and Vendor PO # are required.');
           return;
         }
         close({ vendorName, vendorPoNumber, requestedDate });
@@ -2855,6 +3043,175 @@ function showPODetailsModal(poType, vendors = []) {
   });
 }
 
+async function editPurchaseOrder(id) {
+  try {
+    if (!allVendors.length) {
+      try { await loadVendors(); } catch (e) {}
+    }
+
+    const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`);
+    if (!res.ok) throw new Error('Failed to load PO');
+    const po = await res.json();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'order-detail-modal-overlay';
+    overlay.style.zIndex = '10000';
+
+    const vendorOptions = allVendors
+      .map(v => `<option value="${escapeHtml(v.name)}" ${v.name === po.vendor ? 'selected' : ''}>${escapeHtml(v.name)}</option>`)
+      .join('');
+
+    const modal = document.createElement('div');
+    modal.className = 'order-detail-modal';
+    modal.style.maxWidth = '900px';
+    modal.innerHTML = `
+      <h3 style="margin-top:0;">PURCHASE ORDER ${escapeHtml(po.poNumber || '')}</h3>
+      <div class="order-detail-info" style="grid-template-columns:repeat(3,minmax(160px,1fr)); gap:10px;">
+        <div><strong>PO #</strong><input id="editPoNumber" type="text" value="${escapeHtml(po.poNumber || '')}" style="width:100%;"></div>
+        <div><strong>Order #</strong><input id="editPoOrderNumber" type="text" value="${escapeHtml(po.orderNumber || '')}" style="width:100%;"></div>
+        <div><strong>PO Type</strong>
+          <select id="editPoType" style="width:100%;">
+            <option value="external" ${String(po.poType || '').toLowerCase()==='external'?'selected':''}>External</option>
+            <option value="internal" ${String(po.poType || '').toLowerCase()==='internal'?'selected':''}>Internal</option>
+          </select>
+        </div>
+
+        <div><strong>Date Ordered</strong><input id="editPoDateOrdered" type="date" value="${(po.dateOrdered || '').slice(0,10)}" style="width:100%;"></div>
+        <div><strong>Requested Date</strong><input id="editPoRequestedDate" type="date" value="${(po.requestedDate || '').slice(0,10)}" style="width:100%;"></div>
+        <div><strong>Estimated Delivery</strong><input id="editPoDeliveryDate" type="date" value="${(po.deliveryDate || '').slice(0,10)}" style="width:100%;"></div>
+
+        <div><strong>Received Date</strong><input id="editPoReceivedAt" type="date" value="${(po.receivedAt || '').slice(0,10)}" style="width:100%;"></div>
+        <div><strong>Status</strong>
+          <select id="editPoStatus" style="width:100%;">
+            <option value="Pending" ${po.status==='Pending'?'selected':''}>Pending</option>
+            <option value="In Progress" ${po.status==='In Progress'?'selected':''}>In Progress</option>
+            <option value="Received" ${po.status==='Received'?'selected':''}>Received</option>
+            <option value="Completed by Shop" ${po.status==='Completed by Shop'?'selected':''}>Completed by Shop</option>
+          </select>
+        </div>
+        <div><strong>Vendor</strong>
+          <select id="editPoVendorSelect" style="width:100%;">
+            <option value="">-- Select Vendor --</option>
+            ${vendorOptions}
+          </select>
+          <button id="editPoAddVendorBtn" type="button" style="margin-top:6px;">+ Add Vendor</button>
+        </div>
+      </div>
+
+      <div id="editPoAddVendorFields" style="display:none;margin-top:10px;border:1px solid #ddd;border-radius:8px;padding:10px;">
+        <strong>Add New Vendor</strong>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:8px;margin-top:8px;">
+          <input id="editNewVendorName" type="text" placeholder="Name *" style="width:100%;padding:8px;">
+          <input id="editNewVendorPhone" type="text" placeholder="Phone *" style="width:100%;padding:8px;">
+          <input id="editNewVendorAddress" type="text" placeholder="Address *" style="width:100%;padding:8px;">
+          <input id="editNewVendorEmail" type="email" placeholder="Email *" style="width:100%;padding:8px;">
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <strong>PO Line Items</strong>
+        <div style="font-size:12px;color:#666;margin:4px 0 8px 0;">TO UPDATE ITEMS ON PO PLEASE UPDATE THE ORDER.</div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr><th style="width:60px;">#</th><th>Description</th><th style="width:80px;">Qty</th></tr></thead>
+          <tbody>
+            ${(Array.isArray(po.items) && po.items.length) ? po.items.map((it, idx) => `<tr><td>${idx + 1}</td><td>${escapeHtml(it.description || it.name || '')}</td><td>${escapeHtml(it.qty || '')}</td></tr>`).join('') : '<tr><td colspan="3">No line items</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:15px;">
+        <button id="editPoCancel" type="button">Cancel</button>
+        <button id="editPoSave" type="button">Save PO</button>
+      </div>
+    `;
+
+    function close() { overlay.remove(); }
+
+    modal.querySelector('#editPoAddVendorBtn')?.addEventListener('click', () => {
+      const fields = modal.querySelector('#editPoAddVendorFields');
+      if (fields) fields.style.display = fields.style.display === 'none' ? 'block' : 'none';
+    });
+
+    modal.querySelector('#editPoCancel')?.addEventListener('click', close);
+
+    modal.querySelector('#editPoSave')?.addEventListener('click', async () => {
+      try {
+        let vendor = (modal.querySelector('#editPoVendorSelect')?.value || '').trim();
+        const addFieldsVisible = modal.querySelector('#editPoAddVendorFields')?.style.display !== 'none';
+
+        if (!vendor && addFieldsVisible) {
+          const payload = {
+            name: (modal.querySelector('#editNewVendorName')?.value || '').trim(),
+            address: (modal.querySelector('#editNewVendorAddress')?.value || '').trim(),
+            email: (modal.querySelector('#editNewVendorEmail')?.value || '').trim(),
+            phone: (modal.querySelector('#editNewVendorPhone')?.value || '').trim(),
+          };
+          if (!payload.name || !payload.address || !payload.email || !payload.phone) {
+            alert('New vendor requires Name, Address, Email, and Phone.');
+            return;
+          }
+          const saveRes = await fetchApi('/api/vendors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (!saveRes.ok) {
+            const err = await parseJsonSafe(saveRes);
+            alert(err.error || 'Failed to add vendor.');
+            return;
+          }
+          const savedVendor = await parseJsonSafe(saveRes);
+          vendor = savedVendor.name || payload.name;
+          try { await loadVendors(); } catch (e) {}
+        }
+
+        if (!vendor) {
+          alert('Vendor must be selected from list or added with required fields.');
+          return;
+        }
+
+        const body = {
+          vendor,
+          poNumber: (modal.querySelector('#editPoNumber')?.value || '').trim(),
+          orderNumber: (modal.querySelector('#editPoOrderNumber')?.value || '').trim(),
+          poType: (modal.querySelector('#editPoType')?.value || 'external').trim(),
+          dateOrdered: modal.querySelector('#editPoDateOrdered')?.value || '',
+          requestedDate: modal.querySelector('#editPoRequestedDate')?.value || '',
+          deliveryDate: modal.querySelector('#editPoDeliveryDate')?.value || '',
+          receivedAt: modal.querySelector('#editPoReceivedAt')?.value || '',
+          status: modal.querySelector('#editPoStatus')?.value || 'Pending',
+        };
+
+        const updateRes = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        if (!updateRes.ok) {
+          const err = await parseJsonSafe(updateRes);
+          alert(err.error || 'Failed to update purchase order.');
+          return;
+        }
+
+        close();
+        await loadPurchaseOrders();
+        try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
+      } catch (err) {
+        alert('Failed to save purchase order: ' + err.message);
+      }
+    });
+
+    modal.addEventListener('click', (e) => e.stopPropagation());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  } catch (err) {
+    alert('Failed to edit purchase order: ' + err.message);
+  }
+}
+
+
 async function printQuote(quoteId) {
   const idToPrint = quoteId || currentQuoteId || lastSavedQuoteId;
   if (!idToPrint) {
@@ -2864,7 +3221,7 @@ async function printQuote(quoteId) {
 
   try {
     const res = await fetchApi(`/api/quotes?id=${encodeURIComponent(idToPrint)}`);
-    if (!res.ok) throw new Error('Quote not found');
+    if (!res.ok) throw new Error(res.status === 404 ? 'You must save first.' : 'Quote not found');
     const quote = await res.json();
 
     const printWindow = window.open('', '_blank');
@@ -2872,11 +3229,12 @@ async function printQuote(quoteId) {
 
     const items = quote.items || [];
     const cust = quote.customer || {};
+    const quoteNotes = quote.customerNotes || quote.notes || '';
 
     printWindow.document.write('<html><head><title>Quote</title>');
     printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #000;padding:8px;text-align:center;}h2,h3{margin:0 0 8px 0;}</style>');
     printWindow.document.write('</head><body>');
-    printWindow.document.write(`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;"><img src="/good%20logo.jpg" style="height:56px;width:auto;"><div><h2 style="margin:0;">Kentucky Mirror and Plate Glass</h2><div>822 W Main St, Louisville KY 40202</div><div>502-583-5541 | info@kymirror.com</div></div></div>`);
+    printWindow.document.write(`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;"><img src="/good%20logo.jpg" style="height:56px;width:auto;"><div><div>822 W Main St, Louisville KY 40202</div><div>502-583-5541 | info@kymirror.com</div></div></div>`);
     printWindow.document.write(`<h2>QUOTE ${escapeHtml(quote.quoteNumber || quote.id || '')}</h2>`);
     printWindow.document.write(`<p><strong>Customer:</strong> ${escapeHtml(cust.name || quote.customerName || '')} &nbsp; <strong>Phone:</strong> ${escapeHtml(cust.phone || quote.customerPhone || '')}</p>`);
     printWindow.document.write('<table><thead><tr><th>Qty</th><th>Size</th><th>Glass Type</th></tr></thead><tbody>');
@@ -2884,8 +3242,16 @@ async function printQuote(quoteId) {
       printWindow.document.write(`<tr><td>${item.qty || 1}</td><td>${escapeHtml(`${item.width || ''} x ${item.height || ''}`)}</td><td>${escapeHtml(item.glassType || '')}</td></tr>`);
     });
     printWindow.document.write('</tbody></table>');
+    if (quoteNotes) {
+      printWindow.document.write(`<div style="margin-top:12px;border:1px solid #000;padding:8px;"><strong>Customer Notes:</strong><br>${escapeHtml(quoteNotes)}</div>`);
+    }
     printWindow.document.write('</body></html>');
     printWindow.document.close();
+    try {
+      await waitForPrintableImages(printWindow.document);
+    } catch (e) {
+      console.warn('Quote print image wait warning', e);
+    }
     printWindow.print();
   } catch (err) {
     alert('Error printing quote: ' + err.message);
@@ -2914,6 +3280,10 @@ function startNewOrder() {
   updateTotals();
   clearCustomerInfo();
   clearHardware();
+  const customerNotesEl = document.getElementById('customerNotes');
+  const shopNotesEl = document.getElementById('shopNotes');
+  if (customerNotesEl) customerNotesEl.value = '';
+  if (shopNotesEl) shopNotesEl.value = '';
 }
 
 function prepareForNewQuote() {
@@ -2921,6 +3291,71 @@ function prepareForNewQuote() {
   setCalculatorMode('quote');
   lastSavedOrderId = null;
 }
+
+let printQueue = Promise.resolve();
+
+function waitForPrintableImages(doc) {
+  const images = Array.from(doc?.images || []);
+  if (!images.length) return Promise.resolve();
+
+  return Promise.all(images.map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      const done = () => resolve();
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+      setTimeout(done, 1200);
+    });
+  }));
+}
+
+async function printUrlInHiddenFrame(url) {
+  const res = await fetchApi(url);
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('You must save first.');
+    throw new Error(`Print request failed (${res.status})`);
+  }
+  const html = await res.text();
+
+  await new Promise((resolve) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.style.visibility = 'hidden';
+    iframe.onload = () => {
+      setTimeout(async () => {
+        try {
+          await waitForPrintableImages(iframe.contentDocument);
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (e) {
+          console.error('Print frame error', e);
+        }
+        setTimeout(() => {
+          iframe.remove();
+          resolve();
+        }, 700);
+      }, 150);
+    };
+    iframe.srcdoc = html;
+    document.body.appendChild(iframe);
+  });
+}
+
+function queuePrintUrl(url) {
+  printQueue = printQueue
+    .then(() => printUrlInHiddenFrame(url))
+    .catch((err) => {
+      console.error(err);
+      alert('Print failed: ' + err.message);
+    });
+  return printQueue;
+}
+
 function printDoc(type) {
   const idToPrint = currentOrderId || lastSavedOrderId;
 
@@ -2930,7 +3365,7 @@ function printDoc(type) {
   }
 
   const url = `/api/orders?id=${encodeURIComponent(idToPrint)}&print=${encodeURIComponent(type)}`;
-  window.open(url, "_blank");
+  queuePrintUrl(url);
 }
 
 async function deleteCurrentOrder() {
@@ -2982,8 +3417,9 @@ function gatherOrderData() {
 
   // Gather hardware rows
   const hardwareItems = Array.from(document.querySelectorAll('#hardwareTableBody tr')).map(row => {
-    const qty = parseInt(row.querySelector('.hw-qty')?.value, 10) || 0;
     const name = (row.querySelector('.hw-part')?.value || '').trim();
+    const rawQty = parseInt(row.querySelector('.hw-qty')?.value, 10);
+    const qty = Number.isFinite(rawQty) && rawQty > 0 ? rawQty : (name ? 1 : 0);
     const unitPriceText = row.querySelector('.hw-price')?.innerText || '$0.00';
     const lineTotalText = row.querySelector('.hw-total')?.innerText || '$0.00';
     const unitMatch = unitPriceText.match(/\$([\d.]+)/);
@@ -3010,11 +3446,14 @@ function gatherOrderData() {
   const grandTotalWithTax = gttMatch ? parseFloat(gttMatch[1].replace(/,/g, '')) : 0;
 
   const specialPricing = document.getElementById('specialPricingToggle').checked;
+  const customerNotes = (document.getElementById('customerNotes')?.value || '').trim();
+  const shopNotes = (document.getElementById('shopNotes')?.value || '').trim();
 
-  return { customer, items, hardware, hardwareItems, specialPricing, grandTotal, grandTotalWithTax };
+  return { customer, items, hardware, hardwareItems, specialPricing, grandTotal, grandTotalWithTax, customerNotes, shopNotes, notes: customerNotes };
 }
 
-async function saveQuoteToDatabase() {
+async function saveQuoteToDatabase(options = {}) {
+  const { showMessage = true } = options;
   const data = gatherOrderData();
   const isNewOrder = !currentOrderId;
 
@@ -3038,7 +3477,7 @@ async function saveQuoteToDatabase() {
   const method = currentQuoteId ? 'PUT' : 'POST';
   const url = currentQuoteId ? `/api/quotes?id=${encodeURIComponent(currentQuoteId)}` : '/api/quotes';
 
-  const res = await fetch(url, {
+  const res = await fetchApi(url, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -3052,8 +3491,11 @@ async function saveQuoteToDatabase() {
   const savedQuote = await res.json();
   currentQuoteId = savedQuote.id;
   lastSavedQuoteId = savedQuote.id;
-  document.getElementById('orderSavedStatus').textContent = `Quote saved: ${savedQuote.quoteNumber || savedQuote.id}`;
+  document.getElementById('orderSavedStatus').textContent = '';
   document.getElementById('currentOrderNumber').textContent = savedQuote.quoteNumber || savedQuote.id;
+  if (showMessage) {
+    showCenteredMessage(`QUOTE SAVED: ${savedQuote.quoteNumber || savedQuote.id}`);
+  }
 
   try { await loadQuotes(); } catch (e) {}
   return savedQuote;
@@ -3061,12 +3503,13 @@ async function saveQuoteToDatabase() {
 
 async function convertCurrentQuoteToOrder() {
   try {
-    const savedQuote = await saveQuoteToDatabase();
+    const savedQuote = await saveQuoteToDatabase({ showMessage: false });
     if (!savedQuote) return;
 
     const data = gatherOrderData();
     data.status = 'shop production';
     data.sequenceNumber = savedQuote.sequenceNumber;
+    data.requiresPoSetup = true;
 
     const orderRes = await fetchApi('/api/orders', {
       method: 'POST',
@@ -3087,27 +3530,77 @@ async function convertCurrentQuoteToOrder() {
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
     });
 
-    alert(`Quote converted to order ${createdOrder.orderNumber}.`);
     setCalculatorMode('order');
     currentOrderId = createdOrder.id;
     lastSavedOrderId = createdOrder.id;
+    currentQuoteId = null;
     document.getElementById('currentOrderNumber').textContent = createdOrder.orderNumber;
-    document.getElementById('orderSavedStatus').textContent = `Converted from quote ${savedQuote.id}`;
+    document.getElementById('orderSavedStatus').textContent = '';
 
     try { await loadOrders(); } catch (e) {}
     try { await loadQuotes(); } catch (e) {}
-    alert(`Quote converted to order ${createdOrder.orderNumber}. Quote has been closed as ordered.`);
-    try { await loadOrders(); } catch (e) {}
-    try { await loadQuotes(); } catch (e) {}
-    prepareForNewQuote();
+    showCenteredMessage(`QUOTE CONVERTED TO ORDER ${createdOrder.orderNumber}. QUOTE CLOSED AS ORDERED.`);
+    try { await loadOrderIntoCalculator(createdOrder.id); } catch (e) {}
   } catch (err) {
     alert('Error converting quote: ' + err.message);
   }
 }
 
+
+function buildPoItemsFromOrderItems(items = []) {
+  return (Array.isArray(items) ? items : []).map(it => ({
+    qty: it.qty || it.quantity || 1,
+    description: [it.glassType || it.type || 'ITEM', (it.width && it.height) ? `${it.width} X ${it.height}` : ''].filter(Boolean).join(' '),
+    unitPrice: 0,
+    total: 0,
+  }));
+}
+
+function normalizePoItemsForCompare(items = []) {
+  return (Array.isArray(items) ? items : []).map(it => ({
+    qty: Number(it.qty || it.quantity || 0),
+    description: String(it.description || it.name || '').trim().toUpperCase(),
+  }));
+}
+
+function normalizeOrderForPoPrompt(order = {}) {
+  const customer = order.customer || {};
+  return {
+    customerName: String(customer.name || '').trim().toUpperCase(),
+    customerPhone: String(customer.phone || '').trim().toUpperCase(),
+    customerAddress: String(customer.address || '').trim().toUpperCase(),
+    customerEmail: String(customer.email || '').trim().toUpperCase(),
+    customerTerms: String(customer.creditTerms || '').trim().toUpperCase(),
+    customerNotes: String(order.customerNotes || order.notes || '').trim().toUpperCase(),
+    shopNotes: String(order.shopNotes || '').trim().toUpperCase(),
+    requestedDate: String(order.requestedDate || '').slice(0, 10),
+    vendorName: String(order.vendorName || '').trim().toUpperCase(),
+    vendorPoNumber: String(order.vendorPoNumber || '').trim().toUpperCase(),
+    items: normalizePoItemsForCompare(order.items || []),
+    hardwareItems: (Array.isArray(order.hardwareItems) ? order.hardwareItems : []).map(h => ({
+      qty: Number(h.qty || 0),
+      name: String(h.name || '').trim().toUpperCase(),
+    })),
+  };
+}
+
 async function saveOrder() {
   const data = gatherOrderData();
   const isNewOrder = !currentOrderId;
+  const previousOrder = isNewOrder ? null : (allOrders.find(o => o.id === currentOrderId) || null);
+  const needsInitialOrderWorkflow = !isNewOrder && !!previousOrder?.requiresPoSetup;
+  const hasAnyOrderChanges = !isNewOrder && JSON.stringify(normalizeOrderForPoPrompt(previousOrder || {})) !== JSON.stringify(normalizeOrderForPoPrompt({
+    ...previousOrder,
+    customer: data.customer,
+    customerNotes: data.customerNotes,
+    notes: data.customerNotes,
+    shopNotes: data.shopNotes,
+    requestedDate: data.requestedDate || previousOrder?.requestedDate || '',
+    vendorName: data.vendorName || previousOrder?.vendorName || '',
+    vendorPoNumber: data.vendorPoNumber || previousOrder?.vendorPoNumber || '',
+    items: data.items,
+    hardwareItems: data.hardwareItems,
+  }));
 
   if (!data.customer.name) {
     alert('Please enter a customer name before saving the order.');
@@ -3125,7 +3618,7 @@ async function saveOrder() {
   let requestedDate = '';
 
   let poType = '';
-  if (isNewOrder) {
+  if (isNewOrder || needsInitialOrderWorkflow) {
     poType = await showPOTypeModal();
     if (poType === 'external' || poType === 'internal') {
       sourceType = poType === 'external' ? 'on order (vendor)' : 'shop production';
@@ -3141,20 +3634,6 @@ async function saveOrder() {
     }
   } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').includes('(vendor)')) {
     sourceType = 'on order (vendor)';
-  if (isNewOrder) {
-    const isVendorPO = confirm('Create purchase order? Click OK for PURCHASE ORDER, Cancel for SHOP TICKET.');
-    if (isVendorPO) {
-      sourceType = 'vendor';
-      vendorName = prompt('Enter vendor name:') || '';
-      vendorPoNumber = prompt('Enter vendor PO #:') || '';
-      requestedDate = prompt('Enter requested date (YYYY-MM-DD):', new Date().toISOString().slice(0, 10)) || '';
-      if (!vendorName.trim() || !vendorPoNumber.trim()) {
-        alert('Vendor and PO # are required for purchase orders.');
-        return;
-      }
-    }
-  } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').startsWith('vendor')) {
-    sourceType = 'vendor';
     vendorName = allOrders.find(o => o.id === currentOrderId)?.vendorName || '';
     vendorPoNumber = allOrders.find(o => o.id === currentOrderId)?.vendorPoNumber || '';
     requestedDate = allOrders.find(o => o.id === currentOrderId)?.requestedDate || '';
@@ -3164,6 +3643,7 @@ async function saveOrder() {
   data.vendorName = vendorName;
   data.vendorPoNumber = vendorPoNumber;
   data.requestedDate = requestedDate;
+  if (needsInitialOrderWorkflow) data.requiresPoSetup = false;
 
   const saveBtn = document.querySelector('.btn-save-order');
   saveBtn.disabled = true;
@@ -3172,7 +3652,7 @@ async function saveOrder() {
   try {
     const method = currentOrderId ? 'PUT' : 'POST';
     const url = currentOrderId ? `/api/orders?id=${encodeURIComponent(currentOrderId)}` : '/api/orders';
-    const res = await fetch(url, {
+    const res = await fetchApi(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -3192,7 +3672,6 @@ async function saveOrder() {
       const poNumberGenerated = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}`;
       vendorPoNumber = poNumberGenerated;
       await fetchApi(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
-      await fetch(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3205,7 +3684,7 @@ async function saveOrder() {
     }
 
     if (poType === 'external' || poType === 'internal') {
-    if (sourceType === 'vendor') {
+      const newPoItems = buildPoItemsFromOrderItems(data.items || []);
       const poPayload = {
         orderId: savedOrder.id,
         orderNumber: savedOrder.orderNumber,
@@ -3215,20 +3694,137 @@ async function saveOrder() {
         requestedDate,
         dateOrdered: savedOrder.createdAt,
         status: 'Pending',
+        shopNotes: data.shopNotes || '',
+        items: newPoItems,
       };
       await fetchApi('/api/purchase-orders', {
-      await fetch('/api/purchase-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(poPayload),
       });
-      window.open(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=purchase-order`, '_blank');
-    } else if (isNewOrder) {
-      window.open(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=ticket`, '_blank');
+
+      if (poType === 'external' && Array.isArray(data.hardwareItems) && data.hardwareItems.length) {
+        const internalHardwarePo = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}-H`;
+        const internalPoRes = await fetchApi('/api/purchase-orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: savedOrder.id,
+            orderNumber: savedOrder.orderNumber,
+            poNumber: internalHardwarePo,
+            vendor: 'Kentucky Mirror and Plate Glass (Internal Shop)',
+            poType: 'internal',
+            requestedDate,
+            dateOrdered: savedOrder.createdAt,
+            status: 'Pending',
+            syncToOrder: false,
+            shopNotes: data.shopNotes || '',
+            items: data.hardwareItems.map(h => ({ qty: h.qty, description: h.name, unitPrice: h.price, total: h.total })),
+          }),
+        });
+        if (internalPoRes.ok) {
+          const internalPo = await internalPoRes.json();
+          if (internalPo?.id) {
+            await queuePrintUrl(`/api/purchase-orders?id=${encodeURIComponent(internalPo.id)}&print=1`);
+          }
+        }
+      }
+
+      await queuePrintUrl(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=purchase-order`);
+      await queuePrintUrl(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=packing-list`);
+    } else if (isNewOrder || needsInitialOrderWorkflow) {
+      await queuePrintUrl(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=ticket`);
+    }
+
+
+    if (!isNewOrder) {
+      try {
+        let poReprintedFromChange = false;
+        const poListRes = await fetchApi('/api/purchase-orders');
+        if (poListRes.ok) {
+          const poList = await poListRes.json();
+          const linkedPoCandidates = (poList || []).filter(p => p.orderId === savedOrder.id && p.syncToOrder !== false);
+          const linkedPo = linkedPoCandidates.find(p => (savedOrder.vendorPoNumber ? p.poNumber === savedOrder.vendorPoNumber : false)) || linkedPoCandidates[0];
+          const newPoItems = buildPoItemsFromOrderItems(data.items || []);
+          const previousItems = buildPoItemsFromOrderItems(previousOrder?.items || []);
+          const orderItemsChanged = JSON.stringify(normalizePoItemsForCompare(previousItems)) !== JSON.stringify(normalizePoItemsForCompare(newPoItems));
+
+          if (!linkedPo && orderItemsChanged && (savedOrder.vendorName || savedOrder.vendorPoNumber || savedOrder.requestedDate)) {
+            const createRes = await fetchApi('/api/purchase-orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId: savedOrder.id,
+                orderNumber: savedOrder.orderNumber,
+                poNumber: savedOrder.vendorPoNumber || previousOrder?.vendorPoNumber || '',
+                vendor: savedOrder.vendorName || previousOrder?.vendorName || '',
+                poType: String(savedOrder.status || '').includes('(vendor)') ? 'external' : 'internal',
+                requestedDate: savedOrder.requestedDate || previousOrder?.requestedDate || '',
+                dateOrdered: savedOrder.createdAt || new Date().toISOString(),
+                status: 'Pending',
+                shopNotes: savedOrder.shopNotes || data.shopNotes || '',
+                items: newPoItems,
+              }),
+            });
+            if (createRes.ok) {
+              const createdPo = await createRes.json();
+              if (createdPo?.id) {
+                await queuePrintUrl(`/api/purchase-orders?id=${encodeURIComponent(createdPo.id)}&print=1`);
+                showCenteredMessage(`PO UPDATED: ${createdPo.poNumber || createdPo.id}. NEW COPY PRINTED.`);
+                poReprintedFromChange = true;
+              }
+            } else {
+              const createErr = await parseJsonSafe(createRes);
+              alert(createErr.error || 'PO changed but failed to create/update linked PO.');
+            }
+          }
+
+          if (linkedPo) {
+            const itemsChanged = JSON.stringify(normalizePoItemsForCompare(linkedPo.items || [])) !== JSON.stringify(normalizePoItemsForCompare(newPoItems));
+            const requestedChanged = String((linkedPo.requestedDate || '')).slice(0,10) !== String((savedOrder.requestedDate || '')).slice(0,10);
+            const vendorChanged = String(linkedPo.vendor || '') !== String(savedOrder.vendorName || '');
+            const shopNotesChanged = String(linkedPo.shopNotes || '') !== String(savedOrder.shopNotes || data.shopNotes || '');
+            const poChanged = itemsChanged || requestedChanged || vendorChanged || shopNotesChanged || orderItemsChanged;
+
+            if (poChanged || hasAnyOrderChanges) {
+              const updateRes = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(linkedPo.id)}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  vendor: savedOrder.vendorName || linkedPo.vendor || '',
+                  requestedDate: savedOrder.requestedDate || linkedPo.requestedDate || '',
+                  orderNumber: savedOrder.orderNumber || linkedPo.orderNumber || '',
+                  shopNotes: savedOrder.shopNotes || data.shopNotes || linkedPo.shopNotes || '',
+                  items: newPoItems,
+                  updatedFromOrderAt: new Date().toISOString(),
+                }),
+              });
+              if (updateRes.ok) {
+                await queuePrintUrl(`/api/purchase-orders?id=${encodeURIComponent(linkedPo.id)}&print=1`);
+                showCenteredMessage(`PO UPDATED: ${linkedPo.poNumber || linkedPo.id}. NEW COPY PRINTED.`);
+                poReprintedFromChange = true;
+              } else {
+                const updateErr = await parseJsonSafe(updateRes);
+                alert(updateErr.error || 'PO changed but failed to update linked PO.');
+              }
+            }
+          }
+        }
+
+        if (hasAnyOrderChanges) {
+          await queuePrintUrl(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=purchase-order`);
+          if (!poReprintedFromChange) {
+            showCenteredMessage(`ORDER CHANGED: REPRINTED PO FOR ${savedOrder.orderNumber}.`);
+          }
+        }
+      } catch (poSyncErr) {
+        console.warn('PO sync after order save failed:', poSyncErr);
+      }
     }
 
     document.getElementById('currentOrderNumber').textContent = savedOrder.orderNumber;
-    document.getElementById('orderSavedStatus').textContent = `Saved! ${savedOrder.orderNumber}`;
+    document.getElementById('orderSavedStatus').textContent = '';
+    showCenteredMessage(`ORDER SAVED: ${savedOrder.orderNumber}`);
 
     try { await loadOrders(); } catch (e) {}
     try { await loadPurchaseOrders(); } catch (e) {}
@@ -3249,7 +3845,7 @@ async function loadOrders() {
   try {
     const res = await fetchApi('/api/orders');
     if (!res.ok) throw new Error('Failed to load orders');
-    allOrders = await res.json();
+    allOrders = (await res.json()).filter(o => !String(o.status || "").toLowerCase().includes("invoiced"));
     renderOrderTable(allOrders);
   } catch (err) {
     console.error(err);
@@ -3392,6 +3988,7 @@ function viewOrder(id) {
       <div style="display:flex;gap:10px;margin-top:15px;">
         <button onclick="loadOrderIntoCalculator('${order.id}'); closeOrderDetailModal();" style="padding:8px 18px;font-size:14px;font-weight:bold;background:#007BFF;color:white;border:none;border-radius:6px;cursor:pointer;">Open in Calculator</button>
         <button onclick="printOrderFromDetail('${order.id}')" style="padding:8px 18px;font-size:14px;font-weight:bold;background:#6c757d;color:white;border:none;border-radius:6px;cursor:pointer;">Print</button>
+        <button onclick="markOrderPickedUpAndInvoice('${order.id}')" style="padding:8px 18px;font-size:14px;font-weight:bold;background:#198754;color:white;border:none;border-radius:6px;cursor:pointer;">Mark Picked Up / Invoice</button>
         <button onclick="closeOrderDetailModal()" style="padding:8px 18px;font-size:14px;font-weight:bold;background:lightgrey;color:black;border:none;border-radius:6px;cursor:pointer;">Close</button>
       </div>
     </div>
@@ -3401,6 +3998,39 @@ function viewOrder(id) {
   modal.addEventListener('click', function(e) {
     if (e.target === modal) closeOrderDetailModal();
   });
+}
+
+async function markOrderPickedUpAndInvoice(orderId) {
+  try {
+    const res = await fetchApi('/api/invoices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId }),
+    });
+
+    let payload = await parseJsonSafe(res);
+    if (!res.ok && res.status === 404) {
+      const fallbackRes = await fetchApi(`/api/orders?id=${encodeURIComponent(orderId)}&action=invoice`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      payload = await parseJsonSafe(fallbackRes);
+      if (!fallbackRes.ok) {
+        throw new Error(payload.error || `Failed to create invoice (${fallbackRes.status})`);
+      }
+    } else if (!res.ok) {
+      throw new Error(payload.error || `Failed to create invoice (${res.status})`);
+    }
+
+    await loadOrders();
+    try { await loadPurchaseOrders(); } catch (e) {}
+    showCenteredMessage(`INVOICED ${payload.orderNumber || ''} AS ${payload.invoiceNumber || ''}`);
+    await queuePrintUrl(`/api/orders?id=${encodeURIComponent(orderId)}&print=invoice`);
+    closeOrderDetailModal();
+  } catch (err) {
+    alert('ERROR INVOICING ORDER: ' + err.message);
+  }
 }
 
 function closeOrderDetailModal() {
@@ -3418,7 +4048,6 @@ function printOrderFromDetail(id) {
   let breakdownWindow = window.open('', '', 'width=800,height=600');
   breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
   breakdownWindow.document.write('</head><body>');
-  breakdownWindow.document.write('<h2>Kentucky Mirror and Plate Glass</h2>');
   breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${escapeHtml(order.orderNumber || '')}</h3>`);
 
   let custInfoHtml = `<p style="text-align:center; font-size:16px; margin-bottom:20px;">
@@ -3474,6 +4103,19 @@ async function loadOrderIntoCalculator(id) {
   populateCalculatorFromOrder(order);
 }
 
+
+function formatOrderStatusSummary(order = {}) {
+  const parts = [];
+  if (order.vendorName) parts.push(`Vendor: ${order.vendorName}`);
+  if (order.vendorPoNumber) parts.push(`PO: ${order.vendorPoNumber}`);
+  if (order.vendorReceivedAt) {
+    const dt = new Date(order.vendorReceivedAt);
+    const receivedText = Number.isNaN(dt.getTime()) ? order.vendorReceivedAt : dt.toLocaleDateString();
+    parts.push(`Received: ${receivedText}`);
+  }
+  return parts.join(' | ');
+}
+
 function populateCalculatorFromOrder(order, mode = 'order') {
   const isQuoteMode = mode === 'quote';
   showCalculatorWorkspace(isQuoteMode ? 'quote' : 'order');
@@ -3482,9 +4124,7 @@ function populateCalculatorFromOrder(order, mode = 'order') {
   currentOrderId = isQuoteMode ? null : order.id;
   currentQuoteId = isQuoteMode ? order.id : null;
   document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
-  document.getElementById('orderSavedStatus').textContent = order.vendorPoNumber
-    ? `Vendor: ${order.vendorName || ''} | PO: ${order.vendorPoNumber}`
-    : '';
+  document.getElementById('orderSavedStatus').textContent = formatOrderStatusSummary(order);
 
   const cust = order.customer || {};
   document.getElementById('customerName').value = cust.name || '';
@@ -3492,6 +4132,10 @@ function populateCalculatorFromOrder(order, mode = 'order') {
   document.getElementById('calcCustAddress').value = cust.address || '';
   document.getElementById('calcCustEmail').value = cust.email || '';
   document.getElementById('calcCustCreditTerms').value = cust.creditTerms || '';
+  const customerNotesEl = document.getElementById('customerNotes');
+  const shopNotesEl = document.getElementById('shopNotes');
+  if (customerNotesEl) customerNotesEl.value = order.customerNotes || order.notes || '';
+  if (shopNotesEl) shopNotesEl.value = order.shopNotes || '';
 
   if (cust.name) {
     setCalcCustomerFieldsReadonly(true);
@@ -3523,24 +4167,87 @@ function populateCalculatorFromOrder(order, mode = 'order') {
     for (let i = 0; i < 2; i++) addRow();
   }
 
-  if (order.hardware && order.hardware.name) {
-    // Populate hardware rows from saved data if available
-    clearHardware();
-  } else {
-    clearHardware();
+  clearHardware();
+  const hardwareItems = Array.isArray(order.hardwareItems) ? order.hardwareItems : [];
+  if (hardwareItems.length) {
+    const hwRows = document.querySelectorAll('#hardwareTableBody tr');
+    hardwareItems.forEach((item, idx) => {
+      const row = hwRows[idx] || hwRows[hwRows.length - 1];
+      if (!row) return;
+      row.querySelector('.hw-part').value = item.name || '';
+      row.querySelector('.hw-qty').value = item.qty || '';
+      updateHardwareRow(row);
+      if (idx >= hwRows.length - 1) addHardwareRow();
+    });
   }
 
+  updateHardwareTotals();
   updateTotals();
 }
 
 // ===================== QUOTES LIST (Open Quotes) =====================
 let allQuotes = [];
 
+let allInvoicedOrders = [];
+
+async function loadInvoicedOrders() {
+  try {
+    const res = await fetchApi('/api/invoices');
+    if (!res.ok) throw new Error('Failed to load invoices');
+    allInvoicedOrders = await res.json();
+    renderInvoicedTable(allInvoicedOrders);
+  } catch (err) {
+    const tbody = document.getElementById('invoicedTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Failed to load invoiced orders.</td></tr>';
+  }
+}
+
+function renderInvoicedTable(rows) {
+  const tbody = document.getElementById('invoicedTableBody');
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No invoiced orders found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(inv => {
+    const date = inv.invoiceDate ? new Date(inv.invoiceDate).toLocaleDateString() : '';
+    const customer = inv.customer?.name || 'N/A';
+    return `<tr>
+      <td><strong>${escapeHtml(inv.invoiceNumber || '')}</strong></td>
+      <td>${escapeHtml(inv.orderNumber || '')}</td>
+      <td>${escapeHtml(customer)}</td>
+      <td>${escapeHtml(inv.terms || '')}</td>
+      <td>$${(inv.grandTotalWithTax || 0).toFixed(2)}</td>
+      <td>${escapeHtml(date)}</td>
+      <td><button type="button" onclick="reprintInvoice('${inv.orderId || ''}')">Reprint Invoice</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function searchInvoicedOrders() {
+  const q = (document.getElementById('invoicedSearch')?.value || '').trim().toLowerCase();
+  if (!q) return renderInvoicedTable(allInvoicedOrders);
+  const filtered = allInvoicedOrders.filter(inv =>
+    (inv.invoiceNumber || '').toLowerCase().includes(q) ||
+    (inv.orderNumber || '').toLowerCase().includes(q) ||
+    (inv.customer?.name || '').toLowerCase().includes(q)
+  );
+  renderInvoicedTable(filtered);
+}
+
+async function reprintInvoice(orderId) {
+  if (!orderId) {
+    alert('Missing order id for invoice.');
+    return;
+  }
+  await queuePrintUrl(`/api/orders?id=${encodeURIComponent(orderId)}&print=invoice`);
+}
+
 async function loadQuotes() {
   try {
     const res = await fetchApi('/api/quotes');
     if (!res.ok) throw new Error('Failed to load quotes');
-    allQuotes = await res.json();
+    allQuotes = (await res.json()).filter(q => String(q.status || "").toLowerCase() !== "closed as ordered");
     renderQuoteTable(allQuotes);
   } catch (err) {
     document.getElementById('quoteTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center;">Failed to load quotes.</td></tr>';
@@ -3614,6 +4321,10 @@ async function convertSavedQuoteToOrder(id) {
     specialPricing: quote.specialPricing || false,
     grandTotal: quote.grandTotal || 0,
     grandTotalWithTax: quote.grandTotalWithTax || 0,
+    customerNotes: quote.customerNotes || quote.notes || '',
+    notes: quote.customerNotes || quote.notes || '',
+    shopNotes: quote.shopNotes || '',
+    requiresPoSetup: true,
     status: 'shop production',
   };
 
@@ -3632,13 +4343,14 @@ async function convertSavedQuoteToOrder(id) {
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
     });
 
-    alert(`Quote converted to order ${createdOrder.orderNumber}. Quote has been closed as ordered.`);
     await loadQuotes();
     await loadOrders();
-    prepareForNewQuote();
-    alert(`Quote converted to order ${createdOrder.orderNumber}.`);
-    await loadQuotes();
-    await loadOrders();
+    showCenteredMessage(`QUOTE CONVERTED TO ORDER ${createdOrder.orderNumber}. QUOTE CLOSED AS ORDERED.`);
+    setCalculatorMode('order');
+    currentOrderId = createdOrder.id;
+    lastSavedOrderId = createdOrder.id;
+    currentQuoteId = null;
+    await loadOrderIntoCalculator(createdOrder.id);
   } catch (err) {
     alert('Error converting quote: ' + err.message);
   }
@@ -3912,7 +4624,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
   function kympgHideAllSections(){
     const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
-                 'quotedb-section','po-section','breakage-section','pricelist-section'];
+                 'invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -3938,6 +4650,186 @@ document.addEventListener("DOMContentLoaded", async function () {
     kympgSetHeader('Kentucky Mirror and Plate Glass', 'Select an option on the left to get started.', 'Home', 'Welcome');
   }
 
+  async function runHomeQuickSearch() {
+    const input = document.getElementById('homeQuickSearchInput');
+    const resultsEl = document.getElementById('homeQuickResults');
+    if (!input || !resultsEl) return;
+
+    const q = (input.value || '').trim().toLowerCase();
+    const normalizePhone = (v) => String(v || '').replace(/\D/g, '');
+    const qPhone = normalizePhone(q);
+    if (!q) {
+      resultsEl.innerHTML = '<div class="kympg-quickMeta" style="padding:8px 4px;">Enter an order/quote/PO number, customer name, or phone #.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = '<div class="kympg-quickMeta" style="padding:8px 4px;">Searching…</div>';
+
+    try {
+      const [ordersRes, quotesRes, poRes] = await Promise.all([
+        fetchApi('/api/orders'),
+        fetchApi('/api/quotes'),
+        fetchApi('/api/purchase-orders'),
+      ]);
+
+      const orders = ordersRes.ok ? await ordersRes.json() : [];
+      const quotes = quotesRes.ok ? await quotesRes.json() : [];
+      const pos = poRes.ok ? await poRes.json() : [];
+
+      const orderHits = (orders || []).filter(o => {
+        const custName = (o.customer?.name || '').toLowerCase();
+        const custPhone = normalizePhone(o.customer?.phone || '');
+        return (o.orderNumber || '').toLowerCase().includes(q)
+          || custName.includes(q)
+          || (qPhone && custPhone.includes(qPhone));
+      });
+
+      const quoteHits = (quotes || []).filter(x => {
+        const custName = (x.customer?.name || x.customerName || '').toLowerCase();
+        const custPhone = normalizePhone(x.customer?.phone || x.customerPhone || '');
+        return (x.quoteNumber || '').toLowerCase().includes(q)
+          || custName.includes(q)
+          || (qPhone && custPhone.includes(qPhone));
+      });
+
+      const poHits = (pos || []).filter(p => {
+        return (p.poNumber || '').toLowerCase().includes(q)
+          || (p.orderNumber || '').toLowerCase().includes(q)
+          || (p.vendor || '').toLowerCase().includes(q);
+      });
+
+      const briefOrderDescription = (o) => {
+        const items = Array.isArray(o.items) ? o.items : [];
+        if (!items.length) return 'NO LINE ITEMS';
+        const first = items[0] || {};
+        const size = first.width && first.height ? `${first.width} X ${first.height}` : '';
+        const firstDesc = [first.glassType || first.type || 'GLASS', size].filter(Boolean).join(' ');
+        return items.length > 1 ? `${firstDesc} + ${items.length - 1} MORE` : firstDesc;
+      };
+      const renderLinePreview = (items, title) => {
+        const rows = (Array.isArray(items) ? items : []).slice(0, 6).map((it, idx) => {
+          const size = it.width && it.height ? `${it.width} X ${it.height}` : '';
+          const desc = [it.glassType || it.type || 'ITEM', size].filter(Boolean).join(' ');
+          const qty = it.qty || it.quantity || 1;
+          return `<div class="kympg-quickPreviewLine">${idx + 1}. QTY ${escapeHtml(qty)} — ${escapeHtml(desc)}</div>`;
+        }).join('');
+        const total = Array.isArray(items) ? items.length : 0;
+        const more = total > 6 ? `<div class="kympg-quickPreviewLine">+ ${total - 6} MORE LINES</div>` : '';
+        return `<div class="kympg-quickPreview"><div class="kympg-quickPreviewTitle">${escapeHtml(title)}</div>${rows || '<div class="kympg-quickPreviewLine">NO LINES</div>'}${more}</div>`;
+      };
+      const orderPreviewHtml = (o) => renderLinePreview(o.items || [], 'ORDER LINES PREVIEW');
+      const quotePreviewHtml = (x) => renderLinePreview(x.items || [], 'QUOTE LINES PREVIEW');
+
+      const html = [];
+      orderHits.forEach(o => {
+        const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '';
+        const brief = briefOrderDescription(o);
+        html.push(`<div class="kympg-quickItem" onclick="openQuickSearchResult('order','${o.id}')"><strong>Order ${escapeHtml(o.orderNumber || '')}</strong><div class="kympg-quickMeta">Date: ${escapeHtml(date)} • ${escapeHtml(brief)} • Customer: ${escapeHtml(o.customer?.name || '')}</div>${orderPreviewHtml(o)}</div>`);
+      });
+      quoteHits.forEach(x => {
+        const date = x.createdAt ? new Date(x.createdAt).toLocaleDateString() : '';
+        html.push(`<div class="kympg-quickItem" onclick="openQuickSearchResult('quote','${x.id}')"><strong>Quote ${escapeHtml(x.quoteNumber || '')}</strong><div class="kympg-quickMeta">Date: ${escapeHtml(date)} • Customer: ${escapeHtml(x.customer?.name || x.customerName || '')} • Phone: ${escapeHtml(x.customer?.phone || x.customerPhone || '')}</div>${quotePreviewHtml(x)}</div>`);
+      });
+      poHits.forEach(p => {
+        const date = p.dateOrdered ? new Date(p.dateOrdered).toLocaleDateString() : '';
+        html.push(`<div class="kympg-quickItem" onclick="openQuickSearchResult('po','${p.id}')"><strong>PO ${escapeHtml(p.poNumber || '')}</strong><div class="kympg-quickMeta">Date: ${escapeHtml(date)} • Order: ${escapeHtml(p.orderNumber || '')} • Vendor: ${escapeHtml(p.vendor || '')}</div></div>`);
+      });
+
+      resultsEl.innerHTML = html.length ? html.join('') : '<div class="kympg-quickMeta" style="padding:8px 4px;">No matching orders, quotes, or POs found.</div>';
+    } catch (err) {
+      resultsEl.innerHTML = `<div class="kympg-quickMeta" style="padding:8px 4px;color:#b00020;">Search failed: ${escapeHtml(err.message || 'Unknown error')}</div>`;
+    }
+  }
+
+  async function logReceivedPO() {
+    const input = document.getElementById('homeLogPoInput');
+    const statusEl = document.getElementById('homeLogPoStatus');
+    if (!input || !statusEl) return;
+
+    const raw = (input.value || '').trim();
+    if (!raw) {
+      statusEl.textContent = 'Enter a PO # to log as received.';
+      return;
+    }
+
+    const normalize = (v) => String(v || '').replace(/\s+/g, '').toUpperCase();
+    const target = normalize(raw);
+    statusEl.textContent = 'Searching PO…';
+
+    try {
+      const listRes = await fetchApi('/api/purchase-orders');
+      if (!listRes.ok) throw new Error('Could not load purchase orders');
+      const pos = await listRes.json();
+
+      const po = (pos || []).find(p => normalize(p.poNumber) === target);
+      if (!po) {
+        statusEl.textContent = `PO ${raw} not found.`;
+        return;
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+      const nextStatus = String(po.poType || 'external').toLowerCase() === 'internal'
+        ? 'Completed by Shop'
+        : 'Received';
+
+      const updateRes = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(po.id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: nextStatus,
+          receivedAt: today,
+        }),
+      });
+
+      if (!updateRes.ok) {
+        const err = await updateRes.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to update PO');
+      }
+
+      statusEl.textContent = `Updated ${po.poNumber} as ${nextStatus} on ${today}.`;
+      input.value = '';
+      try { if (typeof loadPurchaseOrders === 'function') await loadPurchaseOrders(); } catch (e) {}
+      try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
+    } catch (err) {
+      statusEl.textContent = `Error: ${err.message}`;
+    }
+  }
+
+  async function openQuickSearchResult(type, id) {
+    if (type === 'order') {
+      try { await loadOrderIntoCalculator(id); } catch (e) {}
+      return;
+    }
+
+    if (type === 'quote') {
+      try {
+        const res = await fetchApi(`/api/quotes?id=${encodeURIComponent(id)}`);
+        if (!res.ok) throw new Error('Quote not found');
+        const quote = await res.json();
+        kympgOpen('quote');
+        populateCalculatorFromOrder({ ...quote, id, orderNumber: quote.quoteNumber || id }, 'quote');
+      } catch (err) {
+        alert('Could not open quote: ' + err.message);
+      }
+      return;
+    }
+
+    if (type === 'po') {
+      try {
+        const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`);
+        if (!res.ok) throw new Error('PO not found');
+        const po = await res.json();
+        if (po.orderId) {
+          await loadOrderIntoCalculator(po.orderId);
+          return;
+        }
+      } catch (err) {
+        alert('Could not open PO: ' + err.message);
+      }
+      kympgOpen('po');
+    }
+  }
+
   async function loadPurchaseOrders() {
     const tbody = document.getElementById('poTableBody');
     if (!tbody) return;
@@ -3951,38 +4843,41 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
       }
 
+      const getPoStatusFromDates = (po = {}) => {
+        const hasReceived = !!String(po.receivedAt || '').trim();
+        const hasEstimatedDelivery = !!String(po.deliveryDate || '').trim();
+        if (hasReceived) return 'Received';
+        if (hasEstimatedDelivery) return 'In Progress';
+        return po.status || 'Pending';
+      };
+
       tbody.innerHTML = data.map(po => `
         <tr>
           <td>${po.orderNumber || ''}</td>
-          <td>${po.vendor || ''}</td>
+          <td>${escapeHtml(po.vendor || '')}</td>
           <td>${po.poNumber || ''}</td>
           <td>${(po.requestedDate || '').slice(0, 10)}</td>
           <td><input type="date" id="po_delivery_${po.id}" value="${(po.deliveryDate || '').slice(0, 10)}"></td>
-          <td>
-            <select id="po_status_${po.id}">
-              <option value="Pending" ${po.status === 'Pending' ? 'selected' : ''}>Pending</option>
-              <option value="In Progress" ${po.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-              <option value="Received" ${po.status === 'Received' ? 'selected' : ''}>Received</option>
-              <option value="Completed by Shop" ${po.status === 'Completed by Shop' ? 'selected' : ''}>Completed by Shop</option>
-            </select>
-          </td>
+          <td>${escapeHtml(getPoStatusFromDates(po))}</td>
           <td><input type="date" id="po_received_${po.id}" value="${(po.receivedAt || '').slice(0, 10)}"></td>
-          <td><button type="button" onclick="updatePurchaseOrder('${po.id}')">Save</button></td>
+          <td><button type="button" onclick="editPurchaseOrder('${po.id}')">Open</button> <button type="button" onclick="updatePurchaseOrder('${po.id}')">Save</button></td>
         </tr>
       `).join('');
     } catch (err) {
       console.error(err);
       tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error loading purchase orders.</td></tr>';
     }
+
+    await loadPurchaseOrders();
+    try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
   }
 
   async function updatePurchaseOrder(id) {
     const deliveryDate = document.getElementById(`po_delivery_${id}`)?.value || '';
-    const status = document.getElementById(`po_status_${id}`)?.value || 'Pending';
     const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
+    const status = receivedAt ? 'Received' : (deliveryDate ? 'In Progress' : 'Pending');
 
     const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
-    const res = await fetch(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deliveryDate, status, receivedAt }),
@@ -4040,6 +4935,13 @@ document.addEventListener("DOMContentLoaded", async function () {
       loadPurchaseOrders();
       return;
     }
+    if (which === 'invoiced'){
+      const inv = document.getElementById('invoiced-section');
+      if (inv){ inv.style.display = 'block'; }
+      kympgSetHeader('Invoiced Orders', 'View closed / invoiced orders.', 'Invoiced', 'Invoices database');
+      try{ if (typeof loadInvoicedOrders === 'function') loadInvoicedOrders(); }catch(e){}
+      return;
+    }
     if (which === 'breakage'){
       const b = document.getElementById('breakage-section');
       if (b){ b.style.display = 'block'; }
@@ -4074,15 +4976,41 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','vendor-section','orders-section','quotedb-section','po-section','breakage-section','pricelist-section']
+      ['calculator-section','customer-section','vendor-section','orders-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section']
         .forEach(id => {
           const el = document.getElementById(id);
           if (el && el.parentElement !== content) content.appendChild(el);
           if (el) el.style.display = 'none';
         });
     }
-    // Keep existing section structure intact; just initialize on landing.
     kympgShowLanding();
+
+    const quickInput = document.getElementById('homeQuickSearchInput');
+    if (quickInput) {
+      quickInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          runHomeQuickSearch();
+          return;
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          quickInput.blur();
+          const resultsEl = document.getElementById('homeQuickResults');
+          if (resultsEl) resultsEl.innerHTML = '';
+        }
+      });
+    }
+
+    const logPoInput = document.getElementById('homeLogPoInput');
+    if (logPoInput) {
+      logPoInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          logReceivedPO();
+        }
+      });
+    }
   });
 </script>
 

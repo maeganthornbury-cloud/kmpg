@@ -18,6 +18,32 @@ async function nextSequenceNumber() {
   return nextValue;
 }
 
+async function nextInvoiceSequence() {
+  const sequenceStore = getStore({ name: "invoice-sequences", consistency: "strong" });
+  const counterKey = "main";
+  let counter = 999;
+  try {
+    const existing = await sequenceStore.get(counterKey, { type: "json" });
+    if (existing && Number.isFinite(existing.value)) counter = existing.value;
+  } catch (e) {
+    // first use
+  }
+  const nextValue = counter + 1;
+  await sequenceStore.setJSON(counterKey, { value: nextValue });
+  return nextValue;
+}
+
+
+function normalizeStringsUpper(value) {
+  if (Array.isArray(value)) return value.map(normalizeStringsUpper);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) out[k] = normalizeStringsUpper(v);
+    return out;
+  }
+  return typeof value === "string" ? value.toUpperCase() : value;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -52,7 +78,6 @@ function renderCompanyHeader(docTitle) {
       <div style="display:flex; gap:12px; align-items:center;">
         <img src="/good%20logo.jpg" alt="Kentucky Mirror and Plate Glass logo" style="height:62px; width:auto;" />
         <div>
-          <h1>Kentucky Mirror and Plate Glass</h1>
           <div class="small">822 W Main St, Louisville KY 40202</div>
           <div class="small">502-583-5541</div>
           <div class="small">info@kymirror.com</div>
@@ -158,6 +183,52 @@ function renderItemsTableNoMoney(order) {
   `;
 }
 
+
+function renderHardwareTable(order, withMoney = false) {
+  const hardwareItems = Array.isArray(order.hardwareItems) ? order.hardwareItems : [];
+  const rows = hardwareItems.map((it, idx) => {
+    const qty = it.qty ?? "";
+    const name = it.name || it.part || "";
+    const unit = Number(it.price ?? it.unitPrice ?? 0);
+    const total = Number(it.total ?? (qty ? unit * Number(qty) : 0));
+    return withMoney
+      ? `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(name)}</td>
+          <td class="right">${escapeHtml(qty)}</td>
+          <td class="right">${escapeHtml(money(unit))}</td>
+          <td class="right">${escapeHtml(money(total))}</td>
+        </tr>
+      `
+      : `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(name)}</td>
+          <td class="right">${escapeHtml(qty)}</td>
+        </tr>
+      `;
+  }).join("");
+
+  if (withMoney) {
+    return `
+    <table>
+      <thead>
+        <tr><th style="width:40px;">#</th><th>Hardware</th><th style="width:70px;">Qty</th><th style="width:90px;">Unit</th><th style="width:90px;">Total</th></tr>
+      </thead>
+      <tbody>${rows || '<tr><td colspan="5">No hardware items</td></tr>'}</tbody>
+    </table>`;
+  }
+
+  return `
+  <table>
+    <thead>
+      <tr><th style="width:40px;">#</th><th>Hardware</th><th style="width:70px;">Qty</th></tr>
+    </thead>
+    <tbody>${rows || '<tr><td colspan="3">No hardware items</td></tr>'}</tbody>
+  </table>`;
+}
+
 function renderTotals(order) {
   // Stored totals: grandTotal (subtotal) and grandTotalWithTax (total with tax).
   const subtotal = order.grandTotal ?? 0;
@@ -225,8 +296,8 @@ function renderQuoteHTML(order) {
       ${escapeHtml(cust.address || "")}
     </div>
     <div class="box" style="flex:1;">
-      <b>Notes</b><br/>
-      ${escapeHtml(order.notes || "")}
+      <b>Customer Notes</b><br/>
+      ${escapeHtml(order.customerNotes || order.notes || "")}
     </div>
   </div>
 
@@ -367,8 +438,8 @@ function renderPackingListHTML(order) {
     Order #: <b>${escapeHtml(order.orderNumber || "")}</b> &nbsp; | &nbsp;
     Order Date: ${escapeHtml(fmtDate(savedISO))} &nbsp; | &nbsp;
     Customer: ${escapeHtml(cust.name || cust.company || "")} &nbsp; | &nbsp;
-    Source: <b>${escapeHtml(order.status === "vendor" ? "Vendor" : "Shop")}</b>
-    ${order.status === "vendor" ? ` &nbsp; | &nbsp; Vendor: <b>${escapeHtml(order.vendorName || "")}</b> &nbsp; | &nbsp; PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b>` : ""}
+    Source: <b>${escapeHtml(String(order.status || "").includes("(vendor)") ? "Vendor" : "Shop")}</b>
+    ${String(order.status || "").includes("(vendor)") ? ` &nbsp; | &nbsp; Vendor: <b>${escapeHtml(order.vendorName || "")}</b> &nbsp; | &nbsp; PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b>` : ""}
   </div>
 
   <table>
@@ -386,7 +457,10 @@ function renderPackingListHTML(order) {
     </tbody>
   </table>
 
+  ${renderHardwareTable(order, true)}
   ${renderTotals(order)}
+
+  ${order.customerNotes || order.notes ? `<div class="box" style="margin-top:12px;"><b>Customer Notes</b><br/>${escapeHtml(order.customerNotes || order.notes || "")}</div>` : ""}
 </body>
 </html>`;
 }
@@ -394,15 +468,20 @@ function renderPackingListHTML(order) {
 
 function renderPurchaseOrderHTML(order) {
   const requestedDate = order.requestedDate || order.createdAt || new Date().toISOString();
+  const statusText = String(order.status || "").toLowerCase();
+  const vendorName = String(order.vendorName || "").trim().toLowerCase();
+  const hasExternalVendor = !!vendorName && !vendorName.includes('kentucky mirror and plate glass') && !vendorName.includes('internal shop');
+  const isVendorOrder = statusText.includes('(vendor)') || hasExternalVendor;
+  const poTitle = isVendorOrder ? "PURCHASE ORDER" : "INTERNAL PO";
   return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Purchase Order ${escapeHtml(order.orderNumber || "")}</title>
+  <title>${poTitle} ${escapeHtml(order.orderNumber || "")}</title>
   ${baseStyles()}
 </head>
 <body>
-  ${renderCompanyHeader("PURCHASE ORDER")}
+  ${renderCompanyHeader(poTitle)}
   <div class="row" style="margin-top:12px;">
     <div class="box" style="flex:1;">
       <b>Vendor</b><br/>
@@ -416,8 +495,8 @@ function renderPurchaseOrderHTML(order) {
     </div>
   </div>
   ${renderItemsTableNoMoney(order)}
-  ${renderItemsTable(order)}
-  ${renderTotals(order)}
+  ${!isVendorOrder ? renderHardwareTable(order, false) : ""}
+  ${!isVendorOrder && (order.shopNotes || "").trim() ? `<div class="box" style="margin-top:12px;"><b>Shop Notes</b><br/>${escapeHtml(order.shopNotes || "")}</div>` : ""}
 </body>
 </html>`;
 }
@@ -456,7 +535,10 @@ function renderInvoiceHTML(order) {
   </div>
 
   ${renderItemsTable(order)}
+  ${renderHardwareTable(order, true)}
   ${renderTotals(order)}
+
+  ${order.customerNotes || order.notes ? `<div class="box" style="margin-top:12px;"><b>Customer Notes</b><br/>${escapeHtml(order.customerNotes || order.notes || "")}</div>` : ""}
 
   <p class="small" style="margin-top:12px;">
     Terms: ${escapeHtml(order.terms || "Due upon receipt")}<br/>
@@ -472,6 +554,7 @@ export default async (req) => {
   const id = url.searchParams.get("id");
   const search = url.searchParams.get("search");
   const print = url.searchParams.get("print"); // quote | ticket | packing-list | invoice
+  const action = url.searchParams.get("action");
 
   const jsonHeaders = {
     "Content-Type": "application/json",
@@ -558,7 +641,75 @@ export default async (req) => {
 
     // POST — create a new order with auto-assigned order number
     if (req.method === "POST") {
-      const body = await req.json();
+      const body = normalizeStringsUpper(await req.json());
+
+      if (action === "invoice") {
+        if (!id) {
+          return new Response(JSON.stringify({ error: "Order id is required for invoice action" }), {
+            status: 400,
+            headers: jsonHeaders,
+          });
+        }
+
+        const order = await store.get(id, { type: "json" });
+        if (!order) {
+          return new Response(JSON.stringify({ error: "Order not found" }), {
+            status: 404,
+            headers: jsonHeaders,
+          });
+        }
+
+        if (order.status === "INVOICED" && order.invoiceNumber) {
+          return new Response(JSON.stringify({
+            alreadyInvoiced: true,
+            orderId: id,
+            orderNumber: order.orderNumber,
+            invoiceNumber: order.invoiceNumber,
+          }), { status: 200, headers: jsonHeaders });
+        }
+
+        const invoicesStore = getStore({ name: "invoices", consistency: "strong" });
+        const nowISO = new Date().toISOString();
+        const sequenceNumber = await nextInvoiceSequence();
+        const invoiceNumber = `I${sequenceNumber}`;
+        const terms = order.customer?.creditTerms || order.terms || "DUE UPON RECEIPT";
+
+        const invoiceId = `invoice_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const invoice = {
+          invoiceNumber,
+          sequenceNumber,
+          orderId: id,
+          orderNumber: order.orderNumber || "",
+          status: "INVOICED",
+          invoiceDate: nowISO,
+          terms,
+          customer: order.customer || {},
+          vendorName: order.vendorName || "",
+          vendorPoNumber: order.vendorPoNumber || "",
+          items: order.items || [],
+          hardwareItems: order.hardwareItems || [],
+          grandTotal: order.grandTotal || 0,
+          grandTotalWithTax: order.grandTotalWithTax || 0,
+          createdAt: nowISO,
+        };
+
+        await invoicesStore.setJSON(invoiceId, invoice);
+        await store.setJSON(id, {
+          ...order,
+          status: "INVOICED",
+          invoiceNumber,
+          invoiceDate: nowISO,
+          terms,
+          pickedUpAt: nowISO,
+          updatedAt: nowISO,
+        });
+
+        return new Response(JSON.stringify({ id: invoiceId, ...invoice }), {
+          status: 201,
+          headers: jsonHeaders,
+        });
+      }
+
       const sequenceNumber = Number(body.sequenceNumber) || (await nextSequenceNumber());
       const orderNumber = `o${sequenceNumber}`;
       const newId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -577,7 +728,11 @@ export default async (req) => {
         customer: body.customer || {},
         items: body.items || [],
         hardware: body.hardware || null,
+        hardwareItems: Array.isArray(body.hardwareItems) ? body.hardwareItems : [],
         specialPricing: body.specialPricing || false,
+        customerNotes: body.customerNotes || body.notes || "",
+        shopNotes: body.shopNotes || "",
+        notes: body.customerNotes || body.notes || "",
         grandTotal: body.grandTotal || 0,
         grandTotalWithTax: body.grandTotalWithTax || 0,
         createdAt: nowISO,        // date saved (used for quote 30-day rule)
@@ -609,7 +764,7 @@ export default async (req) => {
         });
       }
 
-      const body = await req.json();
+      const body = normalizeStringsUpper(await req.json());
       const sequenceNumber = Number(body.sequenceNumber) || Number(existing.sequenceNumber) || null;
       const updatedOrder = {
         ...existing,
