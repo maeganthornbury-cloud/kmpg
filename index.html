@@ -4867,6 +4867,9 @@ document.addEventListener("DOMContentLoaded", async function () {
       console.error(err);
       tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error loading purchase orders.</td></tr>';
     }
+
+    await loadPurchaseOrders();
+    try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
   }
 
   async function updatePurchaseOrder(id) {
