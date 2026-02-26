@@ -1,15 +1,100 @@
 import { getStore } from "@netlify/blobs";
 
+
+function normalizeStringsUpper(value) {
+  if (Array.isArray(value)) return value.map(normalizeStringsUpper);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) out[k] = normalizeStringsUpper(v);
+    return out;
+  }
+  return typeof value === "string" ? value.toUpperCase() : value;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function fmtDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString();
+}
+
+function renderPoPrint(po) {
+  const items = Array.isArray(po.items) ? po.items : [];
+  const rows = items.map((it, idx) => `
+    <tr>
+      <td>${idx + 1}</td>
+      <td>${escapeHtml(it.description || it.name || "")}</td>
+      <td style="text-align:right;">${escapeHtml(it.qty ?? "")}</td>
+    </tr>
+  `).join("");
+
+  return `<!doctype html>
+<html><head><meta charset="utf-8" /><title>${String(po.poType || "").toLowerCase() === "internal" ? "Internal PO" : "Purchase Order"} ${escapeHtml(po.poNumber || "")}</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; color:#000; }
+.small { font-size:12px; }
+.row { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+.box { border:1px solid #000; padding:12px; }
+table { width:100%; border-collapse:collapse; margin-top:12px; }
+th, td { border:1px solid #000; padding:8px; font-size:12px; vertical-align:top; }
+</style></head><body>
+<div class="row" style="align-items:center;">
+  <div style="display:flex; gap:12px; align-items:center;">
+    <img src="/good%20logo.jpg" alt="Kentucky Mirror and Plate Glass logo" style="height:62px; width:auto;" />
+    <div>
+      <div class="small">822 W Main St, Louisville KY 40202</div>
+      <div class="small">502-583-5541</div>
+      <div class="small">info@kymirror.com</div>
+    </div>
+  </div>
+  <div class="box"><b>${String(po.poType || "").toLowerCase() === "internal" ? "INTERNAL PO" : "PURCHASE ORDER"}</b></div>
+</div>
+<div class="row" style="margin-top:12px;">
+  <div class="box" style="flex:1;">
+    <b>Vendor</b><br/>${escapeHtml(po.vendor || "")}
+  </div>
+  <div class="box" style="flex:1;">
+    <div>Order #: <b>${escapeHtml(po.orderNumber || "")}</b></div>
+    <div>PO #: <b>${escapeHtml(po.poNumber || "")}</b></div>
+    <div>Requested Date: <b>${escapeHtml(fmtDate(po.requestedDate))}</b></div>
+    <div>Order Date: ${escapeHtml(fmtDate(po.dateOrdered))}</div>
+  </div>
+</div>
+<table>
+  <thead><tr><th style="width:40px;">#</th><th>Description</th><th style="width:70px;">Qty</th></tr></thead>
+  <tbody>${rows || '<tr><td colspan="3">No line items</td></tr>'}</tbody>
+</table>
+${String(po.poType || "").toLowerCase() === "internal" && String(po.shopNotes || "").trim() ? `<div class="box" style="margin-top:12px;"><b>SHOP NOTES</b><br/>${escapeHtml(po.shopNotes || "")}</div>` : ""}
+</body></html>`;
+}
+
 export default async (req) => {
   const store = getStore({ name: "purchase-orders", consistency: "strong" });
   const ordersStore = getStore({ name: "orders", consistency: "strong" });
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
+  const print = url.searchParams.get("print");
 
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
+
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
   };
 
@@ -39,6 +124,9 @@ export default async (req) => {
             headers,
           });
         }
+        if (print) {
+          return new Response(renderPoPrint(po), { status: 200, headers: htmlHeaders });
+        }
         return new Response(JSON.stringify(po), { headers });
       }
 
@@ -56,7 +144,7 @@ export default async (req) => {
 
     // POST - create a new purchase order
     if (req.method === "POST") {
-      const body = await req.json();
+      const body = normalizeStringsUpper(await req.json());
       const poId = `po-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const order = {
         id: poId,
@@ -70,10 +158,14 @@ export default async (req) => {
         deliveryDate: body.deliveryDate || "",
         receivedAt: body.receivedAt || "",
         status: body.status || "Pending",
+        syncToOrder: body.syncToOrder !== false,
+        items: Array.isArray(body.items) ? body.items : [],
+        shopNotes: body.shopNotes || "",
         createdAt: new Date().toISOString(),
       };
       await store.setJSON(poId, order);
 
+      if (order.syncToOrder !== false && order.orderId) {
       if (order.orderId) {
         const linkedOrder = await ordersStore.get(order.orderId, { type: "json" });
         if (linkedOrder) {
@@ -108,10 +200,11 @@ export default async (req) => {
           headers,
         });
       }
-      const body = await req.json();
+      const body = normalizeStringsUpper(await req.json());
       const updated = { ...existing, ...body, id, updatedAt: new Date().toISOString() };
       await store.setJSON(id, updated);
 
+      if (updated.syncToOrder !== false && updated.orderId) {
       if (updated.orderId) {
         const linkedOrder = await ordersStore.get(updated.orderId, { type: "json" });
         if (linkedOrder) {
