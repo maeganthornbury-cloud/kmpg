@@ -3643,6 +3643,26 @@ document.addEventListener("DOMContentLoaded", async function () {
     try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
   }
 
+  async function updatePurchaseOrder(id) {
+    const deliveryDate = document.getElementById(`po_delivery_${id}`)?.value || '';
+    const status = document.getElementById(`po_status_${id}`)?.value || 'Pending';
+    const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
+
+    const res = await fetch(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deliveryDate, status, receivedAt }),
+    });
+
+    if (!res.ok) {
+      alert('Failed to update purchase order.');
+      return;
+    }
+
+    await loadPurchaseOrders();
+    try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
+  }
+
   function kympgOpen(which, btn){
     if (btn){
       kympgClearActiveNav();
@@ -3720,6 +3740,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
           if (el) el.style.display = 'none';
         });
     }
+    // Keep existing section structure intact; just initialize on landing.
     kympgShowLanding();
   });
 </script>
