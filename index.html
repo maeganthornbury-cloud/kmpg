@@ -2678,6 +2678,15 @@ async function convertCurrentQuoteToOrder() {
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
     });
 
+    alert(`Quote converted to order ${createdOrder.orderNumber}.`);
+    setCalculatorMode('order');
+    currentOrderId = createdOrder.id;
+    lastSavedOrderId = createdOrder.id;
+    document.getElementById('currentOrderNumber').textContent = createdOrder.orderNumber;
+    document.getElementById('orderSavedStatus').textContent = `Converted from quote ${savedQuote.id}`;
+
+    try { await loadOrders(); } catch (e) {}
+    try { await loadQuotes(); } catch (e) {}
     alert(`Quote converted to order ${createdOrder.orderNumber}. Quote has been closed as ordered.`);
     try { await loadOrders(); } catch (e) {}
     try { await loadQuotes(); } catch (e) {}
@@ -3095,6 +3104,19 @@ function searchQuotes() {
 async function loadQuoteIntoCalculator(id) {
   const quote = allQuotes.find(q => q.id === id);
   if (!quote) return;
+
+  if ((quote.status || '').toLowerCase() === 'closed as ordered') {
+    alert('This quote has been converted to an order.');
+    return;
+  }
+
+  kympgOpen('quote');
+  populateCalculatorFromOrder({ ...quote, id: null, orderNumber: `Quote ${quote.id}` });
+  setCalculatorMode('quote');
+  currentOrderId = null;
+  currentQuoteId = quote.id;
+  document.getElementById('currentOrderNumber').textContent = `Quote ${quote.id}`;
+  document.getElementById('orderSavedStatus').textContent = 'Loaded quote';
   showCalculatorWorkspace('quote');
   populateCalculatorFromOrder({ ...quote, id: null, orderNumber: `Quote ${quote.id}` });
   setCalculatorMode('quote');
