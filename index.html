@@ -1939,8 +1939,6 @@ function updateHardwareTotals() {
     if (match) hardwareTotal += parseFloat(match[1].replace(/,/g, '')) || 0;
   });
 
-  if (totalEl) totalEl.innerText = `Hardware Total: $${hardwareTotal.toFixed(2)}`;
-
   // Also update the combined grand total
   updateTotals();
 }
@@ -2018,7 +2016,7 @@ let allCustomers = [];
 
 async function loadCustomers() {
   try {
-    const res = await fetch('/api/customers');
+    const res = await fetchApi('/api/customers');
     if (!res.ok) throw new Error('Failed to load customers');
     allCustomers = await res.json();
     renderCustomerTable(allCustomers);
@@ -2055,6 +2053,16 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+
+async function fetchApi(path, options) {
+  const primary = await fetch(path, options);
+  if (primary.ok || !path.startsWith('/api/')) return primary;
+
+  const fallbackPath = `/.netlify/functions/${path.slice(5)}`;
+  const fallback = await fetch(fallbackPath, options);
+  return fallback;
 }
 
 function filterCustomerTable() {
@@ -2179,7 +2187,7 @@ let calcLookupIndex = -1; // keyboard nav index
 
 async function loadCalcCustomers() {
   try {
-    const res = await fetch('/api/customers');
+    const res = await fetchApi('/api/customers');
     if (!res.ok) throw new Error('Failed to load customers');
     calcCustomers = await res.json();
   } catch (err) {
@@ -2441,6 +2449,17 @@ async function saveQuote() {
   if (!savedQuote) return;
 
   const quoteLabel = savedQuote.quoteNumber || savedQuote.id;
+  const printNow = await showYesNoModal(
+    `Quote ${quoteLabel} saved successfully.`,
+    'Print',
+    'No'
+  );
+
+  if (printNow) {
+    await printQuote(savedQuote.id);
+  }
+
+  prepareForNewQuote();
   const printNow = confirm(
     `Quote ${quoteLabel} saved successfully.
 
@@ -2455,6 +2474,50 @@ Select OK to Print or Cancel for No (save only).`
   alert(`Quote ${quoteLabel} saved. No print copy was created.`);
 }
 
+
+function showYesNoModal(message, yesLabel = 'Yes', noLabel = 'No') {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:10px;max-width:420px;width:calc(100% - 32px);text-align:center;box-shadow:0 12px 30px rgba(0,0,0,0.22);';
+
+    const text = document.createElement('p');
+    text.textContent = message;
+    text.style.cssText = 'margin:0 0 16px 0;font-size:16px;line-height:1.4;';
+
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;justify-content:center;gap:10px;';
+
+    const yesBtn = document.createElement('button');
+    yesBtn.type = 'button';
+    yesBtn.textContent = yesLabel;
+
+    const noBtn = document.createElement('button');
+    noBtn.type = 'button';
+    noBtn.textContent = noLabel;
+
+    function close(result) {
+      overlay.remove();
+      resolve(result);
+    }
+
+    yesBtn.addEventListener('click', () => close(true));
+    noBtn.addEventListener('click', () => close(false));
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close(false);
+    });
+
+    actions.appendChild(yesBtn);
+    actions.appendChild(noBtn);
+    modal.appendChild(text);
+    modal.appendChild(actions);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    yesBtn.focus();
+  });
+}
 
 async function printQuote(quoteId) {
   const idToPrint = quoteId || currentQuoteId || lastSavedQuoteId;
@@ -2765,7 +2828,7 @@ let allOrders = [];
 
 async function loadOrders() {
   try {
-    const res = await fetch('/api/orders');
+    const res = await fetchApi('/api/orders');
     if (!res.ok) throw new Error('Failed to load orders');
     allOrders = await res.json();
     renderOrderTable(allOrders);
