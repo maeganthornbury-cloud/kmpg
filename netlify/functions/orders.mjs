@@ -78,6 +78,7 @@ function renderCompanyHeader(docTitle) {
       <div style="display:flex; gap:12px; align-items:center;">
         <img src="/good%20logo.jpg" alt="Kentucky Mirror and Plate Glass logo" style="height:62px; width:auto;" />
         <div>
+          <h1>Kentucky Mirror and Plate Glass</h1>
           <div class="small">822 W Main St, Louisville KY 40202</div>
           <div class="small">502-583-5541</div>
           <div class="small">info@kymirror.com</div>
@@ -440,6 +441,8 @@ function renderPackingListHTML(order) {
     Customer: ${escapeHtml(cust.name || cust.company || "")} &nbsp; | &nbsp;
     Source: <b>${escapeHtml(String(order.status || "").includes("(vendor)") ? "Vendor" : "Shop")}</b>
     ${String(order.status || "").includes("(vendor)") ? ` &nbsp; | &nbsp; Vendor: <b>${escapeHtml(order.vendorName || "")}</b> &nbsp; | &nbsp; PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b>` : ""}
+    Source: <b>${escapeHtml(order.status === "vendor" ? "Vendor" : "Shop")}</b>
+    ${order.status === "vendor" ? ` &nbsp; | &nbsp; Vendor: <b>${escapeHtml(order.vendorName || "")}</b> &nbsp; | &nbsp; PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b>` : ""}
   </div>
 
   <table>
@@ -461,6 +464,7 @@ function renderPackingListHTML(order) {
   ${renderTotals(order)}
 
   ${order.customerNotes || order.notes ? `<div class="box" style="margin-top:12px;"><b>Customer Notes</b><br/>${escapeHtml(order.customerNotes || order.notes || "")}</div>` : ""}
+  ${renderTotals(order)}
 </body>
 </html>`;
 }
@@ -482,6 +486,11 @@ function renderPurchaseOrderHTML(order) {
 </head>
 <body>
   ${renderCompanyHeader(poTitle)}
+  <title>Purchase Order ${escapeHtml(order.orderNumber || "")}</title>
+  ${baseStyles()}
+</head>
+<body>
+  ${renderCompanyHeader("PURCHASE ORDER")}
   <div class="row" style="margin-top:12px;">
     <div class="box" style="flex:1;">
       <b>Vendor</b><br/>
@@ -497,6 +506,8 @@ function renderPurchaseOrderHTML(order) {
   ${renderItemsTableNoMoney(order)}
   ${!isVendorOrder ? renderHardwareTable(order, false) : ""}
   ${!isVendorOrder && (order.shopNotes || "").trim() ? `<div class="box" style="margin-top:12px;"><b>Shop Notes</b><br/>${escapeHtml(order.shopNotes || "")}</div>` : ""}
+  ${renderItemsTable(order)}
+  ${renderTotals(order)}
 </body>
 </html>`;
 }

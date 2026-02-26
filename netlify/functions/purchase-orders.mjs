@@ -166,11 +166,13 @@ export default async (req) => {
       await store.setJSON(poId, order);
 
       if (order.syncToOrder !== false && order.orderId) {
+      if (order.orderId) {
         const linkedOrder = await ordersStore.get(order.orderId, { type: "json" });
         if (linkedOrder) {
           await ordersStore.setJSON(order.orderId, {
             ...linkedOrder,
             status: mappedOrderStatus(order.poType, order.status),
+            status: "vendor",
             vendorName: order.vendor,
             vendorPoNumber: order.poNumber,
             requestedDate: order.requestedDate,
@@ -203,11 +205,13 @@ export default async (req) => {
       await store.setJSON(id, updated);
 
       if (updated.syncToOrder !== false && updated.orderId) {
+      if (updated.orderId) {
         const linkedOrder = await ordersStore.get(updated.orderId, { type: "json" });
         if (linkedOrder) {
           await ordersStore.setJSON(updated.orderId, {
             ...linkedOrder,
             status: mappedOrderStatus(updated.poType, updated.status),
+            status: updated.status === "Received" ? "vendor received" : "vendor",
             vendorName: updated.vendor || linkedOrder.vendorName || "",
             vendorPoNumber: updated.poNumber || linkedOrder.vendorPoNumber || "",
             requestedDate: updated.requestedDate || linkedOrder.requestedDate || "",

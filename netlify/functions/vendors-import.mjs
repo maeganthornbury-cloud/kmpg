@@ -25,6 +25,7 @@ export default async (req) => {
 
   try {
     const body = normalizeStringsUpper(await req.json());
+    const body = await req.json();
     const vendors = Array.isArray(body.vendors) ? body.vendors : [];
     if (!vendors.length) return new Response(JSON.stringify({ error: "An array of vendors is required" }), { status: 400, headers });
 
