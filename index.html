@@ -4,13 +4,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Kentucky Mirror and Plate Glass - New Order</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
+    body { font-family: Arial, sans-serif; margin: 20px; text-transform: uppercase; }
     h1 { text-align: center; }
     .container { display: flex; }
     .section { width: 50%; padding: 10px; }
     table { width: 100%; border-collapse: collapse; }
     th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
     input, select { width: 90%; }
+    input, select, textarea, button { text-transform: uppercase; }
     .buttons { margin-top: 15px; }
 
 .glassList li.active {
@@ -752,6 +753,44 @@ body{
 .kympg-landingLogo img{ max-width:100%; height:auto; border-radius:18px; box-shadow:0 14px 40px rgba(2,6,23,.12); }
 .kympg-landingTitle{ font-weight: 950; font-size: 26px; letter-spacing:.2px; }
 .kympg-landingSub{ color: var(--muted); font-size: 14px; line-height:1.55; max-width: 760px; }
+.kympg-quickSearch{
+  margin-top: 12px;
+  width:min(860px, 96%);
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  box-shadow: var(--shadow2);
+  text-align:left;
+}
+.kympg-quickSearch h3{ margin:0 0 8px 0; font-size:16px; }
+.kympg-quickSearch .row{ display:flex; gap:8px; align-items:center; }
+.kympg-quickSearch input{ width:100%; flex:1; padding:10px 12px; font-size:14px; border:1px solid #cfd4dc; border-radius:8px; }
+.kympg-quickSearch button{ width:auto; padding:10px 18px; border:none; border-radius:10px; background:#0d78f0; color:#fff; font-weight:700; cursor:pointer; }
+.kympg-quickResults{ margin-top:10px; max-height:220px; overflow:auto; border-top:1px solid #eef1f4; }
+.kympg-quickItem{ position:relative; padding:10px 4px; border-bottom:1px solid #f0f2f5; cursor:pointer; }
+.kympg-quickItem:hover{ background:#f7fbff; }
+.kympg-quickMeta{ color:#666; font-size:12px; }
+.kympg-quickPreview{ display:none; position:absolute; left:8px; right:8px; top:calc(100% - 4px); background:#fff; border:1px solid #d7dee6; border-radius:10px; box-shadow:0 8px 24px rgba(2,6,23,.18); z-index:20; padding:10px; }
+.kympg-quickItem:hover .kympg-quickPreview{ display:block; }
+.kympg-quickPreviewTitle{ font-weight:700; font-size:12px; margin-bottom:6px; color:#1f2937; }
+.kympg-quickPreviewLine{ font-size:12px; color:#374151; padding:2px 0; }
+
+.kympg-logPO{
+  margin-top: 12px;
+  width:min(860px, 96%);
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  box-shadow: var(--shadow2);
+  text-align:left;
+}
+.kympg-logPO h3{ margin:0 0 8px 0; font-size:16px; }
+.kympg-logPO .row{ display:flex; gap:8px; align-items:center; }
+.kympg-logPO input{ width:100%; flex:1; padding:10px 12px; font-size:14px; border:1px solid #cfd4dc; border-radius:8px; }
+.kympg-logPO button{ width:auto; padding:10px 18px; border:none; border-radius:10px; background:#198f42; color:#fff; font-weight:700; cursor:pointer; }
+.kympg-logPOStatus{ margin-top:8px; font-size:13px; color:#444; }
 
 .kympg-iframeWrap{ border:1px solid var(--line); border-radius: var(--radius2); overflow:hidden; height:min(72vh, 860px); background:#fff; }
 .kympg-iframeWrap iframe{ width:100%; height:100%; border:none; }
@@ -863,6 +902,16 @@ body{
           <span class="kympg-hint">Upload customer list</span>
     </span>
       </button>
+
+      <button class="kympg-navBtn" data-tip="Vendor List" type="button" onclick="kympgOpen('vendors', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M19 6v12"/></svg>
+        </span>
+        <span class="kympg-labelWrap">
+          <span class="kympg-label">Vendor List</span>
+          <span class="kympg-hint">Upload vendor list</span>
+    </span>
+      </button>
     </nav>
 
     <div class="kympg-spacer"></div>
@@ -892,12 +941,30 @@ body{
           <div id="landing-section" class="active">
             <div class="kympg-landingWrap">
               <div class="kympg-landingLogo">
-                <img src="564e4083-db27-4742-b925-737f1faaa333.jpg" alt="Kentucky Mirror and Plate Glass" onerror="this.style.display='none';" />
+                <img src="good%20logo.jpg" alt="Kentucky Mirror and Plate Glass" onerror="this.style.display='none';" />
               </div>
               <div class="kympg-landingTitle">Kentucky Mirror and Plate Glass</div>
               <div class="kympg-landingSub">
                 Use the sidebar to create a new quote or order, search past orders, open quotes, manage purchase orders,
                 or open the pricing tools.
+              </div>
+
+              <div class="kympg-quickSearch">
+                <h3>Quick Search (Orders / Quotes / POs)</h3>
+                <div class="row">
+                  <input id="homeQuickSearchInput" type="text" placeholder="Search by #, customer, or phone">
+                  <button type="button" onclick="runHomeQuickSearch()">Search</button>
+                </div>
+                <div id="homeQuickResults" class="kympg-quickResults"></div>
+              </div>
+
+              <div class="kympg-logPO">
+                <h3>Log Received PO's</h3>
+                <div class="row">
+                  <input id="homeLogPoInput" type="text" placeholder="Enter PO # (ex: PO1000)">
+                  <button type="button" onclick="logReceivedPO()">Log Received</button>
+                </div>
+                <div id="homeLogPoStatus" class="kympg-logPOStatus"></div>
               </div>
             </div>
           </div>
@@ -924,7 +991,24 @@ body{
 
           <div id="po-section" style="display:none;">
             <h2 style="margin-top:0;">Purchase Orders</h2>
-            <p style="color:var(--muted);margin-top:6px;">Placeholder for Vendor POs (vendor, PO #, status, dates, totals, attachments).</p>
+            <p style="color:var(--muted);margin-top:6px;">Vendor purchase orders. Updates here sync back to the linked order.</p>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Vendor</th>
+                  <th>PO #</th>
+                  <th>Requested Date</th>
+                  <th>Delivery Date</th>
+                  <th>Status</th>
+                  <th>Received</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="poTableBody">
+                <tr><td colspan="8" style="text-align:center;">Loading purchase orders...</td></tr>
+              </tbody>
+            </table>
           </div>
 
           <div id="breakage-section" style="display:none;">
@@ -1088,6 +1172,7 @@ body{
       <button type="button" onclick="printDoc('ticket')">Print Ticket</button>
       <button type="button" onclick="printDoc('packing-list')">Print Packing List</button>
       <button type="button" onclick="printDoc('invoice')">Print Invoice</button>
+      <button type="button" onclick="printDoc('purchase-order')">Print PO</button>
       <button type="button" onclick="deleteCurrentOrder()">Delete Order</button>
     </div>
 
@@ -1151,6 +1236,48 @@ body{
   </table>
 </div>
 
+<!-- Vendor Management Section -->
+<div id="vendor-section" style="display:none;">
+  <div id="vendorFormWrapper" style="display:none;">
+    <form id="vendorForm" onsubmit="saveVendor(event)">
+      <input type="hidden" id="vendorEditId" value="">
+      <h3 id="vendorFormTitle">Add New Vendor</h3>
+      <label for="vendorName">Vendor Name *</label>
+      <input type="text" id="vendorName" required placeholder="Enter vendor name">
+      <label for="vendorAddress">Address</label>
+      <input type="text" id="vendorAddress" placeholder="Enter address">
+      <label for="vendorEmail">Email</label>
+      <input type="email" id="vendorEmail" placeholder="Enter email address">
+      <label for="vendorPhone">Phone Number</label>
+      <input type="tel" id="vendorPhone" placeholder="(123) 456-7890">
+      <div class="form-actions">
+        <button type="submit" class="btn-save">Save Vendor</button>
+        <button type="button" class="btn-cancel" onclick="cancelVendorForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <button class="btn-add-customer" onclick="showAddVendorForm()">+ Add Vendor</button>
+  <button class="btn-upload-customer" onclick="document.getElementById('vendorImportFileInput').click()">Upload Vendor CSV/Excel</button>
+  <input type="file" id="vendorImportFileInput" accept=".csv,.xlsx,.xls" style="display:none;" onchange="handleVendorImportFile(event)">
+  <input type="text" id="vendorSearch" placeholder="Search vendors..." oninput="filterVendorTable()">
+
+  <table id="vendorTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="vendorTableBody">
+      <tr><td colspan="5" style="text-align:center;">Loading vendors...</td></tr>
+    </tbody>
+  </table>
+</div>
+
 <!-- Orders Section -->
 <div id="orders-section">
   <h2>Orders</h2>
@@ -1165,12 +1292,14 @@ body{
         <th>Grand Total</th>
         <th>Total w/ Tax</th>
         <th>Date</th>
+        <th>Vendor</th>
+        <th>PO #</th>
         <th>Status</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody id="orderTableBody">
-      <tr><td colspan="8" style="text-align:center;">Loading orders...</td></tr>
+      <tr><td colspan="10" style="text-align:center;">Loading orders...</td></tr>
     </tbody>
   </table>
 </div>
@@ -1186,7 +1315,7 @@ body{
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','customer-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1194,7 +1323,7 @@ body{
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','customer-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['landing-section','calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
@@ -1202,6 +1331,7 @@ body{
       order: 'calculator-section',
       orders: 'orders-section',
       customerimport: 'customer-section',
+      vendors: 'vendor-section',
       breakage: 'breakage-section',
       pricelist: 'pricelist-section',
       quotedb: 'quotedb-section',
@@ -1211,6 +1341,7 @@ body{
     const targetId = map[which] || 'landing-section';
     const target = document.getElementById(targetId);
     if (target) target.style.display = 'block';
+    if (which === 'po' && typeof loadPurchaseOrders === 'function') loadPurchaseOrders();
   }
 
   // Ignore noisy browser-extension promise rejections unrelated to app logic.
@@ -1467,8 +1598,7 @@ function printBreakdown() {
 
   breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
   breakdownWindow.document.write('</head><body>');
-  breakdownWindow.document.write('<h2>Kentucky Mirror and Plate Glass</h2>');
-
+  
   if (orderNumber && orderNumber !== 'Will be assigned on save') {
     breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${orderNumber}</h3>`);
   }
@@ -2013,6 +2143,7 @@ function showCalculatorWorkspace(mode = 'order') {
 
 // ===================== CUSTOMER CRUD =====================
 let allCustomers = [];
+let allVendors = [];
 
 async function loadCustomers() {
   try {
@@ -2025,6 +2156,183 @@ async function loadCustomers() {
     document.getElementById('customerTableBody').innerHTML =
       '<tr><td colspan="6" style="text-align:center;">Failed to load customers.</td></tr>';
   }
+}
+
+async function loadVendors() {
+  try {
+    const res = await fetchApi('/api/vendors');
+    if (!res.ok) throw new Error('Failed to load vendors');
+    allVendors = await res.json();
+    renderVendorTable(allVendors);
+  } catch (err) {
+    console.error(err);
+    const tbody = document.getElementById('vendorTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Failed to load vendors.</td></tr>';
+  }
+}
+
+function renderVendorTable(vendors) {
+  const tbody = document.getElementById('vendorTableBody');
+  if (!tbody) return;
+  if (!vendors.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No vendors found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = vendors.map(v => `
+    <tr>
+      <td>${escapeHtml(v.name || '')}</td>
+      <td>${escapeHtml(v.address || '')}</td>
+      <td>${escapeHtml(v.email || '')}</td>
+      <td>${escapeHtml(v.phone || '')}</td>
+      <td class="actions-cell">
+        <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
+        <button class="btn-delete" onclick="deleteVendor('${v.id}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterVendorTable() {
+  const search = (document.getElementById('vendorSearch')?.value || '').toLowerCase();
+  const filtered = allVendors.filter(v =>
+    (v.name || '').toLowerCase().includes(search) ||
+    (v.address || '').toLowerCase().includes(search) ||
+    (v.email || '').toLowerCase().includes(search) ||
+    (v.phone || '').toLowerCase().includes(search)
+  );
+  renderVendorTable(filtered);
+}
+
+function showAddVendorForm() {
+  document.getElementById('vendorEditId').value = '';
+  document.getElementById('vendorFormTitle').textContent = 'Add New Vendor';
+  document.getElementById('vendorName').value = '';
+  document.getElementById('vendorAddress').value = '';
+  document.getElementById('vendorEmail').value = '';
+  document.getElementById('vendorPhone').value = '';
+  document.getElementById('vendorFormWrapper').style.display = 'block';
+}
+
+function cancelVendorForm() {
+  document.getElementById('vendorFormWrapper').style.display = 'none';
+}
+
+function editVendor(id) {
+  const vendor = allVendors.find(v => v.id === id);
+  if (!vendor) return;
+  document.getElementById('vendorEditId').value = id;
+  document.getElementById('vendorFormTitle').textContent = 'Edit Vendor';
+  document.getElementById('vendorName').value = vendor.name || '';
+  document.getElementById('vendorAddress').value = vendor.address || '';
+  document.getElementById('vendorEmail').value = vendor.email || '';
+  document.getElementById('vendorPhone').value = vendor.phone || '';
+  document.getElementById('vendorFormWrapper').style.display = 'block';
+}
+
+async function saveVendor(event) {
+  event.preventDefault();
+  const id = document.getElementById('vendorEditId').value;
+  const payload = {
+    name: document.getElementById('vendorName').value.trim(),
+    address: document.getElementById('vendorAddress').value.trim(),
+    email: document.getElementById('vendorEmail').value.trim(),
+    phone: document.getElementById('vendorPhone').value.trim(),
+  };
+
+  const method = id ? 'PUT' : 'POST';
+  const url = id ? `/api/vendors?id=${encodeURIComponent(id)}` : '/api/vendors';
+  const res = await fetchApi(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert(err.error || 'Failed to save vendor');
+    return;
+  }
+
+  cancelVendorForm();
+  await loadVendors();
+}
+
+async function deleteVendor(id) {
+  if (!confirm('Delete this vendor?')) return;
+  const res = await fetchApi(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!res.ok) {
+    alert('Failed to delete vendor');
+    return;
+  }
+  await loadVendors();
+}
+
+async function handleVendorImportFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  let rows = [];
+
+  if (ext === 'csv') {
+    rows = parseCSVRows(await file.text());
+  } else {
+    await loadXLSXLib();
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false, defval: '' });
+  }
+
+  if (!rows.length) return;
+
+  const headers = rows[0].map(h => String(h).trim().toLowerCase());
+  const getCol = (names) => names.map(n => headers.indexOf(n)).find(i => i >= 0) ?? -1;
+  const iName = getCol(['name', 'vendor']);
+  const iAddress = getCol(['address']);
+  const iEmail = getCol(['email']);
+  const iPhone = getCol(['phone']);
+
+  const vendors = rows.slice(1).map(row => ({
+    name: String(row[iName] || '').trim(),
+    address: String(row[iAddress] || '').trim(),
+    email: String(row[iEmail] || '').trim(),
+    phone: String(row[iPhone] || '').trim(),
+  })).filter(v => v.name);
+
+  if (!vendors.length) {
+    alert('No valid vendors found to import.');
+    return;
+  }
+
+  const res = await fetchApi('/api/vendors-import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vendors }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert(err.error || 'Vendor import failed');
+    return;
+  }
+
+  await loadVendors();
+  alert(`Imported ${vendors.length} vendor(s).`);
+}
+
+async function chooseVendorForPO() {
+  if (!allVendors.length) {
+    try { await loadVendors(); } catch (e) {}
+  }
+  if (!allVendors.length) {
+    return (prompt('No vendors found. Enter vendor name:') || '').trim();
+  }
+
+  const options = allVendors.slice(0, 25).map((v, i) => `${i + 1}. ${v.name}`).join('\n');
+  const answer = prompt(`Select vendor number, or type a new vendor name:\n\n${options}`) || '';
+  const n = Number(answer);
+  if (Number.isInteger(n) && n >= 1 && n <= allVendors.length) return allVendors[n - 1].name;
+  return answer.trim();
 }
 
 function renderCustomerTable(customers) {
@@ -2057,12 +2365,20 @@ function escapeHtml(text) {
 
 
 async function fetchApi(path, options) {
-  const primary = await fetch(path, options);
-  if (primary.ok || !path.startsWith('/api/')) return primary;
+  if (!path.startsWith('/api/')) {
+    return fetch(path, options);
+  }
 
   const fallbackPath = `/.netlify/functions/${path.slice(5)}`;
-  const fallback = await fetch(fallbackPath, options);
-  return fallback;
+
+  try {
+    const primary = await fetch(path, options);
+    if (primary.ok) return primary;
+  } catch (e) {
+    // fall through to function-path fallback
+  }
+
+  return fetch(fallbackPath, options);
 }
 
 function filterCustomerTable() {
@@ -2125,13 +2441,13 @@ async function saveCustomer(event) {
   try {
     let res;
     if (id) {
-      res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, {
+      res = await fetchApi(`/api/customers?id=${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
     } else {
-      res = await fetch('/api/customers', {
+      res = await fetchApi('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -2154,7 +2470,7 @@ async function deleteCustomer(id) {
   if (!confirm('Are you sure you want to delete this customer?')) return;
 
   try {
-    const res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, {
+    const res = await fetchApi(`/api/customers?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete customer');
@@ -2408,7 +2724,7 @@ async function saveQuickAddCustomer() {
   };
 
   try {
-    const res = await fetch('/api/customers', {
+    const res = await fetchApi('/api/customers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -2460,18 +2776,6 @@ async function saveQuote() {
   }
 
   prepareForNewQuote();
-  const printNow = confirm(
-    `Quote ${quoteLabel} saved successfully.
-
-Select OK to Print or Cancel for No (save only).`
-  );
-
-  if (printNow) {
-    printQuote(savedQuote.id);
-    return;
-  }
-
-  alert(`Quote ${quoteLabel} saved. No print copy was created.`);
 }
 
 
@@ -2519,6 +2823,100 @@ function showYesNoModal(message, yesLabel = 'Yes', noLabel = 'No') {
   });
 }
 
+function showPOTypeModal() {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:10px;max-width:460px;width:calc(100% - 32px);text-align:center;box-shadow:0 12px 30px rgba(0,0,0,0.22);';
+    modal.innerHTML = `
+      <p style="margin:0 0 16px 0;font-size:16px;line-height:1.4;">Choose PO type for this new order:</p>
+      <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+        <button id="poTypeInternal" type="button">Internal PO</button>
+        <button id="poTypeExternal" type="button">External PO</button>
+        <button id="poTypeNone" type="button">No PO</button>
+      </div>
+    `;
+
+    function close(value) {
+      overlay.remove();
+      resolve(value);
+    }
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    modal.querySelector('#poTypeInternal').addEventListener('click', () => close('internal'));
+    modal.querySelector('#poTypeExternal').addEventListener('click', () => close('external'));
+    modal.querySelector('#poTypeNone').addEventListener('click', () => close('none'));
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close('none');
+    });
+  });
+}
+
+function showPODetailsModal(poType, vendors = []) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:10px;max-width:520px;width:calc(100% - 32px);text-align:left;box-shadow:0 12px 30px rgba(0,0,0,0.22);';
+
+    const vendorOptions = vendors.map(v => `<option value="${escapeHtml(v.name)}">${escapeHtml(v.name)}</option>`).join('');
+    const isExternal = poType === 'external';
+    modal.innerHTML = `
+      <h3 style="margin:0 0 12px 0;">${isExternal ? 'External' : 'Internal'} PO Details</h3>
+      ${isExternal ? `<label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Vendor</label>
+      <select id="poVendorSelect" style="width:100%;padding:8px;">
+        <option value="">-- Select Vendor --</option>
+        ${vendorOptions}
+      </select>
+      <label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Or Enter New Vendor</label>
+      <input id="poVendorInput" type="text" style="width:100%;padding:8px;" placeholder="Vendor name">` : `<p style="margin:6px 0 10px 0;">Internal PO number will be generated from order # (example: PO1000).</p>`}
+      ${isExternal ? `<label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Vendor PO #</label>
+      <input id="poNumberInput" type="text" style="width:100%;padding:8px;" placeholder="Enter vendor PO #">` : ''}
+      <label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Requested Date</label>
+      <input id="poRequestedDate" type="date" style="width:100%;padding:8px;" value="${new Date().toISOString().slice(0,10)}">
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+        <button id="poDetailsCancel" type="button">Cancel</button>
+        <button id="poDetailsSave" type="button">Continue</button>
+      </div>
+    `;
+
+    function close(value) {
+      overlay.remove();
+      resolve(value);
+    }
+
+    modal.querySelector('#poDetailsCancel').addEventListener('click', () => close(null));
+    modal.querySelector('#poDetailsSave').addEventListener('click', () => {
+      const requestedDate = modal.querySelector('#poRequestedDate')?.value || '';
+      if (!requestedDate) {
+        alert('Requested date is required.');
+        return;
+      }
+      if (isExternal) {
+        const selected = modal.querySelector('#poVendorSelect')?.value?.trim() || '';
+        const typed = modal.querySelector('#poVendorInput')?.value?.trim() || '';
+        const vendorName = typed || selected;
+        const vendorPoNumber = modal.querySelector('#poNumberInput')?.value?.trim() || '';
+        if (!vendorName || !vendorPoNumber) {
+          alert('Vendor and Vendor PO # are required.');
+          return;
+        }
+        close({ vendorName, vendorPoNumber, requestedDate });
+        return;
+      }
+      close({ vendorName: 'Kentucky Mirror and Plate Glass (Internal Shop)', vendorPoNumber: '', requestedDate });
+    });
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  });
+}
+
 async function printQuote(quoteId) {
   const idToPrint = quoteId || currentQuoteId || lastSavedQuoteId;
   if (!idToPrint) {
@@ -2527,7 +2925,7 @@ async function printQuote(quoteId) {
   }
 
   try {
-    const res = await fetch(`/api/quotes?id=${encodeURIComponent(idToPrint)}`);
+    const res = await fetchApi(`/api/quotes?id=${encodeURIComponent(idToPrint)}`);
     if (!res.ok) throw new Error('Quote not found');
     const quote = await res.json();
 
@@ -2540,15 +2938,14 @@ async function printQuote(quoteId) {
     printWindow.document.write('<html><head><title>Quote</title>');
     printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #000;padding:8px;text-align:center;}h2,h3{margin:0 0 8px 0;}</style>');
     printWindow.document.write('</head><body>');
-    printWindow.document.write(`<h2>Quote ${escapeHtml(quote.quoteNumber || quote.id || '')}</h2>`);
+    printWindow.document.write(`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;"><img src="/good%20logo.jpg" style="height:56px;width:auto;"><div><div>822 W Main St, Louisville KY 40202</div><div>502-583-5541 | info@kymirror.com</div></div></div>`);
+    printWindow.document.write(`<h2>QUOTE ${escapeHtml(quote.quoteNumber || quote.id || '')}</h2>`);
     printWindow.document.write(`<p><strong>Customer:</strong> ${escapeHtml(cust.name || quote.customerName || '')} &nbsp; <strong>Phone:</strong> ${escapeHtml(cust.phone || quote.customerPhone || '')}</p>`);
-    printWindow.document.write('<table><thead><tr><th>Qty</th><th>Size</th><th>Glass Type</th><th>Each</th><th>Total</th></tr></thead><tbody>');
+    printWindow.document.write('<table><thead><tr><th>Qty</th><th>Size</th><th>Glass Type</th></tr></thead><tbody>');
     items.forEach(item => {
-      printWindow.document.write(`<tr><td>${item.qty || 1}</td><td>${escapeHtml(`${item.width || ''} x ${item.height || ''}`)}</td><td>${escapeHtml(item.glassType || '')}</td><td>${escapeHtml(item.eachPrice || '$0.00')}</td><td>${escapeHtml(item.lineTotal || '$0.00')}</td></tr>`);
+      printWindow.document.write(`<tr><td>${item.qty || 1}</td><td>${escapeHtml(`${item.width || ''} x ${item.height || ''}`)}</td><td>${escapeHtml(item.glassType || '')}</td></tr>`);
     });
     printWindow.document.write('</tbody></table>');
-    printWindow.document.write(`<h3>Grand Total: $${(quote.grandTotal || 0).toFixed(2)}</h3>`);
-    printWindow.document.write(`<h3>Total with Tax: $${(quote.grandTotalWithTax || 0).toFixed(2)}</h3>`);
     printWindow.document.write('</body></html>');
     printWindow.document.close();
     printWindow.print();
@@ -2586,6 +2983,52 @@ function prepareForNewQuote() {
   setCalculatorMode('quote');
   lastSavedOrderId = null;
 }
+
+let printQueue = Promise.resolve();
+
+async function printUrlInHiddenFrame(url) {
+  const res = await fetchApi(url);
+  if (!res.ok) throw new Error(`Print request failed (${res.status})`);
+  const html = await res.text();
+
+  await new Promise((resolve) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    iframe.style.visibility = 'hidden';
+    iframe.onload = () => {
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (e) {
+          console.error('Print frame error', e);
+        }
+        setTimeout(() => {
+          iframe.remove();
+          resolve();
+        }, 700);
+      }, 150);
+    };
+    iframe.srcdoc = html;
+    document.body.appendChild(iframe);
+  });
+}
+
+function queuePrintUrl(url) {
+  printQueue = printQueue
+    .then(() => printUrlInHiddenFrame(url))
+    .catch((err) => {
+      console.error(err);
+      alert('Print failed: ' + err.message);
+    });
+  return printQueue;
+}
+
 function printDoc(type) {
   const idToPrint = currentOrderId || lastSavedOrderId;
 
@@ -2595,7 +3038,7 @@ function printDoc(type) {
   }
 
   const url = `/api/orders?id=${encodeURIComponent(idToPrint)}&print=${encodeURIComponent(type)}`;
-  window.open(url, "_blank");
+  queuePrintUrl(url);
 }
 
 async function deleteCurrentOrder() {
@@ -2647,8 +3090,9 @@ function gatherOrderData() {
 
   // Gather hardware rows
   const hardwareItems = Array.from(document.querySelectorAll('#hardwareTableBody tr')).map(row => {
-    const qty = parseInt(row.querySelector('.hw-qty')?.value, 10) || 0;
     const name = (row.querySelector('.hw-part')?.value || '').trim();
+    const rawQty = parseInt(row.querySelector('.hw-qty')?.value, 10);
+    const qty = Number.isFinite(rawQty) && rawQty > 0 ? rawQty : (name ? 1 : 0);
     const unitPriceText = row.querySelector('.hw-price')?.innerText || '$0.00';
     const lineTotalText = row.querySelector('.hw-total')?.innerText || '$0.00';
     const unitMatch = unitPriceText.match(/\$([\d.]+)/);
@@ -2681,6 +3125,7 @@ function gatherOrderData() {
 
 async function saveQuoteToDatabase() {
   const data = gatherOrderData();
+  const isNewOrder = !currentOrderId;
 
   if (!data.customer.name) {
     alert('Please enter a customer name before saving the quote.');
@@ -2702,7 +3147,7 @@ async function saveQuoteToDatabase() {
   const method = currentQuoteId ? 'PUT' : 'POST';
   const url = currentQuoteId ? `/api/quotes?id=${encodeURIComponent(currentQuoteId)}` : '/api/quotes';
 
-  const res = await fetch(url, {
+  const res = await fetchApi(url, {
     method,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -2732,7 +3177,7 @@ async function convertCurrentQuoteToOrder() {
     data.status = 'shop production';
     data.sequenceNumber = savedQuote.sequenceNumber;
 
-    const orderRes = await fetch('/api/orders', {
+    const orderRes = await fetchApi('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -2745,7 +3190,7 @@ async function convertCurrentQuoteToOrder() {
 
     const createdOrder = await orderRes.json();
 
-    await fetch(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
+    await fetchApi(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
@@ -2771,7 +3216,7 @@ async function convertCurrentQuoteToOrder() {
 
 async function saveOrder() {
   const data = gatherOrderData();
-  data.status = 'shop production';
+  const isNewOrder = !currentOrderId;
 
   if (!data.customer.name) {
     alert('Please enter a customer name before saving the order.');
@@ -2783,6 +3228,38 @@ async function saveOrder() {
     return;
   }
 
+  let sourceType = 'shop production';
+  let vendorName = '';
+  let vendorPoNumber = '';
+  let requestedDate = '';
+
+  let poType = '';
+  if (isNewOrder) {
+    poType = await showPOTypeModal();
+    if (poType === 'external' || poType === 'internal') {
+      sourceType = poType === 'external' ? 'on order (vendor)' : 'shop production';
+      const details = await showPODetailsModal(poType, allVendors);
+      if (!details) return;
+      vendorName = details.vendorName || '';
+      vendorPoNumber = details.vendorPoNumber || '';
+      requestedDate = details.requestedDate || '';
+      if (!vendorName.trim() || !requestedDate) {
+        alert('PO details are required when issuing a PO.');
+        return;
+      }
+    }
+  } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').includes('(vendor)')) {
+    sourceType = 'on order (vendor)';
+    vendorName = allOrders.find(o => o.id === currentOrderId)?.vendorName || '';
+    vendorPoNumber = allOrders.find(o => o.id === currentOrderId)?.vendorPoNumber || '';
+    requestedDate = allOrders.find(o => o.id === currentOrderId)?.requestedDate || '';
+  }
+
+  data.status = sourceType;
+  data.vendorName = vendorName;
+  data.vendorPoNumber = vendorPoNumber;
+  data.requestedDate = requestedDate;
+
   const saveBtn = document.querySelector('.btn-save-order');
   saveBtn.disabled = true;
   saveBtn.textContent = 'Saving...';
@@ -2790,7 +3267,7 @@ async function saveOrder() {
   try {
     const method = currentOrderId ? 'PUT' : 'POST';
     const url = currentOrderId ? `/api/orders?id=${encodeURIComponent(currentOrderId)}` : '/api/orders';
-    const res = await fetch(url, {
+    const res = await fetchApi(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -2803,17 +3280,79 @@ async function saveOrder() {
 
     const savedOrder = await res.json();
 
-    // Remember what we just saved (so Print works)
     currentOrderId = savedOrder.id;
     lastSavedOrderId = savedOrder.id;
 
-    // Briefly show confirmation
+    if (poType === 'internal') {
+      const poNumberGenerated = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}`;
+      vendorPoNumber = poNumberGenerated;
+      await fetchApi(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'shop production',
+          vendorName,
+          vendorPoNumber,
+          requestedDate,
+        }),
+      });
+    }
+
+    if (poType === 'external' || poType === 'internal') {
+      const poPayload = {
+        orderId: savedOrder.id,
+        orderNumber: savedOrder.orderNumber,
+        poNumber: vendorPoNumber,
+        vendor: vendorName,
+        poType,
+        requestedDate,
+        dateOrdered: savedOrder.createdAt,
+        status: 'Pending',
+      };
+      await fetchApi('/api/purchase-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(poPayload),
+      });
+
+      if (poType === 'external' && Array.isArray(data.hardwareItems) && data.hardwareItems.length) {
+        const internalHardwarePo = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}-H`;
+        const internalPoRes = await fetchApi('/api/purchase-orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: savedOrder.id,
+            orderNumber: savedOrder.orderNumber,
+            poNumber: internalHardwarePo,
+            vendor: 'Kentucky Mirror and Plate Glass (Internal Shop)',
+            poType: 'internal',
+            requestedDate,
+            dateOrdered: savedOrder.createdAt,
+            status: 'Pending',
+            syncToOrder: false,
+            items: data.hardwareItems.map(h => ({ qty: h.qty, description: h.name, unitPrice: h.price, total: h.total })),
+          }),
+        });
+        if (internalPoRes.ok) {
+          const internalPo = await internalPoRes.json();
+          if (internalPo?.id) {
+            await queuePrintUrl(`/api/purchase-orders?id=${encodeURIComponent(internalPo.id)}&print=1`);
+          }
+        }
+      }
+
+      await queuePrintUrl(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=purchase-order`);
+      await queuePrintUrl(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=packing-list`);
+    } else if (isNewOrder) {
+      await queuePrintUrl(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=ticket`);
+    }
+
     document.getElementById('currentOrderNumber').textContent = savedOrder.orderNumber;
     document.getElementById('orderSavedStatus').textContent = `Saved! ${savedOrder.orderNumber}`;
 
-    // Refresh Orders tab list
     try { await loadOrders(); } catch (e) {}
-
+    try { await loadPurchaseOrders(); } catch (e) {}
+    if (isNewOrder) startNewOrder();
 
   } catch (err) {
     alert('Error saving order: ' + err.message);
@@ -2835,14 +3374,16 @@ async function loadOrders() {
   } catch (err) {
     console.error(err);
     document.getElementById('orderTableBody').innerHTML =
-      '<tr><td colspan="8" style="text-align:center;">Failed to load orders.</td></tr>';
+      '<tr><td colspan="10" style="text-align:center;">Failed to load orders.</td></tr>';
   }
 }
+
+
 
 function renderOrderTable(orders) {
   const tbody = document.getElementById('orderTableBody');
   if (!orders.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No orders found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>';
     return;
   }
 
@@ -2859,11 +3400,9 @@ function renderOrderTable(orders) {
       <td>$${(o.grandTotal || 0).toFixed(2)}</td>
       <td>$${(o.grandTotalWithTax || 0).toFixed(2)}</td>
       <td>${escapeHtml(date)}</td>
-      <td>
-        <select onchange="event.stopPropagation(); updateOrderStatus('${o.id}', this.value)">
-          ${['shop production','on order (vendor)','completed'].map(status => `<option value="${status}" ${selectedStatus === status ? 'selected' : ''}>${status}</option>`).join('')}
-        </select>
-      </td>
+      <td>${escapeHtml(o.vendorName || '')}</td>
+      <td>${escapeHtml(o.vendorPoNumber || '')}</td>
+      <td>${escapeHtml(selectedStatus)}</td>
       <td class="actions-cell">
         <button class="btn-edit" onclick="event.stopPropagation(); loadOrderIntoCalculator('${o.id}')">Open</button>
         <button class="btn-delete" onclick="event.stopPropagation(); deleteOrder('${o.id}')">Delete</button>
@@ -2881,7 +3420,7 @@ async function searchOrders() {
   }
 
   try {
-    const res = await fetch(`/api/orders?search=${encodeURIComponent(query)}`);
+    const res = await fetchApi(`/api/orders?search=${encodeURIComponent(query)}`);
     if (!res.ok) throw new Error('Search failed');
     const results = await res.json();
     renderOrderTable(results);
@@ -2891,25 +3430,11 @@ async function searchOrders() {
 }
 
 
-async function updateOrderStatus(id, status) {
-  try {
-    const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    if (!res.ok) throw new Error('Failed to update order status');
-    await loadOrders();
-  } catch (err) {
-    alert('Error updating status: ' + err.message);
-  }
-}
-
 async function deleteOrder(id) {
   if (!confirm('Are you sure you want to delete this order?')) return false;
 
   try {
-    const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`, {
+    const res = await fetchApi(`/api/orders?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete order');
@@ -2968,6 +3493,8 @@ function viewOrder(id) {
         <div><strong>Address</strong>${escapeHtml(cust.address || 'N/A')}</div>
         <div><strong>Email</strong>${escapeHtml(cust.email || 'N/A')}</div>
         <div><strong>Credit Terms</strong>${escapeHtml(cust.creditTerms || 'N/A')}</div>
+        <div><strong>Vendor</strong>${escapeHtml(order.vendorName || 'N/A')}</div>
+        <div><strong>PO #</strong>${escapeHtml(order.vendorPoNumber || 'N/A')}</div>
       </div>
 
       <table>
@@ -3011,7 +3538,6 @@ function printOrderFromDetail(id) {
   let breakdownWindow = window.open('', '', 'width=800,height=600');
   breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
   breakdownWindow.document.write('</head><body>');
-  breakdownWindow.document.write('<h2>Kentucky Mirror and Plate Glass</h2>');
   breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${escapeHtml(order.orderNumber || '')}</h3>`);
 
   let custInfoHtml = `<p style="text-align:center; font-size:16px; margin-bottom:20px;">
@@ -3055,7 +3581,7 @@ async function loadOrderIntoCalculator(id) {
   const order = allOrders.find(o => o.id === id);
   if (!order) {
     try {
-      const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`);
+      const res = await fetchApi(`/api/orders?id=${encodeURIComponent(id)}`);
       if (!res.ok) throw new Error('Order not found');
       const fetched = await res.json();
       populateCalculatorFromOrder(fetched);
@@ -3067,6 +3593,19 @@ async function loadOrderIntoCalculator(id) {
   populateCalculatorFromOrder(order);
 }
 
+
+function formatOrderStatusSummary(order = {}) {
+  const parts = [];
+  if (order.vendorName) parts.push(`Vendor: ${order.vendorName}`);
+  if (order.vendorPoNumber) parts.push(`PO: ${order.vendorPoNumber}`);
+  if (order.vendorReceivedAt) {
+    const dt = new Date(order.vendorReceivedAt);
+    const receivedText = Number.isNaN(dt.getTime()) ? order.vendorReceivedAt : dt.toLocaleDateString();
+    parts.push(`Received: ${receivedText}`);
+  }
+  return parts.join(' | ');
+}
+
 function populateCalculatorFromOrder(order, mode = 'order') {
   const isQuoteMode = mode === 'quote';
   showCalculatorWorkspace(isQuoteMode ? 'quote' : 'order');
@@ -3075,7 +3614,7 @@ function populateCalculatorFromOrder(order, mode = 'order') {
   currentOrderId = isQuoteMode ? null : order.id;
   currentQuoteId = isQuoteMode ? order.id : null;
   document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
-  document.getElementById('orderSavedStatus').textContent = '';
+  document.getElementById('orderSavedStatus').textContent = formatOrderStatusSummary(order);
 
   const cust = order.customer || {};
   document.getElementById('customerName').value = cust.name || '';
@@ -3114,11 +3653,18 @@ function populateCalculatorFromOrder(order, mode = 'order') {
     for (let i = 0; i < 2; i++) addRow();
   }
 
-  if (order.hardware && order.hardware.name) {
-    // Populate hardware rows from saved data if available
-    clearHardware();
-  } else {
-    clearHardware();
+  clearHardware();
+  const hardwareItems = Array.isArray(order.hardwareItems) ? order.hardwareItems : [];
+  if (hardwareItems.length) {
+    const hwRows = document.querySelectorAll('#hardwareTableBody tr');
+    hardwareItems.forEach((item, idx) => {
+      const row = hwRows[idx] || hwRows[hwRows.length - 1];
+      if (!row) return;
+      row.querySelector('.hw-part').value = item.name || '';
+      row.querySelector('.hw-qty').value = item.qty || '';
+      calculateHardwareRow(row);
+      if (idx >= hwRows.length - 1) addHardwareRow();
+    });
   }
 
   updateTotals();
@@ -3129,7 +3675,7 @@ let allQuotes = [];
 
 async function loadQuotes() {
   try {
-    const res = await fetch('/api/quotes');
+    const res = await fetchApi('/api/quotes');
     if (!res.ok) throw new Error('Failed to load quotes');
     allQuotes = await res.json();
     renderQuoteTable(allQuotes);
@@ -3209,7 +3755,7 @@ async function convertSavedQuoteToOrder(id) {
   };
 
   try {
-    const orderRes = await fetch('/api/orders', {
+    const orderRes = await fetchApi('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderPayload),
@@ -3217,7 +3763,7 @@ async function convertSavedQuoteToOrder(id) {
     if (!orderRes.ok) throw new Error('Failed to create order from quote');
     const createdOrder = await orderRes.json();
 
-    await fetch(`/api/quotes?id=${encodeURIComponent(id)}`, {
+    await fetchApi(`/api/quotes?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
@@ -3446,7 +3992,7 @@ async function confirmImport() {
   statusEl.textContent = `Importing ${customers.length} customer(s)...`;
 
   try {
-    const res = await fetch('/api/customers-import', {
+    const res = await fetchApi('/api/customers-import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ customers }),
@@ -3486,6 +4032,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   for (let i = 0; i < 5; i++) addRow();
   updateTotals();
+  // Ensure calculator always starts with visible editable lines.
+  try { if (typeof startNewOrder === 'function') startNewOrder(); } catch (e) {}
 
   await loadCalcCustomers();
   setupCustomerLookup();
@@ -3500,7 +4048,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
   }
   function kympgHideAllSections(){
-    const ids = ['landing-section','calculator-section','customer-section','orders-section',
+    const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
                  'quotedb-section','po-section','breakage-section','pricelist-section'];
     ids.forEach(id => {
       const el = document.getElementById(id);
@@ -3527,52 +4075,243 @@ document.addEventListener("DOMContentLoaded", async function () {
     kympgSetHeader('Kentucky Mirror and Plate Glass', 'Select an option on the left to get started.', 'Home', 'Welcome');
   }
 
-  async function loadPurchaseOrders() {
+  async function runHomeQuickSearch() {
+    const input = document.getElementById('homeQuickSearchInput');
+    const resultsEl = document.getElementById('homeQuickResults');
+    if (!input || !resultsEl) return;
+
+    const q = (input.value || '').trim().toLowerCase();
+    const normalizePhone = (v) => String(v || '').replace(/\D/g, '');
+    const qPhone = normalizePhone(q);
+    if (!q) {
+      resultsEl.innerHTML = '<div class="kympg-quickMeta" style="padding:8px 4px;">Enter an order/quote/PO number, customer name, or phone #.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = '<div class="kympg-quickMeta" style="padding:8px 4px;">Searching…</div>';
+
     try {
-      const res = await fetch('/.netlify/functions/purchase-orders');
-      if (!res.ok) throw new Error('Failed to load Purchase Orders');
+      const [ordersRes, quotesRes, poRes] = await Promise.all([
+        fetchApi('/api/orders'),
+        fetchApi('/api/quotes'),
+        fetchApi('/api/purchase-orders'),
+      ]);
 
-      const data = await res.json();
-      const container = document.getElementById('po-section');
-      container.innerHTML = '<h2>Purchase Orders</h2>';
+      const orders = ordersRes.ok ? await ordersRes.json() : [];
+      const quotes = quotesRes.ok ? await quotesRes.json() : [];
+      const pos = poRes.ok ? await poRes.json() : [];
 
-      if (!data || data.length === 0) {
-        container.innerHTML += '<p>No purchase orders found.</p>';
+      const orderHits = (orders || []).filter(o => {
+        const custName = (o.customer?.name || '').toLowerCase();
+        const custPhone = normalizePhone(o.customer?.phone || '');
+        return (o.orderNumber || '').toLowerCase().includes(q)
+          || custName.includes(q)
+          || (qPhone && custPhone.includes(qPhone));
+      });
+
+      const quoteHits = (quotes || []).filter(x => {
+        const custName = (x.customer?.name || x.customerName || '').toLowerCase();
+        const custPhone = normalizePhone(x.customer?.phone || x.customerPhone || '');
+        return (x.quoteNumber || '').toLowerCase().includes(q)
+          || custName.includes(q)
+          || (qPhone && custPhone.includes(qPhone));
+      });
+
+      const poHits = (pos || []).filter(p => {
+        return (p.poNumber || '').toLowerCase().includes(q)
+          || (p.orderNumber || '').toLowerCase().includes(q)
+          || (p.vendor || '').toLowerCase().includes(q);
+      });
+
+      const briefOrderDescription = (o) => {
+        const items = Array.isArray(o.items) ? o.items : [];
+        if (!items.length) return 'NO LINE ITEMS';
+        const first = items[0] || {};
+        const size = first.width && first.height ? `${first.width} X ${first.height}` : '';
+        const firstDesc = [first.glassType || first.type || 'GLASS', size].filter(Boolean).join(' ');
+        return items.length > 1 ? `${firstDesc} + ${items.length - 1} MORE` : firstDesc;
+      };
+      const renderLinePreview = (items, title) => {
+        const rows = (Array.isArray(items) ? items : []).slice(0, 6).map((it, idx) => {
+          const size = it.width && it.height ? `${it.width} X ${it.height}` : '';
+          const desc = [it.glassType || it.type || 'ITEM', size].filter(Boolean).join(' ');
+          const qty = it.qty || it.quantity || 1;
+          return `<div class="kympg-quickPreviewLine">${idx + 1}. QTY ${escapeHtml(qty)} — ${escapeHtml(desc)}</div>`;
+        }).join('');
+        const total = Array.isArray(items) ? items.length : 0;
+        const more = total > 6 ? `<div class="kympg-quickPreviewLine">+ ${total - 6} MORE LINES</div>` : '';
+        return `<div class="kympg-quickPreview"><div class="kympg-quickPreviewTitle">${escapeHtml(title)}</div>${rows || '<div class="kympg-quickPreviewLine">NO LINES</div>'}${more}</div>`;
+      };
+      const orderPreviewHtml = (o) => renderLinePreview(o.items || [], 'ORDER LINES PREVIEW');
+      const quotePreviewHtml = (x) => renderLinePreview(x.items || [], 'QUOTE LINES PREVIEW');
+
+      const html = [];
+      orderHits.forEach(o => {
+        const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '';
+        const brief = briefOrderDescription(o);
+        html.push(`<div class="kympg-quickItem" onclick="openQuickSearchResult('order','${o.id}')"><strong>Order ${escapeHtml(o.orderNumber || '')}</strong><div class="kympg-quickMeta">Date: ${escapeHtml(date)} • ${escapeHtml(brief)} • Customer: ${escapeHtml(o.customer?.name || '')}</div>${orderPreviewHtml(o)}</div>`);
+      });
+      quoteHits.forEach(x => {
+        const date = x.createdAt ? new Date(x.createdAt).toLocaleDateString() : '';
+        html.push(`<div class="kympg-quickItem" onclick="openQuickSearchResult('quote','${x.id}')"><strong>Quote ${escapeHtml(x.quoteNumber || '')}</strong><div class="kympg-quickMeta">Date: ${escapeHtml(date)} • Customer: ${escapeHtml(x.customer?.name || x.customerName || '')} • Phone: ${escapeHtml(x.customer?.phone || x.customerPhone || '')}</div>${quotePreviewHtml(x)}</div>`);
+      });
+      poHits.forEach(p => {
+        const date = p.dateOrdered ? new Date(p.dateOrdered).toLocaleDateString() : '';
+        html.push(`<div class="kympg-quickItem" onclick="openQuickSearchResult('po','${p.id}')"><strong>PO ${escapeHtml(p.poNumber || '')}</strong><div class="kympg-quickMeta">Date: ${escapeHtml(date)} • Order: ${escapeHtml(p.orderNumber || '')} • Vendor: ${escapeHtml(p.vendor || '')}</div></div>`);
+      });
+
+      resultsEl.innerHTML = html.length ? html.join('') : '<div class="kympg-quickMeta" style="padding:8px 4px;">No matching orders, quotes, or POs found.</div>';
+    } catch (err) {
+      resultsEl.innerHTML = `<div class="kympg-quickMeta" style="padding:8px 4px;color:#b00020;">Search failed: ${escapeHtml(err.message || 'Unknown error')}</div>`;
+    }
+  }
+
+  async function logReceivedPO() {
+    const input = document.getElementById('homeLogPoInput');
+    const statusEl = document.getElementById('homeLogPoStatus');
+    if (!input || !statusEl) return;
+
+    const raw = (input.value || '').trim();
+    if (!raw) {
+      statusEl.textContent = 'Enter a PO # to log as received.';
+      return;
+    }
+
+    const normalize = (v) => String(v || '').replace(/\s+/g, '').toUpperCase();
+    const target = normalize(raw);
+    statusEl.textContent = 'Searching PO…';
+
+    try {
+      const listRes = await fetchApi('/api/purchase-orders');
+      if (!listRes.ok) throw new Error('Could not load purchase orders');
+      const pos = await listRes.json();
+
+      const po = (pos || []).find(p => normalize(p.poNumber) === target);
+      if (!po) {
+        statusEl.textContent = `PO ${raw} not found.`;
         return;
       }
 
-      const table = document.createElement('table');
-      table.style.width = '100%';
-      table.style.borderCollapse = 'collapse';
+      const today = new Date().toISOString().slice(0, 10);
+      const nextStatus = String(po.poType || 'external').toLowerCase() === 'internal'
+        ? 'Completed by Shop'
+        : 'Received';
 
-      table.innerHTML = `
-        <thead>
-          <tr>
-            <th>PO #</th>
-            <th>Vendor</th>
-            <th>Date</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${data.map(po => `
-            <tr>
-              <td>${po.poNumber || ''}</td>
-              <td>${po.vendor || ''}</td>
-              <td>${po.date || ''}</td>
-              <td>${po.total || ''}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      `;
+      const updateRes = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(po.id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: nextStatus,
+          receivedAt: today,
+        }),
+      });
 
-      container.appendChild(table);
+      if (!updateRes.ok) {
+        const err = await updateRes.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to update PO');
+      }
 
+      statusEl.textContent = `Updated ${po.poNumber} as ${nextStatus} on ${today}.`;
+      input.value = '';
+      try { if (typeof loadPurchaseOrders === 'function') await loadPurchaseOrders(); } catch (e) {}
+      try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
+    } catch (err) {
+      statusEl.textContent = `Error: ${err.message}`;
+    }
+  }
+
+  async function openQuickSearchResult(type, id) {
+    if (type === 'order') {
+      try { await loadOrderIntoCalculator(id); } catch (e) {}
+      return;
+    }
+
+    if (type === 'quote') {
+      try {
+        const res = await fetchApi(`/api/quotes?id=${encodeURIComponent(id)}`);
+        if (!res.ok) throw new Error('Quote not found');
+        const quote = await res.json();
+        kympgOpen('quote');
+        populateCalculatorFromOrder({ ...quote, id, orderNumber: quote.quoteNumber || id }, 'quote');
+      } catch (err) {
+        alert('Could not open quote: ' + err.message);
+      }
+      return;
+    }
+
+    if (type === 'po') {
+      try {
+        const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`);
+        if (!res.ok) throw new Error('PO not found');
+        const po = await res.json();
+        if (po.orderId) {
+          await loadOrderIntoCalculator(po.orderId);
+          return;
+        }
+      } catch (err) {
+        alert('Could not open PO: ' + err.message);
+      }
+      kympgOpen('po');
+    }
+  }
+
+  async function loadPurchaseOrders() {
+    const tbody = document.getElementById('poTableBody');
+    if (!tbody) return;
+    try {
+      const res = await fetchApi('/api/purchase-orders');
+      if (!res.ok) throw new Error('Failed to load Purchase Orders');
+      const data = await res.json();
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No purchase orders found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(po => `
+        <tr>
+          <td>${po.orderNumber || ''}</td>
+          <td><input type="text" id="po_vendor_${po.id}" value="${escapeHtml(po.vendor || '')}"></td>
+          <td>${po.poNumber || ''}</td>
+          <td>${(po.requestedDate || '').slice(0, 10)}</td>
+          <td><input type="date" id="po_delivery_${po.id}" value="${(po.deliveryDate || '').slice(0, 10)}"></td>
+          <td>
+            <select id="po_status_${po.id}">
+              <option value="Pending" ${po.status === 'Pending' ? 'selected' : ''}>Pending</option>
+              <option value="In Progress" ${po.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="Received" ${po.status === 'Received' ? 'selected' : ''}>Received</option>
+              <option value="Completed by Shop" ${po.status === 'Completed by Shop' ? 'selected' : ''}>Completed by Shop</option>
+            </select>
+          </td>
+          <td><input type="date" id="po_received_${po.id}" value="${(po.receivedAt || '').slice(0, 10)}"></td>
+          <td><button type="button" onclick="updatePurchaseOrder('${po.id}')">Save</button></td>
+        </tr>
+      `).join('');
     } catch (err) {
       console.error(err);
-      document.getElementById('po-section').innerHTML =
-        '<p style="color:red;">Error loading purchase orders.</p>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error loading purchase orders.</td></tr>';
     }
+  }
+
+  async function updatePurchaseOrder(id) {
+    const vendor = (document.getElementById(`po_vendor_${id}`)?.value || '').trim().toUpperCase();
+    const deliveryDate = document.getElementById(`po_delivery_${id}`)?.value || '';
+    const status = document.getElementById(`po_status_${id}`)?.value || 'Pending';
+    const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
+
+    const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vendor, deliveryDate, status, receivedAt }),
+    });
+
+    if (!res.ok) {
+      alert('Failed to update purchase order.');
+      return;
+    }
+
+    await loadPurchaseOrders();
+    try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
   }
 
   function kympgOpen(which, btn){
@@ -3637,22 +4376,56 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       try{ if (typeof loadCustomers === 'function') loadCustomers(); }catch(e){}
       return;
     }
+    if (which === 'vendors'){
+      const v = document.getElementById('vendor-section');
+      if (v){ v.style.display = 'block'; }
+      kympgSetHeader('Vendor Database', '', 'Vendor Import', '');
+      try{ if (typeof loadVendors === 'function') loadVendors(); }catch(e){}
+      return;
+    }
     setCalculatorMode('quote');
     kympgShowLanding();
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','orders-section'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.parentElement !== content){
-          content.appendChild(el);
-        }
-        if (el) el.style.display = 'none';
-      });
+      ['calculator-section','customer-section','vendor-section','orders-section','quotedb-section','po-section','breakage-section','pricelist-section']
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (el && el.parentElement !== content) content.appendChild(el);
+          if (el) el.style.display = 'none';
+        });
     }
     kympgShowLanding();
+
+    const quickInput = document.getElementById('homeQuickSearchInput');
+    if (quickInput) {
+      quickInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          runHomeQuickSearch();
+          return;
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          quickInput.blur();
+          const resultsEl = document.getElementById('homeQuickResults');
+          if (resultsEl) resultsEl.innerHTML = '';
+        }
+      });
+    }
+
+    const logPoInput = document.getElementById('homeLogPoInput');
+    if (logPoInput) {
+      logPoInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          logReceivedPO();
+        }
+      });
+    }
   });
 </script>
 
