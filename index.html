@@ -3563,11 +3563,44 @@ function normalizePoItemsForCompare(items = []) {
   }));
 }
 
+function normalizeOrderForPoPrompt(order = {}) {
+  const customer = order.customer || {};
+  return {
+    customerName: String(customer.name || '').trim().toUpperCase(),
+    customerPhone: String(customer.phone || '').trim().toUpperCase(),
+    customerAddress: String(customer.address || '').trim().toUpperCase(),
+    customerEmail: String(customer.email || '').trim().toUpperCase(),
+    customerTerms: String(customer.creditTerms || '').trim().toUpperCase(),
+    customerNotes: String(order.customerNotes || order.notes || '').trim().toUpperCase(),
+    shopNotes: String(order.shopNotes || '').trim().toUpperCase(),
+    requestedDate: String(order.requestedDate || '').slice(0, 10),
+    vendorName: String(order.vendorName || '').trim().toUpperCase(),
+    vendorPoNumber: String(order.vendorPoNumber || '').trim().toUpperCase(),
+    items: normalizePoItemsForCompare(order.items || []),
+    hardwareItems: (Array.isArray(order.hardwareItems) ? order.hardwareItems : []).map(h => ({
+      qty: Number(h.qty || 0),
+      name: String(h.name || '').trim().toUpperCase(),
+    })),
+  };
+}
+
 async function saveOrder() {
   const data = gatherOrderData();
   const isNewOrder = !currentOrderId;
   const previousOrder = isNewOrder ? null : (allOrders.find(o => o.id === currentOrderId) || null);
   const needsInitialOrderWorkflow = !isNewOrder && !!previousOrder?.requiresPoSetup;
+  const hasAnyOrderChanges = !isNewOrder && JSON.stringify(normalizeOrderForPoPrompt(previousOrder || {})) !== JSON.stringify(normalizeOrderForPoPrompt({
+    ...previousOrder,
+    customer: data.customer,
+    customerNotes: data.customerNotes,
+    notes: data.customerNotes,
+    shopNotes: data.shopNotes,
+    requestedDate: data.requestedDate || previousOrder?.requestedDate || '',
+    vendorName: data.vendorName || previousOrder?.vendorName || '',
+    vendorPoNumber: data.vendorPoNumber || previousOrder?.vendorPoNumber || '',
+    items: data.items,
+    hardwareItems: data.hardwareItems,
+  }));
 
   if (!data.customer.name) {
     alert('Please enter a customer name before saving the order.');
@@ -3751,7 +3784,7 @@ async function saveOrder() {
             const shopNotesChanged = String(linkedPo.shopNotes || '') !== String(savedOrder.shopNotes || data.shopNotes || '');
             const poChanged = itemsChanged || requestedChanged || vendorChanged || shopNotesChanged || orderItemsChanged;
 
-            if (poChanged) {
+            if (poChanged || hasAnyOrderChanges) {
               const updateRes = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(linkedPo.id)}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -3761,6 +3794,7 @@ async function saveOrder() {
                   orderNumber: savedOrder.orderNumber || linkedPo.orderNumber || '',
                   shopNotes: savedOrder.shopNotes || data.shopNotes || linkedPo.shopNotes || '',
                   items: newPoItems,
+                  updatedFromOrderAt: new Date().toISOString(),
                 }),
               });
               if (updateRes.ok) {
