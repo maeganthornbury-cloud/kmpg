@@ -1990,6 +1990,29 @@ function switchTab(tab) {
   }
 }
 
+
+function showCalculatorWorkspace(mode = 'order') {
+  if (typeof kympgHideAllSections === 'function') {
+    kympgHideAllSections();
+  }
+
+  const calc = document.getElementById('calculator-section');
+  if (calc) {
+    calc.style.display = 'block';
+  }
+
+  if (typeof kympgSetHeader === 'function') {
+    if (mode === 'quote') {
+      kympgSetHeader('New Quote', 'Create and print a quote.', 'New Quote', 'Quote builder');
+    } else {
+      kympgSetHeader('New Order', 'Create an order and print ticket/invoice.', 'New Order', 'Order form');
+    }
+  }
+
+  switchTab('calculator');
+  setCalculatorMode(mode);
+}
+
 // ===================== CUSTOMER CRUD =====================
 let allCustomers = [];
 
@@ -2962,8 +2985,7 @@ async function loadOrderIntoCalculator(id) {
 }
 
 function populateCalculatorFromOrder(order) {
-  switchTab('calculator');
-  setCalculatorMode('order');
+  showCalculatorWorkspace('order');
 
   currentOrderId = order.id;
   document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
@@ -3073,6 +3095,7 @@ function searchQuotes() {
 async function loadQuoteIntoCalculator(id) {
   const quote = allQuotes.find(q => q.id === id);
   if (!quote) return;
+  showCalculatorWorkspace('quote');
   populateCalculatorFromOrder({ ...quote, id: null, orderNumber: `Quote ${quote.id}` });
   setCalculatorMode('quote');
   currentQuoteId = quote.id;
