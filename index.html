@@ -1990,6 +1990,29 @@ function switchTab(tab) {
   }
 }
 
+
+function showCalculatorWorkspace(mode = 'order') {
+  if (typeof kympgHideAllSections === 'function') {
+    kympgHideAllSections();
+  }
+
+  const calc = document.getElementById('calculator-section');
+  if (calc) {
+    calc.style.display = 'block';
+  }
+
+  if (typeof kympgSetHeader === 'function') {
+    if (mode === 'quote') {
+      kympgSetHeader('New Quote', 'Create and print a quote.', 'New Quote', 'Quote builder');
+    } else {
+      kympgSetHeader('New Order', 'Create an order and print ticket/invoice.', 'New Order', 'Order form');
+    }
+  }
+
+  switchTab('calculator');
+  setCalculatorMode(mode);
+}
+
 // ===================== CUSTOMER CRUD =====================
 let allCustomers = [];
 
@@ -2421,6 +2444,8 @@ async function saveQuote() {
   if (printNow) {
     printQuote(savedQuote.id);
   }
+
+  prepareForNewQuote();
 }
 
 async function printQuote(quoteId) {
@@ -2483,6 +2508,12 @@ function startNewOrder() {
   updateTotals();
   clearCustomerInfo();
   clearHardware();
+}
+
+function prepareForNewQuote() {
+  startNewOrder();
+  setCalculatorMode('quote');
+  lastSavedOrderId = null;
 }
 function printDoc(type) {
   const idToPrint = currentOrderId || lastSavedOrderId;
@@ -2656,6 +2687,10 @@ async function convertCurrentQuoteToOrder() {
 
     try { await loadOrders(); } catch (e) {}
     try { await loadQuotes(); } catch (e) {}
+    alert(`Quote converted to order ${createdOrder.orderNumber}. Quote has been closed as ordered.`);
+    try { await loadOrders(); } catch (e) {}
+    try { await loadQuotes(); } catch (e) {}
+    prepareForNewQuote();
   } catch (err) {
     alert('Error converting quote: ' + err.message);
   }
@@ -2962,6 +2997,8 @@ function populateCalculatorFromOrder(order, mode = 'order') {
   switchTab('calculator');
   const isQuoteMode = mode === 'quote';
   setCalculatorMode(isQuoteMode ? 'quote' : 'order');
+function populateCalculatorFromOrder(order) {
+  showCalculatorWorkspace('order');
 
   currentOrderId = isQuoteMode ? null : order.id;
   document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
@@ -3082,6 +3119,10 @@ async function loadQuoteIntoCalculator(id) {
   currentQuoteId = quote.id;
   document.getElementById('currentOrderNumber').textContent = `Quote ${quote.id}`;
   document.getElementById('orderSavedStatus').textContent = 'Loaded quote';
+  showCalculatorWorkspace('quote');
+  populateCalculatorFromOrder({ ...quote, id: null, orderNumber: `Quote ${quote.id}` });
+  setCalculatorMode('quote');
+  currentQuoteId = quote.id;
 }
 
 async function convertSavedQuoteToOrder(id) {
@@ -3113,6 +3154,10 @@ async function convertSavedQuoteToOrder(id) {
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
     });
 
+    alert(`Quote converted to order ${createdOrder.orderNumber}. Quote has been closed as ordered.`);
+    await loadQuotes();
+    await loadOrders();
+    prepareForNewQuote();
     alert(`Quote converted to order ${createdOrder.orderNumber}.`);
     await loadQuotes();
     await loadOrders();
