@@ -863,6 +863,16 @@ body{
           <span class="kympg-hint">Upload customer list</span>
     </span>
       </button>
+
+      <button class="kympg-navBtn" data-tip="Vendor List" type="button" onclick="kympgOpen('vendors', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M19 6v12"/></svg>
+        </span>
+        <span class="kympg-labelWrap">
+          <span class="kympg-label">Vendor List</span>
+          <span class="kympg-hint">Upload vendor list</span>
+    </span>
+      </button>
     </nav>
 
     <div class="kympg-spacer"></div>
@@ -924,7 +934,24 @@ body{
 
           <div id="po-section" style="display:none;">
             <h2 style="margin-top:0;">Purchase Orders</h2>
-            <p style="color:var(--muted);margin-top:6px;">Placeholder for Vendor POs (vendor, PO #, status, dates, totals, attachments).</p>
+            <p style="color:var(--muted);margin-top:6px;">Vendor purchase orders. Updates here sync back to the linked order.</p>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th>Order #</th>
+                  <th>Vendor</th>
+                  <th>PO #</th>
+                  <th>Requested Date</th>
+                  <th>Delivery Date</th>
+                  <th>Status</th>
+                  <th>Received</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="poTableBody">
+                <tr><td colspan="8" style="text-align:center;">Loading purchase orders...</td></tr>
+              </tbody>
+            </table>
           </div>
 
           <div id="breakage-section" style="display:none;">
@@ -1088,6 +1115,7 @@ body{
       <button type="button" onclick="printDoc('ticket')">Print Ticket</button>
       <button type="button" onclick="printDoc('packing-list')">Print Packing List</button>
       <button type="button" onclick="printDoc('invoice')">Print Invoice</button>
+      <button type="button" onclick="printDoc('purchase-order')">Print PO</button>
       <button type="button" onclick="deleteCurrentOrder()">Delete Order</button>
     </div>
 
@@ -1151,6 +1179,48 @@ body{
   </table>
 </div>
 
+<!-- Vendor Management Section -->
+<div id="vendor-section" style="display:none;">
+  <div id="vendorFormWrapper" style="display:none;">
+    <form id="vendorForm" onsubmit="saveVendor(event)">
+      <input type="hidden" id="vendorEditId" value="">
+      <h3 id="vendorFormTitle">Add New Vendor</h3>
+      <label for="vendorName">Vendor Name *</label>
+      <input type="text" id="vendorName" required placeholder="Enter vendor name">
+      <label for="vendorAddress">Address</label>
+      <input type="text" id="vendorAddress" placeholder="Enter address">
+      <label for="vendorEmail">Email</label>
+      <input type="email" id="vendorEmail" placeholder="Enter email address">
+      <label for="vendorPhone">Phone Number</label>
+      <input type="tel" id="vendorPhone" placeholder="(123) 456-7890">
+      <div class="form-actions">
+        <button type="submit" class="btn-save">Save Vendor</button>
+        <button type="button" class="btn-cancel" onclick="cancelVendorForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <button class="btn-add-customer" onclick="showAddVendorForm()">+ Add Vendor</button>
+  <button class="btn-upload-customer" onclick="document.getElementById('vendorImportFileInput').click()">Upload Vendor CSV/Excel</button>
+  <input type="file" id="vendorImportFileInput" accept=".csv,.xlsx,.xls" style="display:none;" onchange="handleVendorImportFile(event)">
+  <input type="text" id="vendorSearch" placeholder="Search vendors..." oninput="filterVendorTable()">
+
+  <table id="vendorTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="vendorTableBody">
+      <tr><td colspan="5" style="text-align:center;">Loading vendors...</td></tr>
+    </tbody>
+  </table>
+</div>
+
 <!-- Orders Section -->
 <div id="orders-section">
   <h2>Orders</h2>
@@ -1165,12 +1235,14 @@ body{
         <th>Grand Total</th>
         <th>Total w/ Tax</th>
         <th>Date</th>
+        <th>Vendor</th>
+        <th>PO #</th>
         <th>Status</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody id="orderTableBody">
-      <tr><td colspan="8" style="text-align:center;">Loading orders...</td></tr>
+      <tr><td colspan="10" style="text-align:center;">Loading orders...</td></tr>
     </tbody>
   </table>
 </div>
@@ -1186,7 +1258,7 @@ body{
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','customer-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1194,7 +1266,7 @@ body{
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','customer-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['landing-section','calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
@@ -1202,6 +1274,7 @@ body{
       order: 'calculator-section',
       orders: 'orders-section',
       customerimport: 'customer-section',
+      vendors: 'vendor-section',
       breakage: 'breakage-section',
       pricelist: 'pricelist-section',
       quotedb: 'quotedb-section',
@@ -1211,6 +1284,7 @@ body{
     const targetId = map[which] || 'landing-section';
     const target = document.getElementById(targetId);
     if (target) target.style.display = 'block';
+    if (which === 'po') loadPurchaseOrders();
   }
 
   // Ignore noisy browser-extension promise rejections unrelated to app logic.
@@ -2013,6 +2087,7 @@ function showCalculatorWorkspace(mode = 'order') {
 
 // ===================== CUSTOMER CRUD =====================
 let allCustomers = [];
+let allVendors = [];
 
 async function loadCustomers() {
   try {
@@ -2025,6 +2100,183 @@ async function loadCustomers() {
     document.getElementById('customerTableBody').innerHTML =
       '<tr><td colspan="6" style="text-align:center;">Failed to load customers.</td></tr>';
   }
+}
+
+async function loadVendors() {
+  try {
+    const res = await fetchApi('/api/vendors');
+    if (!res.ok) throw new Error('Failed to load vendors');
+    allVendors = await res.json();
+    renderVendorTable(allVendors);
+  } catch (err) {
+    console.error(err);
+    const tbody = document.getElementById('vendorTableBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Failed to load vendors.</td></tr>';
+  }
+}
+
+function renderVendorTable(vendors) {
+  const tbody = document.getElementById('vendorTableBody');
+  if (!tbody) return;
+  if (!vendors.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No vendors found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = vendors.map(v => `
+    <tr>
+      <td>${escapeHtml(v.name || '')}</td>
+      <td>${escapeHtml(v.address || '')}</td>
+      <td>${escapeHtml(v.email || '')}</td>
+      <td>${escapeHtml(v.phone || '')}</td>
+      <td class="actions-cell">
+        <button class="btn-edit" onclick="editVendor('${v.id}')">Edit</button>
+        <button class="btn-delete" onclick="deleteVendor('${v.id}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function filterVendorTable() {
+  const search = (document.getElementById('vendorSearch')?.value || '').toLowerCase();
+  const filtered = allVendors.filter(v =>
+    (v.name || '').toLowerCase().includes(search) ||
+    (v.address || '').toLowerCase().includes(search) ||
+    (v.email || '').toLowerCase().includes(search) ||
+    (v.phone || '').toLowerCase().includes(search)
+  );
+  renderVendorTable(filtered);
+}
+
+function showAddVendorForm() {
+  document.getElementById('vendorEditId').value = '';
+  document.getElementById('vendorFormTitle').textContent = 'Add New Vendor';
+  document.getElementById('vendorName').value = '';
+  document.getElementById('vendorAddress').value = '';
+  document.getElementById('vendorEmail').value = '';
+  document.getElementById('vendorPhone').value = '';
+  document.getElementById('vendorFormWrapper').style.display = 'block';
+}
+
+function cancelVendorForm() {
+  document.getElementById('vendorFormWrapper').style.display = 'none';
+}
+
+function editVendor(id) {
+  const vendor = allVendors.find(v => v.id === id);
+  if (!vendor) return;
+  document.getElementById('vendorEditId').value = id;
+  document.getElementById('vendorFormTitle').textContent = 'Edit Vendor';
+  document.getElementById('vendorName').value = vendor.name || '';
+  document.getElementById('vendorAddress').value = vendor.address || '';
+  document.getElementById('vendorEmail').value = vendor.email || '';
+  document.getElementById('vendorPhone').value = vendor.phone || '';
+  document.getElementById('vendorFormWrapper').style.display = 'block';
+}
+
+async function saveVendor(event) {
+  event.preventDefault();
+  const id = document.getElementById('vendorEditId').value;
+  const payload = {
+    name: document.getElementById('vendorName').value.trim(),
+    address: document.getElementById('vendorAddress').value.trim(),
+    email: document.getElementById('vendorEmail').value.trim(),
+    phone: document.getElementById('vendorPhone').value.trim(),
+  };
+
+  const method = id ? 'PUT' : 'POST';
+  const url = id ? `/api/vendors?id=${encodeURIComponent(id)}` : '/api/vendors';
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert(err.error || 'Failed to save vendor');
+    return;
+  }
+
+  cancelVendorForm();
+  await loadVendors();
+}
+
+async function deleteVendor(id) {
+  if (!confirm('Delete this vendor?')) return;
+  const res = await fetchApi(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+  if (!res.ok) {
+    alert('Failed to delete vendor');
+    return;
+  }
+  await loadVendors();
+}
+
+async function handleVendorImportFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  let rows = [];
+
+  if (ext === 'csv') {
+    rows = parseCSVRows(await file.text());
+  } else {
+    await loadXLSXLib();
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    rows = XLSX.utils.sheet_to_json(sheet, { header: 1, blankrows: false, defval: '' });
+  }
+
+  if (!rows.length) return;
+
+  const headers = rows[0].map(h => String(h).trim().toLowerCase());
+  const getCol = (names) => names.map(n => headers.indexOf(n)).find(i => i >= 0) ?? -1;
+  const iName = getCol(['name', 'vendor']);
+  const iAddress = getCol(['address']);
+  const iEmail = getCol(['email']);
+  const iPhone = getCol(['phone']);
+
+  const vendors = rows.slice(1).map(row => ({
+    name: String(row[iName] || '').trim(),
+    address: String(row[iAddress] || '').trim(),
+    email: String(row[iEmail] || '').trim(),
+    phone: String(row[iPhone] || '').trim(),
+  })).filter(v => v.name);
+
+  if (!vendors.length) {
+    alert('No valid vendors found to import.');
+    return;
+  }
+
+  const res = await fetchApi('/api/vendors-import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vendors }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert(err.error || 'Vendor import failed');
+    return;
+  }
+
+  await loadVendors();
+  alert(`Imported ${vendors.length} vendor(s).`);
+}
+
+async function chooseVendorForPO() {
+  if (!allVendors.length) {
+    try { await loadVendors(); } catch (e) {}
+  }
+  if (!allVendors.length) {
+    return (prompt('No vendors found. Enter vendor name:') || '').trim();
+  }
+
+  const options = allVendors.slice(0, 25).map((v, i) => `${i + 1}. ${v.name}`).join('\n');
+  const answer = prompt(`Select vendor number, or type a new vendor name:\n\n${options}`) || '';
+  const n = Number(answer);
+  if (Number.isInteger(n) && n >= 1 && n <= allVendors.length) return allVendors[n - 1].name;
+  return answer.trim();
 }
 
 function renderCustomerTable(customers) {
@@ -2125,13 +2377,13 @@ async function saveCustomer(event) {
   try {
     let res;
     if (id) {
-      res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, {
+      res = await fetchApi(`/api/customers?id=${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
     } else {
-      res = await fetch('/api/customers', {
+      res = await fetchApi('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -2154,7 +2406,7 @@ async function deleteCustomer(id) {
   if (!confirm('Are you sure you want to delete this customer?')) return;
 
   try {
-    const res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, {
+    const res = await fetchApi(`/api/customers?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete customer');
@@ -2408,7 +2660,7 @@ async function saveQuickAddCustomer() {
   };
 
   try {
-    const res = await fetch('/api/customers', {
+    const res = await fetchApi('/api/customers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -2460,18 +2712,6 @@ async function saveQuote() {
   }
 
   prepareForNewQuote();
-  const printNow = confirm(
-    `Quote ${quoteLabel} saved successfully.
-
-Select OK to Print or Cancel for No (save only).`
-  );
-
-  if (printNow) {
-    printQuote(savedQuote.id);
-    return;
-  }
-
-  alert(`Quote ${quoteLabel} saved. No print copy was created.`);
 }
 
 
@@ -2519,6 +2759,100 @@ function showYesNoModal(message, yesLabel = 'Yes', noLabel = 'No') {
   });
 }
 
+function showPOTypeModal() {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:10px;max-width:460px;width:calc(100% - 32px);text-align:center;box-shadow:0 12px 30px rgba(0,0,0,0.22);';
+    modal.innerHTML = `
+      <p style="margin:0 0 16px 0;font-size:16px;line-height:1.4;">Choose PO type for this new order:</p>
+      <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+        <button id="poTypeInternal" type="button">Internal PO</button>
+        <button id="poTypeExternal" type="button">External PO</button>
+        <button id="poTypeNone" type="button">No PO</button>
+      </div>
+    `;
+
+    function close(value) {
+      overlay.remove();
+      resolve(value);
+    }
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    modal.querySelector('#poTypeInternal').addEventListener('click', () => close('internal'));
+    modal.querySelector('#poTypeExternal').addEventListener('click', () => close('external'));
+    modal.querySelector('#poTypeNone').addEventListener('click', () => close('none'));
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close('none');
+    });
+  });
+}
+
+function showPODetailsModal(poType, vendors = []) {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:9999;';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;padding:20px 24px;border-radius:10px;max-width:520px;width:calc(100% - 32px);text-align:left;box-shadow:0 12px 30px rgba(0,0,0,0.22);';
+
+    const vendorOptions = vendors.map(v => `<option value="${escapeHtml(v.name)}">${escapeHtml(v.name)}</option>`).join('');
+    const isExternal = poType === 'external';
+    modal.innerHTML = `
+      <h3 style="margin:0 0 12px 0;">${isExternal ? 'External' : 'Internal'} PO Details</h3>
+      ${isExternal ? `<label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Vendor</label>
+      <select id="poVendorSelect" style="width:100%;padding:8px;">
+        <option value="">-- Select Vendor --</option>
+        ${vendorOptions}
+      </select>
+      <label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Or Enter New Vendor</label>
+      <input id="poVendorInput" type="text" style="width:100%;padding:8px;" placeholder="Vendor name">` : `<p style="margin:6px 0 10px 0;">Internal PO number will be generated from order # (example: PO1000).</p>`}
+      ${isExternal ? `<label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Vendor PO #</label>
+      <input id="poNumberInput" type="text" style="width:100%;padding:8px;" placeholder="Enter vendor PO #">` : ''}
+      <label style="display:block;font-weight:bold;margin:8px 0 4px 0;">Requested Date</label>
+      <input id="poRequestedDate" type="date" style="width:100%;padding:8px;" value="${new Date().toISOString().slice(0,10)}">
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+        <button id="poDetailsCancel" type="button">Cancel</button>
+        <button id="poDetailsSave" type="button">Continue</button>
+      </div>
+    `;
+
+    function close(value) {
+      overlay.remove();
+      resolve(value);
+    }
+
+    modal.querySelector('#poDetailsCancel').addEventListener('click', () => close(null));
+    modal.querySelector('#poDetailsSave').addEventListener('click', () => {
+      const requestedDate = modal.querySelector('#poRequestedDate')?.value || '';
+      if (!requestedDate) {
+        alert('Requested date is required.');
+        return;
+      }
+      if (isExternal) {
+        const selected = modal.querySelector('#poVendorSelect')?.value?.trim() || '';
+        const typed = modal.querySelector('#poVendorInput')?.value?.trim() || '';
+        const vendorName = typed || selected;
+        const vendorPoNumber = modal.querySelector('#poNumberInput')?.value?.trim() || '';
+        if (!vendorName || !vendorPoNumber) {
+          alert('Vendor and Vendor PO # are required.');
+          return;
+        }
+        close({ vendorName, vendorPoNumber, requestedDate });
+        return;
+      }
+      close({ vendorName: 'Kentucky Mirror and Plate Glass (Internal Shop)', vendorPoNumber: '', requestedDate });
+    });
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  });
+}
+
 async function printQuote(quoteId) {
   const idToPrint = quoteId || currentQuoteId || lastSavedQuoteId;
   if (!idToPrint) {
@@ -2527,7 +2861,7 @@ async function printQuote(quoteId) {
   }
 
   try {
-    const res = await fetch(`/api/quotes?id=${encodeURIComponent(idToPrint)}`);
+    const res = await fetchApi(`/api/quotes?id=${encodeURIComponent(idToPrint)}`);
     if (!res.ok) throw new Error('Quote not found');
     const quote = await res.json();
 
@@ -2540,15 +2874,14 @@ async function printQuote(quoteId) {
     printWindow.document.write('<html><head><title>Quote</title>');
     printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #000;padding:8px;text-align:center;}h2,h3{margin:0 0 8px 0;}</style>');
     printWindow.document.write('</head><body>');
-    printWindow.document.write(`<h2>Quote ${escapeHtml(quote.quoteNumber || quote.id || '')}</h2>`);
+    printWindow.document.write(`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;"><img src="/good%20logo.jpg" style="height:56px;width:auto;"><div><h2 style="margin:0;">Kentucky Mirror and Plate Glass</h2><div>822 W Main St, Louisville KY 40202</div><div>502-583-5541 | info@kymirror.com</div></div></div>`);
+    printWindow.document.write(`<h2>QUOTE ${escapeHtml(quote.quoteNumber || quote.id || '')}</h2>`);
     printWindow.document.write(`<p><strong>Customer:</strong> ${escapeHtml(cust.name || quote.customerName || '')} &nbsp; <strong>Phone:</strong> ${escapeHtml(cust.phone || quote.customerPhone || '')}</p>`);
-    printWindow.document.write('<table><thead><tr><th>Qty</th><th>Size</th><th>Glass Type</th><th>Each</th><th>Total</th></tr></thead><tbody>');
+    printWindow.document.write('<table><thead><tr><th>Qty</th><th>Size</th><th>Glass Type</th></tr></thead><tbody>');
     items.forEach(item => {
-      printWindow.document.write(`<tr><td>${item.qty || 1}</td><td>${escapeHtml(`${item.width || ''} x ${item.height || ''}`)}</td><td>${escapeHtml(item.glassType || '')}</td><td>${escapeHtml(item.eachPrice || '$0.00')}</td><td>${escapeHtml(item.lineTotal || '$0.00')}</td></tr>`);
+      printWindow.document.write(`<tr><td>${item.qty || 1}</td><td>${escapeHtml(`${item.width || ''} x ${item.height || ''}`)}</td><td>${escapeHtml(item.glassType || '')}</td></tr>`);
     });
     printWindow.document.write('</tbody></table>');
-    printWindow.document.write(`<h3>Grand Total: $${(quote.grandTotal || 0).toFixed(2)}</h3>`);
-    printWindow.document.write(`<h3>Total with Tax: $${(quote.grandTotalWithTax || 0).toFixed(2)}</h3>`);
     printWindow.document.write('</body></html>');
     printWindow.document.close();
     printWindow.print();
@@ -2681,6 +3014,7 @@ function gatherOrderData() {
 
 async function saveQuoteToDatabase() {
   const data = gatherOrderData();
+  const isNewOrder = !currentOrderId;
 
   if (!data.customer.name) {
     alert('Please enter a customer name before saving the quote.');
@@ -2732,7 +3066,7 @@ async function convertCurrentQuoteToOrder() {
     data.status = 'shop production';
     data.sequenceNumber = savedQuote.sequenceNumber;
 
-    const orderRes = await fetch('/api/orders', {
+    const orderRes = await fetchApi('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -2745,7 +3079,7 @@ async function convertCurrentQuoteToOrder() {
 
     const createdOrder = await orderRes.json();
 
-    await fetch(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
+    await fetchApi(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
@@ -2771,7 +3105,7 @@ async function convertCurrentQuoteToOrder() {
 
 async function saveOrder() {
   const data = gatherOrderData();
-  data.status = 'shop production';
+  const isNewOrder = !currentOrderId;
 
   if (!data.customer.name) {
     alert('Please enter a customer name before saving the order.');
@@ -2782,6 +3116,38 @@ async function saveOrder() {
     alert('Please add at least one glass line item before saving the order.');
     return;
   }
+
+  let sourceType = 'shop production';
+  let vendorName = '';
+  let vendorPoNumber = '';
+  let requestedDate = '';
+
+  let poType = '';
+  if (isNewOrder) {
+    poType = await showPOTypeModal();
+    if (poType === 'external' || poType === 'internal') {
+      sourceType = poType === 'external' ? 'on order (vendor)' : 'shop production';
+      const details = await showPODetailsModal(poType, allVendors);
+      if (!details) return;
+      vendorName = details.vendorName || '';
+      vendorPoNumber = details.vendorPoNumber || '';
+      requestedDate = details.requestedDate || '';
+      if (!vendorName.trim() || !requestedDate) {
+        alert('PO details are required when issuing a PO.');
+        return;
+      }
+    }
+  } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').includes('(vendor)')) {
+    sourceType = 'on order (vendor)';
+    vendorName = allOrders.find(o => o.id === currentOrderId)?.vendorName || '';
+    vendorPoNumber = allOrders.find(o => o.id === currentOrderId)?.vendorPoNumber || '';
+    requestedDate = allOrders.find(o => o.id === currentOrderId)?.requestedDate || '';
+  }
+
+  data.status = sourceType;
+  data.vendorName = vendorName;
+  data.vendorPoNumber = vendorPoNumber;
+  data.requestedDate = requestedDate;
 
   const saveBtn = document.querySelector('.btn-save-order');
   saveBtn.disabled = true;
@@ -2803,17 +3169,51 @@ async function saveOrder() {
 
     const savedOrder = await res.json();
 
-    // Remember what we just saved (so Print works)
     currentOrderId = savedOrder.id;
     lastSavedOrderId = savedOrder.id;
 
-    // Briefly show confirmation
+    if (poType === 'internal') {
+      const poNumberGenerated = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}`;
+      vendorPoNumber = poNumberGenerated;
+      await fetchApi(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'shop production',
+          vendorName,
+          vendorPoNumber,
+          requestedDate,
+        }),
+      });
+    }
+
+    if (poType === 'external' || poType === 'internal') {
+      const poPayload = {
+        orderId: savedOrder.id,
+        orderNumber: savedOrder.orderNumber,
+        poNumber: vendorPoNumber,
+        vendor: vendorName,
+        poType,
+        requestedDate,
+        dateOrdered: savedOrder.createdAt,
+        status: 'Pending',
+      };
+      await fetchApi('/api/purchase-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(poPayload),
+      });
+      window.open(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=purchase-order`, '_blank');
+    } else if (isNewOrder) {
+      window.open(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=ticket`, '_blank');
+    }
+
     document.getElementById('currentOrderNumber').textContent = savedOrder.orderNumber;
     document.getElementById('orderSavedStatus').textContent = `Saved! ${savedOrder.orderNumber}`;
 
-    // Refresh Orders tab list
     try { await loadOrders(); } catch (e) {}
-
+    try { await loadPurchaseOrders(); } catch (e) {}
+    if (isNewOrder) startNewOrder();
 
   } catch (err) {
     alert('Error saving order: ' + err.message);
@@ -2835,14 +3235,16 @@ async function loadOrders() {
   } catch (err) {
     console.error(err);
     document.getElementById('orderTableBody').innerHTML =
-      '<tr><td colspan="8" style="text-align:center;">Failed to load orders.</td></tr>';
+      '<tr><td colspan="10" style="text-align:center;">Failed to load orders.</td></tr>';
   }
 }
+
+
 
 function renderOrderTable(orders) {
   const tbody = document.getElementById('orderTableBody');
   if (!orders.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No orders found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;">No orders found.</td></tr>';
     return;
   }
 
@@ -2859,11 +3261,9 @@ function renderOrderTable(orders) {
       <td>$${(o.grandTotal || 0).toFixed(2)}</td>
       <td>$${(o.grandTotalWithTax || 0).toFixed(2)}</td>
       <td>${escapeHtml(date)}</td>
-      <td>
-        <select onchange="event.stopPropagation(); updateOrderStatus('${o.id}', this.value)">
-          ${['shop production','on order (vendor)','completed'].map(status => `<option value="${status}" ${selectedStatus === status ? 'selected' : ''}>${status}</option>`).join('')}
-        </select>
-      </td>
+      <td>${escapeHtml(o.vendorName || '')}</td>
+      <td>${escapeHtml(o.vendorPoNumber || '')}</td>
+      <td>${escapeHtml(selectedStatus)}</td>
       <td class="actions-cell">
         <button class="btn-edit" onclick="event.stopPropagation(); loadOrderIntoCalculator('${o.id}')">Open</button>
         <button class="btn-delete" onclick="event.stopPropagation(); deleteOrder('${o.id}')">Delete</button>
@@ -2881,7 +3281,7 @@ async function searchOrders() {
   }
 
   try {
-    const res = await fetch(`/api/orders?search=${encodeURIComponent(query)}`);
+    const res = await fetchApi(`/api/orders?search=${encodeURIComponent(query)}`);
     if (!res.ok) throw new Error('Search failed');
     const results = await res.json();
     renderOrderTable(results);
@@ -2891,25 +3291,11 @@ async function searchOrders() {
 }
 
 
-async function updateOrderStatus(id, status) {
-  try {
-    const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    if (!res.ok) throw new Error('Failed to update order status');
-    await loadOrders();
-  } catch (err) {
-    alert('Error updating status: ' + err.message);
-  }
-}
-
 async function deleteOrder(id) {
   if (!confirm('Are you sure you want to delete this order?')) return false;
 
   try {
-    const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`, {
+    const res = await fetchApi(`/api/orders?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete order');
@@ -2968,6 +3354,8 @@ function viewOrder(id) {
         <div><strong>Address</strong>${escapeHtml(cust.address || 'N/A')}</div>
         <div><strong>Email</strong>${escapeHtml(cust.email || 'N/A')}</div>
         <div><strong>Credit Terms</strong>${escapeHtml(cust.creditTerms || 'N/A')}</div>
+        <div><strong>Vendor</strong>${escapeHtml(order.vendorName || 'N/A')}</div>
+        <div><strong>PO #</strong>${escapeHtml(order.vendorPoNumber || 'N/A')}</div>
       </div>
 
       <table>
@@ -3055,7 +3443,7 @@ async function loadOrderIntoCalculator(id) {
   const order = allOrders.find(o => o.id === id);
   if (!order) {
     try {
-      const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`);
+      const res = await fetchApi(`/api/orders?id=${encodeURIComponent(id)}`);
       if (!res.ok) throw new Error('Order not found');
       const fetched = await res.json();
       populateCalculatorFromOrder(fetched);
@@ -3075,7 +3463,9 @@ function populateCalculatorFromOrder(order, mode = 'order') {
   currentOrderId = isQuoteMode ? null : order.id;
   currentQuoteId = isQuoteMode ? order.id : null;
   document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
-  document.getElementById('orderSavedStatus').textContent = '';
+  document.getElementById('orderSavedStatus').textContent = order.vendorPoNumber
+    ? `Vendor: ${order.vendorName || ''} | PO: ${order.vendorPoNumber}`
+    : '';
 
   const cust = order.customer || {};
   document.getElementById('customerName').value = cust.name || '';
@@ -3129,7 +3519,7 @@ let allQuotes = [];
 
 async function loadQuotes() {
   try {
-    const res = await fetch('/api/quotes');
+    const res = await fetchApi('/api/quotes');
     if (!res.ok) throw new Error('Failed to load quotes');
     allQuotes = await res.json();
     renderQuoteTable(allQuotes);
@@ -3209,7 +3599,7 @@ async function convertSavedQuoteToOrder(id) {
   };
 
   try {
-    const orderRes = await fetch('/api/orders', {
+    const orderRes = await fetchApi('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderPayload),
@@ -3217,7 +3607,7 @@ async function convertSavedQuoteToOrder(id) {
     if (!orderRes.ok) throw new Error('Failed to create order from quote');
     const createdOrder = await orderRes.json();
 
-    await fetch(`/api/quotes?id=${encodeURIComponent(id)}`, {
+    await fetchApi(`/api/quotes?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
@@ -3446,7 +3836,7 @@ async function confirmImport() {
   statusEl.textContent = `Importing ${customers.length} customer(s)...`;
 
   try {
-    const res = await fetch('/api/customers-import', {
+    const res = await fetchApi('/api/customers-import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ customers }),
@@ -3486,6 +3876,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
   for (let i = 0; i < 5; i++) addRow();
   updateTotals();
+  // Ensure calculator always starts with visible editable lines.
+  try { if (typeof startNewOrder === 'function') startNewOrder(); } catch (e) {}
 
   await loadCalcCustomers();
   setupCustomerLookup();
@@ -3500,7 +3892,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
   }
   function kympgHideAllSections(){
-    const ids = ['landing-section','calculator-section','customer-section','orders-section',
+    const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
                  'quotedb-section','po-section','breakage-section','pricelist-section'];
     ids.forEach(id => {
       const el = document.getElementById(id);
@@ -3528,51 +3920,61 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   async function loadPurchaseOrders() {
+    const tbody = document.getElementById('poTableBody');
+    if (!tbody) return;
     try {
-      const res = await fetch('/.netlify/functions/purchase-orders');
+      const res = await fetchApi('/api/purchase-orders');
       if (!res.ok) throw new Error('Failed to load Purchase Orders');
-
       const data = await res.json();
-      const container = document.getElementById('po-section');
-      container.innerHTML = '<h2>Purchase Orders</h2>';
 
       if (!data || data.length === 0) {
-        container.innerHTML += '<p>No purchase orders found.</p>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No purchase orders found.</td></tr>';
         return;
       }
 
-      const table = document.createElement('table');
-      table.style.width = '100%';
-      table.style.borderCollapse = 'collapse';
-
-      table.innerHTML = `
-        <thead>
-          <tr>
-            <th>PO #</th>
-            <th>Vendor</th>
-            <th>Date</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${data.map(po => `
-            <tr>
-              <td>${po.poNumber || ''}</td>
-              <td>${po.vendor || ''}</td>
-              <td>${po.date || ''}</td>
-              <td>${po.total || ''}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      `;
-
-      container.appendChild(table);
-
+      tbody.innerHTML = data.map(po => `
+        <tr>
+          <td>${po.orderNumber || ''}</td>
+          <td>${po.vendor || ''}</td>
+          <td>${po.poNumber || ''}</td>
+          <td>${(po.requestedDate || '').slice(0, 10)}</td>
+          <td><input type="date" id="po_delivery_${po.id}" value="${(po.deliveryDate || '').slice(0, 10)}"></td>
+          <td>
+            <select id="po_status_${po.id}">
+              <option value="Pending" ${po.status === 'Pending' ? 'selected' : ''}>Pending</option>
+              <option value="In Progress" ${po.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="Received" ${po.status === 'Received' ? 'selected' : ''}>Received</option>
+              <option value="Completed by Shop" ${po.status === 'Completed by Shop' ? 'selected' : ''}>Completed by Shop</option>
+            </select>
+          </td>
+          <td><input type="date" id="po_received_${po.id}" value="${(po.receivedAt || '').slice(0, 10)}"></td>
+          <td><button type="button" onclick="updatePurchaseOrder('${po.id}')">Save</button></td>
+        </tr>
+      `).join('');
     } catch (err) {
       console.error(err);
-      document.getElementById('po-section').innerHTML =
-        '<p style="color:red;">Error loading purchase orders.</p>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Error loading purchase orders.</td></tr>';
     }
+  }
+
+  async function updatePurchaseOrder(id) {
+    const deliveryDate = document.getElementById(`po_delivery_${id}`)?.value || '';
+    const status = document.getElementById(`po_status_${id}`)?.value || 'Pending';
+    const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
+
+    const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deliveryDate, status, receivedAt }),
+    });
+
+    if (!res.ok) {
+      alert('Failed to update purchase order.');
+      return;
+    }
+
+    await loadPurchaseOrders();
+    try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
   }
 
   function kympgOpen(which, btn){
@@ -3637,20 +4039,27 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       try{ if (typeof loadCustomers === 'function') loadCustomers(); }catch(e){}
       return;
     }
+    if (which === 'vendors'){
+      const v = document.getElementById('vendor-section');
+      if (v){ v.style.display = 'block'; }
+      kympgSetHeader('Vendor Database', '', 'Vendor Import', '');
+      try{ if (typeof loadVendors === 'function') loadVendors(); }catch(e){}
+      return;
+    }
     setCalculatorMode('quote');
     kympgShowLanding();
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','orders-section'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && el.parentElement !== content){
-          content.appendChild(el);
-        }
-        if (el) el.style.display = 'none';
-      });
+      ['calculator-section','customer-section','vendor-section','orders-section','quotedb-section','po-section','breakage-section','pricelist-section']
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (el && el.parentElement !== content) content.appendChild(el);
+          if (el) el.style.display = 'none';
+        });
     }
     kympgShowLanding();
   });
