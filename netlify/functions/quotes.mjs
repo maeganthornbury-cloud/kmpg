@@ -48,6 +48,10 @@ export default async (req) => {
       const quoteId = `quote-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const quote = {
         id: quoteId,
+        status: body.status || "quote",
+        closedReason: body.closedReason || null,
+        convertedOrderId: body.convertedOrderId || null,
+        customer: body.customer || null,
         customerName: body.customerName || "",
         customerPhone: body.customerPhone || "",
         items: body.items || [],
