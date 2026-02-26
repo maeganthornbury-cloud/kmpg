@@ -17,6 +17,17 @@ export default async (req) => {
     return new Response(null, { status: 204, headers });
   }
 
+  const mappedOrderStatus = (poType, poStatus) => {
+    const type = String(poType || "external").toLowerCase();
+    const status = String(poStatus || "pending").toLowerCase();
+    if (type === "internal") {
+      if (status === "completed by shop") return "completed";
+      return "shop production";
+    }
+    if (status === "received") return "received (vendor)";
+    return "on order (vendor)";
+  };
+
   try {
     // GET - list all or get one
     if (req.method === "GET") {
@@ -55,6 +66,7 @@ export default async (req) => {
         requestedDate: body.requestedDate || body.dateOrdered || "",
         poNumber: body.poNumber || "",
         vendor: body.vendor || "",
+        poType: body.poType || "external",
         deliveryDate: body.deliveryDate || "",
         receivedAt: body.receivedAt || "",
         status: body.status || "Pending",
@@ -67,6 +79,7 @@ export default async (req) => {
         if (linkedOrder) {
           await ordersStore.setJSON(order.orderId, {
             ...linkedOrder,
+            status: mappedOrderStatus(order.poType, order.status),
             status: "vendor",
             vendorName: order.vendor,
             vendorPoNumber: order.poNumber,
@@ -104,6 +117,7 @@ export default async (req) => {
         if (linkedOrder) {
           await ordersStore.setJSON(updated.orderId, {
             ...linkedOrder,
+            status: mappedOrderStatus(updated.poType, updated.status),
             status: updated.status === "Received" ? "vendor received" : "vendor",
             vendorName: updated.vendor || linkedOrder.vendorName || "",
             vendorPoNumber: updated.poNumber || linkedOrder.vendorPoNumber || "",

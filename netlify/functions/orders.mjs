@@ -75,7 +75,7 @@ function renderItemsTable(order) {
           it.glassType || it.type,
           it.thickness,
           it.width && it.height ? `${it.width} x ${it.height}` : "",
-          it.edgework || it.bevelWidth ? `Edge/Bevel: ${it.edgework || ""} ${it.bevelWidth || ""}` : "",
+          it.edgework || it.bevel ? `Edge/Bevel: ${it.edgework || ""} ${it.bevel ? (it.bevelWidth || "") : ""}` : "",
           it.notes,
         ]
           .filter(Boolean)
@@ -218,7 +218,7 @@ function renderTicketHTML(order) {
         it.width && it.height ? `${it.width} x ${it.height}` : (it.size || "");
       const glass = it.glassType || it.type || "";
       const thk = it.thickness || it.thk || "";
-      const edge = it.edgework || (it.bevelWidth ? `Bevel ${it.bevelWidth}` : "") || "";
+      const edge = it.edgework || (it.bevel ? `Bevel ${it.bevelWidth || ""}` : "") || "";
       const temper = it.tempered ? "YES" : (it.temp ? "YES" : "");
       const notes = it.notes || it.instructions || it.descNotes || it.description || "";
 
