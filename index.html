@@ -904,7 +904,22 @@ body{
 
           <div id="quotedb-section" style="display:none;">
             <h2 style="margin-top:0;">Open Quotes</h2>
-            <p style="color:var(--muted);margin-top:6px;">Placeholder for your Quotes database (search, open, edit, convert to order).</p>
+            <input type="text" id="quoteSearch" placeholder="Search by quote id or customer name..." oninput="searchQuotes()" style="width:100%;max-width:420px;margin:10px 0;padding:8px;border:1px solid #ccc;border-radius:4px;">
+            <table id="quoteTable" style="width:100%;border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th>Quote #</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                  <th>Grand Total</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="quoteTableBody">
+                <tr><td colspan="6" style="text-align:center;">Loading quotes...</td></tr>
+              </tbody>
+            </table>
           </div>
 
           <div id="po-section" style="display:none;">
@@ -1150,11 +1165,12 @@ body{
         <th>Grand Total</th>
         <th>Total w/ Tax</th>
         <th>Date</th>
+        <th>Status</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody id="orderTableBody">
-      <tr><td colspan="7" style="text-align:center;">Loading orders...</td></tr>
+      <tr><td colspan="8" style="text-align:center;">Loading orders...</td></tr>
     </tbody>
   </table>
 </div>
@@ -2398,25 +2414,68 @@ function setCalculatorMode(mode) {
 }
 
 async function saveQuote() {
-  await saveOrder();
+  const savedQuote = await saveQuoteToDatabase();
+  if (!savedQuote) return;
+
+  const printNow = confirm(`Quote ${savedQuote.id} saved. Print a copy now?`);
+  if (printNow) {
+    printQuote(savedQuote.id);
+  }
 }
 
-function printQuote() {
-  printDoc('quote');
+async function printQuote(quoteId) {
+  const idToPrint = quoteId || currentQuoteId || lastSavedQuoteId;
+  if (!idToPrint) {
+    alert('Please save the quote first, then print.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/quotes?id=${encodeURIComponent(idToPrint)}`);
+    if (!res.ok) throw new Error('Quote not found');
+    const quote = await res.json();
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const items = quote.items || [];
+    const cust = quote.customer || {};
+
+    printWindow.document.write('<html><head><title>Quote</title>');
+    printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #000;padding:8px;text-align:center;}h2,h3{margin:0 0 8px 0;}</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(`<h2>Quote ${escapeHtml(quote.id || '')}</h2>`);
+    printWindow.document.write(`<p><strong>Customer:</strong> ${escapeHtml(cust.name || quote.customerName || '')} &nbsp; <strong>Phone:</strong> ${escapeHtml(cust.phone || quote.customerPhone || '')}</p>`);
+    printWindow.document.write('<table><thead><tr><th>Qty</th><th>Size</th><th>Glass Type</th><th>Each</th><th>Total</th></tr></thead><tbody>');
+    items.forEach(item => {
+      printWindow.document.write(`<tr><td>${item.qty || 1}</td><td>${escapeHtml(`${item.width || ''} x ${item.height || ''}`)}</td><td>${escapeHtml(item.glassType || '')}</td><td>${escapeHtml(item.eachPrice || '$0.00')}</td><td>${escapeHtml(item.lineTotal || '$0.00')}</td></tr>`);
+    });
+    printWindow.document.write('</tbody></table>');
+    printWindow.document.write(`<h3>Grand Total: $${(quote.grandTotal || 0).toFixed(2)}</h3>`);
+    printWindow.document.write(`<h3>Total with Tax: $${(quote.grandTotalWithTax || 0).toFixed(2)}</h3>`);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+  } catch (err) {
+    alert('Error printing quote: ' + err.message);
+  }
 }
 
-function convertToOrder() {
-  setCalculatorMode('order');
+async function convertToOrder() {
+  await convertCurrentQuoteToOrder();
 }
 
 // ===================== ORDER MANAGEMENT =====================
 let currentOrderId = null;      // currently loaded order in the form (null = unsaved / new)
 let lastSavedOrderId = null;    // last saved order id (kept even after clearing the form)
+let currentQuoteId = null;
+let lastSavedQuoteId = null;
 
 function startNewOrder() {
   currentOrderId = null;
   document.getElementById('currentOrderNumber').textContent = 'Will be assigned on save';
   document.getElementById('orderSavedStatus').textContent = '';
+  currentQuoteId = null;
 
   // Clear the form
   document.getElementById('glassTableBody').innerHTML = '';
@@ -2518,8 +2577,93 @@ function gatherOrderData() {
   return { customer, items, hardware, hardwareItems, specialPricing, grandTotal, grandTotalWithTax };
 }
 
+async function saveQuoteToDatabase() {
+  const data = gatherOrderData();
+
+  if (!data.customer.name) {
+    alert('Please enter a customer name before saving the quote.');
+    return null;
+  }
+
+  if (data.items.length === 0) {
+    alert('Please add at least one glass line item before saving the quote.');
+    return null;
+  }
+
+  const payload = {
+    ...data,
+    customerName: data.customer.name,
+    customerPhone: data.customer.phone,
+    status: 'quote',
+  };
+
+  const method = currentQuoteId ? 'PUT' : 'POST';
+  const url = currentQuoteId ? `/api/quotes?id=${encodeURIComponent(currentQuoteId)}` : '/api/quotes';
+
+  const res = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to save quote');
+  }
+
+  const savedQuote = await res.json();
+  currentQuoteId = savedQuote.id;
+  lastSavedQuoteId = savedQuote.id;
+  document.getElementById('orderSavedStatus').textContent = `Quote saved: ${savedQuote.id}`;
+
+  try { await loadQuotes(); } catch (e) {}
+  return savedQuote;
+}
+
+async function convertCurrentQuoteToOrder() {
+  try {
+    const savedQuote = await saveQuoteToDatabase();
+    if (!savedQuote) return;
+
+    const data = gatherOrderData();
+    data.status = 'shop production';
+
+    const orderRes = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!orderRes.ok) {
+      const err = await orderRes.json();
+      throw new Error(err.error || 'Failed to convert quote to order');
+    }
+
+    const createdOrder = await orderRes.json();
+
+    await fetch(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
+    });
+
+    alert(`Quote converted to order ${createdOrder.orderNumber}.`);
+    setCalculatorMode('order');
+    currentOrderId = createdOrder.id;
+    lastSavedOrderId = createdOrder.id;
+    document.getElementById('currentOrderNumber').textContent = createdOrder.orderNumber;
+    document.getElementById('orderSavedStatus').textContent = `Converted from quote ${savedQuote.id}`;
+
+    try { await loadOrders(); } catch (e) {}
+    try { await loadQuotes(); } catch (e) {}
+  } catch (err) {
+    alert('Error converting quote: ' + err.message);
+  }
+}
+
 async function saveOrder() {
   const data = gatherOrderData();
+  data.status = 'shop production';
 
   if (!data.customer.name) {
     alert('Please enter a customer name before saving the order.');
@@ -2582,14 +2726,14 @@ async function loadOrders() {
   } catch (err) {
     console.error(err);
     document.getElementById('orderTableBody').innerHTML =
-      '<tr><td colspan="7" style="text-align:center;">Failed to load orders.</td></tr>';
+      '<tr><td colspan="8" style="text-align:center;">Failed to load orders.</td></tr>';
   }
 }
 
 function renderOrderTable(orders) {
   const tbody = document.getElementById('orderTableBody');
   if (!orders.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No orders found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">No orders found.</td></tr>';
     return;
   }
 
@@ -2597,6 +2741,7 @@ function renderOrderTable(orders) {
     const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '';
     const custName = o.customer?.name || 'N/A';
     const itemCount = (o.items || []).length;
+    const selectedStatus = o.status || 'shop production';
     return `
     <tr onclick="viewOrder('${o.id}')">
       <td><strong>${escapeHtml(o.orderNumber || '')}</strong></td>
@@ -2605,6 +2750,11 @@ function renderOrderTable(orders) {
       <td>$${(o.grandTotal || 0).toFixed(2)}</td>
       <td>$${(o.grandTotalWithTax || 0).toFixed(2)}</td>
       <td>${escapeHtml(date)}</td>
+      <td>
+        <select onchange="event.stopPropagation(); updateOrderStatus('${o.id}', this.value)">
+          ${['shop production','on order (vendor)','completed'].map(status => `<option value="${status}" ${selectedStatus === status ? 'selected' : ''}>${status}</option>`).join('')}
+        </select>
+      </td>
       <td class="actions-cell">
         <button class="btn-edit" onclick="event.stopPropagation(); loadOrderIntoCalculator('${o.id}')">Open</button>
         <button class="btn-delete" onclick="event.stopPropagation(); deleteOrder('${o.id}')">Delete</button>
@@ -2628,6 +2778,21 @@ async function searchOrders() {
     renderOrderTable(results);
   } catch (err) {
     console.error(err);
+  }
+}
+
+
+async function updateOrderStatus(id, status) {
+  try {
+    const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) throw new Error('Failed to update order status');
+    await loadOrders();
+  } catch (err) {
+    alert('Error updating status: ' + err.message);
   }
 }
 
@@ -2686,7 +2851,7 @@ function viewOrder(id) {
   modal.innerHTML = `
     <div class="order-detail-modal">
       <h3>${escapeHtml(order.orderNumber || 'Order')}</h3>
-      <p style="font-size:12px;color:#888;">Created: ${escapeHtml(date)}${order.specialPricing ? ' | Special Pricing' : ''}</p>
+      <p style="font-size:12px;color:#888;">Created: ${escapeHtml(date)} | Status: ${escapeHtml(order.status || 'shop production')}${order.specialPricing ? ' | Special Pricing' : ''}</p>
 
       <div class="order-detail-info">
         <div><strong>Customer</strong>${escapeHtml(cust.name || 'N/A')}</div>
@@ -2846,6 +3011,105 @@ function populateCalculatorFromOrder(order) {
   }
 
   updateTotals();
+}
+
+// ===================== QUOTES LIST (Open Quotes) =====================
+let allQuotes = [];
+
+async function loadQuotes() {
+  try {
+    const res = await fetch('/api/quotes');
+    if (!res.ok) throw new Error('Failed to load quotes');
+    allQuotes = await res.json();
+    renderQuoteTable(allQuotes);
+  } catch (err) {
+    document.getElementById('quoteTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center;">Failed to load quotes.</td></tr>';
+  }
+}
+
+function renderQuoteTable(quotes) {
+  const tbody = document.getElementById('quoteTableBody');
+  if (!quotes.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No quotes found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = quotes.map(q => {
+    const created = q.createdAt ? new Date(q.createdAt).toLocaleDateString() : '';
+    const custName = q.customer?.name || q.customerName || '';
+    return `
+      <tr>
+        <td><strong>${escapeHtml(q.id || '')}</strong></td>
+        <td>${escapeHtml(custName)}</td>
+        <td>${escapeHtml(q.status || 'quote')}</td>
+        <td>$${(q.grandTotal || 0).toFixed(2)}</td>
+        <td>${escapeHtml(created)}</td>
+        <td>
+          <button onclick="loadQuoteIntoCalculator('${q.id}')">Open</button>
+          <button onclick="printQuote('${q.id}')">Print</button>
+          <button onclick="convertSavedQuoteToOrder('${q.id}')">Convert to Order</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function searchQuotes() {
+  const query = document.getElementById('quoteSearch').value.trim().toLowerCase();
+  if (!query) {
+    renderQuoteTable(allQuotes);
+    return;
+  }
+  const filtered = allQuotes.filter(q => {
+    const custName = (q.customer?.name || q.customerName || '').toLowerCase();
+    return (q.id || '').toLowerCase().includes(query) || custName.includes(query);
+  });
+  renderQuoteTable(filtered);
+}
+
+async function loadQuoteIntoCalculator(id) {
+  const quote = allQuotes.find(q => q.id === id);
+  if (!quote) return;
+  populateCalculatorFromOrder({ ...quote, id: null, orderNumber: `Quote ${quote.id}` });
+  setCalculatorMode('quote');
+  currentQuoteId = quote.id;
+}
+
+async function convertSavedQuoteToOrder(id) {
+  const quote = allQuotes.find(q => q.id === id);
+  if (!quote) return;
+
+  const orderPayload = {
+    customer: quote.customer || { name: quote.customerName, phone: quote.customerPhone },
+    items: quote.items || [],
+    hardware: quote.hardware || null,
+    specialPricing: quote.specialPricing || false,
+    grandTotal: quote.grandTotal || 0,
+    grandTotalWithTax: quote.grandTotalWithTax || 0,
+    status: 'shop production',
+  };
+
+  try {
+    const orderRes = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderPayload),
+    });
+    if (!orderRes.ok) throw new Error('Failed to create order from quote');
+    const createdOrder = await orderRes.json();
+
+    await fetch(`/api/quotes?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
+    });
+
+    alert(`Quote converted to order ${createdOrder.orderNumber}.`);
+    await loadQuotes();
+    await loadOrders();
+  } catch (err) {
+    alert('Error converting quote: ' + err.message);
+  }
 }
 
 // ===================== CSV/EXCEL IMPORT =====================
@@ -3221,6 +3485,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       const q = document.getElementById('quotedb-section');
       if (q){ q.style.display = 'block'; }
       kympgSetHeader('Open Quotes', 'Search and open saved quotes.', 'Quotes', 'Quotes database');
+      try{ if (typeof loadQuotes === 'function') loadQuotes(); }catch(e){}
       return;
     }
     if (which === 'po') {
