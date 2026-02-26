@@ -18,6 +18,17 @@ async function nextSequenceNumber() {
   return nextValue;
 }
 
+
+function normalizeStringsUpper(value) {
+  if (Array.isArray(value)) return value.map(normalizeStringsUpper);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) out[k] = normalizeStringsUpper(v);
+    return out;
+  }
+  return typeof value === "string" ? value.toUpperCase() : value;
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -46,6 +57,22 @@ function money(n) {
   return num.toFixed(2);
 }
 
+function renderCompanyHeader(docTitle) {
+  return `
+    <div class="row" style="align-items:center;">
+      <div style="display:flex; gap:12px; align-items:center;">
+        <img src="/good%20logo.jpg" alt="Kentucky Mirror and Plate Glass logo" style="height:62px; width:auto;" />
+        <div>
+          <div class="small">822 W Main St, Louisville KY 40202</div>
+          <div class="small">502-583-5541</div>
+          <div class="small">info@kymirror.com</div>
+        </div>
+      </div>
+      <div class="box"><b>${escapeHtml(docTitle)}</b></div>
+    </div>
+  `;
+}
+
 function renderItemsTable(order) {
   const items = Array.isArray(order.items) ? order.items : [];
   const rows = items
@@ -58,7 +85,7 @@ function renderItemsTable(order) {
           it.glassType || it.type,
           it.thickness,
           it.width && it.height ? `${it.width} x ${it.height}` : "",
-          it.edgework || it.bevelWidth ? `Edge/Bevel: ${it.edgework || ""} ${it.bevelWidth || ""}` : "",
+          it.edgework || it.bevel ? `Edge/Bevel: ${it.edgework || ""} ${it.bevel ? (it.bevelWidth || "") : ""}` : "",
           it.notes,
         ]
           .filter(Boolean)
@@ -95,6 +122,96 @@ function renderItemsTable(order) {
       </tbody>
     </table>
   `;
+}
+
+function renderItemsTableNoMoney(order) {
+  const items = Array.isArray(order.items) ? order.items : [];
+  const rows = items
+    .map((it, idx) => {
+      const qty = it.qty ?? it.quantity ?? "";
+      const desc =
+        it.description ??
+        it.name ??
+        [
+          it.glassType || it.type,
+          it.thickness,
+          it.width && it.height ? `${it.width} x ${it.height}` : "",
+          it.edgework || it.bevel ? `Edge/Bevel: ${it.edgework || ""} ${it.bevel ? (it.bevelWidth || "") : ""}` : "",
+          it.notes,
+        ]
+          .filter(Boolean)
+          .join(" • ");
+
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(desc)}</td>
+          <td class="right">${escapeHtml(qty)}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  return `
+    <table>
+      <thead>
+        <tr>
+          <th style="width:40px;">#</th>
+          <th>Description</th>
+          <th style="width:70px;">Qty</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows || `<tr><td colspan="3">No line items</td></tr>`}
+      </tbody>
+    </table>
+  `;
+}
+
+
+function renderHardwareTable(order, withMoney = false) {
+  const hardwareItems = Array.isArray(order.hardwareItems) ? order.hardwareItems : [];
+  const rows = hardwareItems.map((it, idx) => {
+    const qty = it.qty ?? "";
+    const name = it.name || it.part || "";
+    const unit = Number(it.price ?? it.unitPrice ?? 0);
+    const total = Number(it.total ?? (qty ? unit * Number(qty) : 0));
+    return withMoney
+      ? `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(name)}</td>
+          <td class="right">${escapeHtml(qty)}</td>
+          <td class="right">${escapeHtml(money(unit))}</td>
+          <td class="right">${escapeHtml(money(total))}</td>
+        </tr>
+      `
+      : `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${escapeHtml(name)}</td>
+          <td class="right">${escapeHtml(qty)}</td>
+        </tr>
+      `;
+  }).join("");
+
+  if (withMoney) {
+    return `
+    <table>
+      <thead>
+        <tr><th style="width:40px;">#</th><th>Hardware</th><th style="width:70px;">Qty</th><th style="width:90px;">Unit</th><th style="width:90px;">Total</th></tr>
+      </thead>
+      <tbody>${rows || '<tr><td colspan="5">No hardware items</td></tr>'}</tbody>
+    </table>`;
+  }
+
+  return `
+  <table>
+    <thead>
+      <tr><th style="width:40px;">#</th><th>Hardware</th><th style="width:70px;">Qty</th></tr>
+    </thead>
+    <tbody>${rows || '<tr><td colspan="3">No hardware items</td></tr>'}</tbody>
+  </table>`;
 }
 
 function renderTotals(order) {
@@ -144,14 +261,10 @@ function renderQuoteHTML(order) {
   ${baseStyles()}
 </head>
 <body>
-  <div class="row">
-    <div>
-      <h1>Kentucky Mirror &amp; Plate Glass</h1>
-      <div class="small">Louisville, KY</div>
-      <div class="small">Phone: ____________________</div>
-    </div>
+  ${renderCompanyHeader("QUOTE")}
+  <div class="row" style="margin-top:12px;">
+    <div></div>
     <div class="box">
-      <div><b>QUOTE</b></div>
       <div>Quote #: <b>${escapeHtml(order.orderNumber || "")}</b></div>
       <div>Date Saved: ${escapeHtml(fmtDate(savedISO))}</div>
       <div>Valid Through: <b>${escapeHtml(fmtDate(validThroughISO))}</b></div>
@@ -173,8 +286,7 @@ function renderQuoteHTML(order) {
     </div>
   </div>
 
-  ${renderItemsTable(order)}
-  ${renderTotals(order)}
+  ${renderItemsTableNoMoney(order)}
 
   <p class="small" style="margin-top:12px;">
     This quote is good for <b>30 days</b> from <b>${escapeHtml(fmtDate(savedISO))}</b>.
@@ -205,7 +317,7 @@ function renderTicketHTML(order) {
         it.width && it.height ? `${it.width} x ${it.height}` : (it.size || "");
       const glass = it.glassType || it.type || "";
       const thk = it.thickness || it.thk || "";
-      const edge = it.edgework || (it.bevelWidth ? `Bevel ${it.bevelWidth}` : "") || "";
+      const edge = it.edgework || (it.bevel ? `Bevel ${it.bevelWidth || ""}` : "") || "";
       const temper = it.tempered ? "YES" : (it.temp ? "YES" : "");
       const notes = it.notes || it.instructions || it.descNotes || it.description || "";
 
@@ -241,7 +353,7 @@ function renderTicketHTML(order) {
   </style>
 </head>
 <body>
-  <h1>SHOP TICKET</h1>
+  ${renderCompanyHeader("SHOP TICKET")}
   <div class="meta">
     Order #: <b>${escapeHtml(order.orderNumber || "")}</b> &nbsp; | &nbsp;
     Date Saved: ${escapeHtml(fmtDate(savedISO))} &nbsp; | &nbsp;
@@ -303,22 +415,16 @@ function renderPackingListHTML(order) {
 <head>
   <meta charset="utf-8" />
   <title>Packing List ${escapeHtml(order.orderNumber || "")}</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { margin: 0; }
-    .meta { margin-top: 8px; font-size: 13px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #000; padding: 8px; font-size: 13px; }
-    .right { text-align: right; }
-    @page { margin: 12mm; }
-  </style>
+  ${baseStyles()}
 </head>
 <body>
-  <h1>PACKING LIST</h1>
-  <div class="meta">
+  ${renderCompanyHeader("PACKING LIST")}
+  <div class="meta" style="margin-top:10px;font-size:13px;">
     Order #: <b>${escapeHtml(order.orderNumber || "")}</b> &nbsp; | &nbsp;
-    Date Saved: ${escapeHtml(fmtDate(savedISO))} &nbsp; | &nbsp;
-    Customer: ${escapeHtml(cust.name || cust.company || "")}
+    Order Date: ${escapeHtml(fmtDate(savedISO))} &nbsp; | &nbsp;
+    Customer: ${escapeHtml(cust.name || cust.company || "")} &nbsp; | &nbsp;
+    Source: <b>${escapeHtml(String(order.status || "").includes("(vendor)") ? "Vendor" : "Shop")}</b>
+    ${String(order.status || "").includes("(vendor)") ? ` &nbsp; | &nbsp; Vendor: <b>${escapeHtml(order.vendorName || "")}</b> &nbsp; | &nbsp; PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b>` : ""}
   </div>
 
   <table>
@@ -335,6 +441,41 @@ function renderPackingListHTML(order) {
       ${rows || `<tr><td colspan="5">No line items</td></tr>`}
     </tbody>
   </table>
+
+  ${renderHardwareTable(order, true)}
+  ${renderTotals(order)}
+</body>
+</html>`;
+}
+
+
+function renderPurchaseOrderHTML(order) {
+  const requestedDate = order.requestedDate || order.createdAt || new Date().toISOString();
+  const isVendorOrder = String(order.status || "").includes("(vendor)");
+  const poTitle = isVendorOrder ? "PURCHASE ORDER" : "INTERNAL PO";
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${poTitle} ${escapeHtml(order.orderNumber || "")}</title>
+  ${baseStyles()}
+</head>
+<body>
+  ${renderCompanyHeader(poTitle)}
+  <div class="row" style="margin-top:12px;">
+    <div class="box" style="flex:1;">
+      <b>Vendor</b><br/>
+      ${escapeHtml(order.vendorName || "")}
+    </div>
+    <div class="box" style="flex:1;">
+      <div>Order #: <b>${escapeHtml(order.orderNumber || "")}</b></div>
+      <div>PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b></div>
+      <div>Requested Date: <b>${escapeHtml(fmtDate(requestedDate))}</b></div>
+      <div>Order Date: ${escapeHtml(fmtDate(order.createdAt))}</div>
+    </div>
+  </div>
+  ${renderItemsTableNoMoney(order)}
+  ${!isVendorOrder ? renderHardwareTable(order, false) : ""}
 </body>
 </html>`;
 }
@@ -352,13 +493,9 @@ function renderInvoiceHTML(order) {
   ${baseStyles()}
 </head>
 <body>
-  <div class="row">
-    <div>
-      <h1>Kentucky Mirror &amp; Plate Glass</h1>
-      <div class="small">Louisville, KY</div>
-      <div class="small">Phone: ____________________</div>
-      <div class="small">Address: ________________________________</div>
-    </div>
+  ${renderCompanyHeader("INVOICE")}
+  <div class="row" style="margin-top:12px;">
+    <div></div>
     <div class="box">
       <div><b>INVOICE</b></div>
       <div>Invoice #: <b>${escapeHtml(invoiceNumber)}</b></div>
@@ -377,6 +514,7 @@ function renderInvoiceHTML(order) {
   </div>
 
   ${renderItemsTable(order)}
+  ${renderHardwareTable(order, true)}
   ${renderTotals(order)}
 
   <p class="small" style="margin-top:12px;">
@@ -432,6 +570,7 @@ export default async (req) => {
           else if (p === "ticket") html = renderTicketHTML(order);
           else if (p === "packing-list" || p === "packinglist") html = renderPackingListHTML(order);
           else if (p === "invoice") html = renderInvoiceHTML(order);
+          else if (p === "purchase-order" || p === "purchaseorder" || p === "po") html = renderPurchaseOrderHTML(order);
           else {
             return new Response(JSON.stringify({ error: "Invalid print type" }), {
               status: 400,
@@ -478,7 +617,7 @@ export default async (req) => {
 
     // POST — create a new order with auto-assigned order number
     if (req.method === "POST") {
-      const body = await req.json();
+      const body = normalizeStringsUpper(await req.json());
       const sequenceNumber = Number(body.sequenceNumber) || (await nextSequenceNumber());
       const orderNumber = `o${sequenceNumber}`;
       const newId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -489,9 +628,15 @@ export default async (req) => {
         sequenceNumber,
         orderNumber,
         status: body.status || "shop production",
+        vendorName: body.vendorName || "",
+        vendorPoNumber: body.vendorPoNumber || "",
+        requestedDate: body.requestedDate || "",
+        vendorDeliveryDate: body.vendorDeliveryDate || "",
+        vendorReceivedAt: body.vendorReceivedAt || "",
         customer: body.customer || {},
         items: body.items || [],
         hardware: body.hardware || null,
+        hardwareItems: Array.isArray(body.hardwareItems) ? body.hardwareItems : [],
         specialPricing: body.specialPricing || false,
         grandTotal: body.grandTotal || 0,
         grandTotalWithTax: body.grandTotalWithTax || 0,
@@ -524,7 +669,7 @@ export default async (req) => {
         });
       }
 
-      const body = await req.json();
+      const body = normalizeStringsUpper(await req.json());
       const sequenceNumber = Number(body.sequenceNumber) || Number(existing.sequenceNumber) || null;
       const updatedOrder = {
         ...existing,
