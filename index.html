@@ -3111,6 +3111,9 @@ async function convertSavedQuoteToOrder(id) {
     await loadQuotes();
     await loadOrders();
     prepareForNewQuote();
+    alert(`Quote converted to order ${createdOrder.orderNumber}.`);
+    await loadQuotes();
+    await loadOrders();
   } catch (err) {
     alert('Error converting quote: ' + err.message);
   }
