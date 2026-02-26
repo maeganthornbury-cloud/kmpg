@@ -20,6 +20,7 @@ async function nextSequenceNumber() {
 
 export default async (req) => {
   const store = getStore({ name: "quotes", consistency: "strong" });
+  const closedStore = getStore({ name: "closed-quotes", consistency: "strong" });
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
 
@@ -81,7 +82,8 @@ export default async (req) => {
         grandTotal: body.grandTotal || 0,
         grandTotalWithTax: body.grandTotalWithTax || 0,
         specialPricing: body.specialPricing || false,
-        notes: body.notes || "",
+        customerNotes: body.customerNotes || body.notes || "",
+        notes: body.customerNotes || body.notes || "",
         createdAt: new Date().toISOString(),
       };
       await store.setJSON(quoteId, quote);
@@ -113,7 +115,17 @@ export default async (req) => {
         quoteNumber: sequenceNumber ? `q${sequenceNumber}` : existing.quoteNumber,
         updatedAt: new Date().toISOString(),
       };
-      await store.setJSON(id, updated);
+
+      if (String(updated.status || "").toLowerCase() === "closed as ordered") {
+        await closedStore.setJSON(id, {
+          ...updated,
+          closedAt: updated.updatedAt,
+        });
+        await store.delete(id);
+      } else {
+        await store.setJSON(id, updated);
+      }
+
       return new Response(JSON.stringify(updated), { headers });
     }
 
