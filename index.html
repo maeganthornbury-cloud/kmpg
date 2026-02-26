@@ -2479,18 +2479,6 @@ async function saveQuote() {
   }
 
   prepareForNewQuote();
-  const printNow = confirm(
-    `Quote ${quoteLabel} saved successfully.
-
-Select OK to Print or Cancel for No (save only).`
-  );
-
-  if (printNow) {
-    printQuote(savedQuote.id);
-    return;
-  }
-
-  alert(`Quote ${quoteLabel} saved. No print copy was created.`);
 }
 
 
@@ -3655,6 +3643,26 @@ document.addEventListener("DOMContentLoaded", async function () {
     try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
   }
 
+  async function updatePurchaseOrder(id) {
+    const deliveryDate = document.getElementById(`po_delivery_${id}`)?.value || '';
+    const status = document.getElementById(`po_status_${id}`)?.value || 'Pending';
+    const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
+
+    const res = await fetch(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deliveryDate, status, receivedAt }),
+    });
+
+    if (!res.ok) {
+      alert('Failed to update purchase order.');
+      return;
+    }
+
+    await loadPurchaseOrders();
+    try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
+  }
+
   function kympgOpen(which, btn){
     if (btn){
       kympgClearActiveNav();
@@ -3722,6 +3730,16 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
   }
 
   window.addEventListener('DOMContentLoaded', () => {
+    // Ensure app workspaces live inside the card body so navigation renders correctly.
+    const content = document.getElementById('kympgContentArea');
+    if (content){
+      ['calculator-section','customer-section','orders-section','quotedb-section','po-section','breakage-section','pricelist-section']
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (el && el.parentElement !== content) content.appendChild(el);
+          if (el) el.style.display = 'none';
+        });
+    }
     // Keep existing section structure intact; just initialize on landing.
     kympgShowLanding();
   });
