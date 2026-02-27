@@ -488,34 +488,80 @@
     #shower-section.active { display: block; }
     .shower-layout {
       display: grid;
-      grid-template-columns: minmax(320px, 420px) 1fr;
-      gap: 20px;
+      grid-template-columns: minmax(390px, 470px) 1fr;
+      gap: 0;
       align-items: start;
+      border: 1px solid #d8dde5;
+      border-radius: 14px;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(10, 20, 36, 0.08);
     }
     .shower-card {
-      border: 1px solid #d7d7d7;
-      border-radius: 10px;
-      background: #fafafa;
-      padding: 14px;
+      border-right: 1px solid #d8dde5;
+      background: #f7f8fb;
+      padding: 16px;
+    }
+    .shower-card h3 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      letter-spacing: .2px;
+    }
+    .shower-subtabs {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #d8dde5;
+      padding-bottom: 8px;
+    }
+    .shower-subtabs span {
+      font-weight: 700;
+      color: #75849b;
+    }
+    .shower-subtabs .active {
+      color: #5ca8b7;
+      border-bottom: 3px solid #5ca8b7;
+      padding-bottom: 6px;
     }
     .shower-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
-    .shower-grid label { font-size: 12px; font-weight: bold; }
-    .shower-grid input, .shower-grid select { width: 100%; box-sizing: border-box; }
+    .shower-grid label { font-size: 11px; font-weight: 700; color: #6c7687; text-transform: uppercase; }
+    .shower-grid input, .shower-grid select {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #cfd5df;
+      border-radius: 6px;
+      background: #fff;
+      padding: 8px 10px;
+      color: #243248;
+      font-weight: 600;
+    }
+    .shower-grid .full { grid-column: 1 / -1; }
+    .shower-primary-btn {
+      width: 100%;
+      background: #8f969f;
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      padding: 11px;
+      margin-top: 2px;
+      cursor: pointer;
+    }
     #showerPreview {
       width: 100%;
       max-width: 640px;
-      border: 1px solid #d7d7d7;
-      border-radius: 10px;
+      border-left: 1px solid #d8dde5;
       background: #fff;
     }
     .shower-stats {
-      margin-top: 10px;
-      font-size: 13px;
+      margin-top: 12px;
+      font-size: 12px;
       line-height: 1.5;
+      color: #344154;
     }
     @media (max-width: 900px) {
       .shower-layout { grid-template-columns: 1fr; }
@@ -1598,36 +1644,54 @@ body.auth-locked .auth-gate{ display:flex; }
 </div>
 
 <div id="shower-section">
-  <h2>Shower Door Measuring App</h2>
-  <p>Enter your field measurements and instantly preview the shower enclosure layout.</p>
+  <h2>Shower Designer</h2>
+  <p>Configure panel dimensions and preview a multi-panel enclosure similar to the design layout.</p>
   <div class="shower-layout">
     <div class="shower-card">
+      <h3>Design</h3>
+      <div class="shower-subtabs"><span class="active">Details</span><span>Measurement Grid</span></div>
       <div class="shower-grid">
         <div>
-          <label for="showerWidth">Opening Width (in)</label>
-          <input id="showerWidth" type="number" min="20" step="0.25" value="60">
+          <label for="showerWidth">Top Left (mm)</label>
+          <input id="showerWidth" type="number" min="300" step="1" value="1200">
         </div>
         <div>
-          <label for="showerHeight">Height (in)</label>
-          <input id="showerHeight" type="number" min="60" step="0.25" value="76">
+          <label for="showerHeight">Top Right (mm)</label>
+          <input id="showerHeight" type="number" min="300" step="1" value="795">
         </div>
         <div>
-          <label for="wallLeft">Left Return Wall (in)</label>
-          <input id="wallLeft" type="number" min="0" step="0.25" value="0">
+          <label for="wallLeft">Left Side Height (mm)</label>
+          <input id="wallLeft" type="number" min="600" step="1" value="1800">
         </div>
         <div>
-          <label for="wallRight">Right Return Wall (in)</label>
-          <input id="wallRight" type="number" min="0" step="0.25" value="0">
+          <label for="wallRight">Right Side Height (mm)</label>
+          <input id="wallRight" type="number" min="600" step="1" value="1131">
         </div>
         <div>
-          <label for="doorWidth">Door Panel Width (in)</label>
-          <input id="doorWidth" type="number" min="18" step="0.25" value="28">
+          <label for="doorWidth">Door Width (mm)</label>
+          <input id="doorWidth" type="number" min="350" step="1" value="700">
+        </div>
+        <div>
+          <label for="kneeHeight">Knee Return (mm)</label>
+          <input id="kneeHeight" type="number" min="200" step="1" value="525">
+        </div>
+        <div>
+          <label for="baseLeft">Base Left (mm)</label>
+          <input id="baseLeft" type="number" min="200" step="1" value="1200">
+        </div>
+        <div>
+          <label for="baseCenter">Base Center (mm)</label>
+          <input id="baseCenter" type="number" min="200" step="1" value="500">
+        </div>
+        <div>
+          <label for="baseRight">Base Right (mm)</label>
+          <input id="baseRight" type="number" min="200" step="1" value="445">
         </div>
         <div>
           <label for="glassTypeSelect">Glass Thickness</label>
           <select id="glassTypeSelect">
-            <option value='3/8"'>3/8"</option>
-            <option value='1/2"'>1/2"</option>
+            <option value='10mm clear'>10mm Clear</option>
+            <option value='12mm clear'>12mm Clear</option>
           </select>
         </div>
         <div>
@@ -1637,17 +1701,17 @@ body.auth-locked .auth-gate{ display:flex; }
             <option value="right">Right Hinge</option>
           </select>
         </div>
-        <div>
+        <div class="full">
           <label for="layoutType">Layout</label>
           <select id="layoutType">
+            <option value="raked">Raked Corner with Knee Return</option>
             <option value="inline">Inline (Door + Fixed)</option>
             <option value="neo">Neo-angle style</option>
-            <option value="slider">Bypass Slider</option>
           </select>
         </div>
       </div>
       <div class="buttons" style="margin-top:12px;">
-        <button type="button" onclick="renderShowerDesign()">Render Preview</button>
+        <button type="button" class="shower-primary-btn" onclick="renderShowerDesign()">Reapply</button>
         <button type="button" onclick="downloadShowerPreview()">Download PNG</button>
       </div>
       <div id="showerStats" class="shower-stats"></div>
@@ -2492,16 +2556,18 @@ function switchTab(tab) {
 
 
 function renderShowerDesign() {
-  const width = Math.max(20, parseFloat(document.getElementById('showerWidth')?.value) || 0);
-  const height = Math.max(60, parseFloat(document.getElementById('showerHeight')?.value) || 0);
-  const leftWall = Math.max(0, parseFloat(document.getElementById('wallLeft')?.value) || 0);
-  const rightWall = Math.max(0, parseFloat(document.getElementById('wallRight')?.value) || 0);
-  const doorWidthInput = Math.max(18, parseFloat(document.getElementById('doorWidth')?.value) || 0);
-  const layout = document.getElementById('layoutType')?.value || 'inline';
+  const topLeft = Math.max(300, parseFloat(document.getElementById('showerWidth')?.value) || 1200);
+  const topRight = Math.max(300, parseFloat(document.getElementById('showerHeight')?.value) || 795);
+  const leftHeight = Math.max(600, parseFloat(document.getElementById('wallLeft')?.value) || 1800);
+  const rightHeight = Math.max(600, parseFloat(document.getElementById('wallRight')?.value) || 1131);
+  const doorWidth = Math.max(350, parseFloat(document.getElementById('doorWidth')?.value) || 700);
+  const kneeHeight = Math.max(200, parseFloat(document.getElementById('kneeHeight')?.value) || 525);
+  const baseLeft = Math.max(200, parseFloat(document.getElementById('baseLeft')?.value) || 1200);
+  const baseCenter = Math.max(200, parseFloat(document.getElementById('baseCenter')?.value) || 500);
+  const baseRight = Math.max(200, parseFloat(document.getElementById('baseRight')?.value) || 445);
+  const layout = document.getElementById('layoutType')?.value || 'raked';
   const swing = document.getElementById('doorSwing')?.value || 'left';
-  const glass = document.getElementById('glassTypeSelect')?.value || '3/8"';
-  const doorWidth = Math.min(doorWidthInput, width - 4);
-  const fixedWidth = Math.max(0, width - doorWidth);
+  const glass = document.getElementById('glassTypeSelect')?.value || '10mm clear';
 
   const canvas = document.getElementById('showerPreview');
   if (!canvas) return;
@@ -2512,92 +2578,90 @@ function renderShowerDesign() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const padding = 60;
-  const scale = Math.min((canvas.width - padding * 2) / (width + leftWall + rightWall + 6), (canvas.height - padding * 2) / height);
-  const baseX = (canvas.width - (width + leftWall + rightWall) * scale) / 2;
-  const baseY = canvas.height - 55;
-  const hPx = height * scale;
+  const poly = [
+    { x: 0, y: 0 },
+    { x: topLeft, y: -240 },
+    { x: topLeft + topRight, y: 0 },
+    { x: topLeft + topRight, y: rightHeight },
+    { x: topLeft + topRight - baseRight, y: rightHeight },
+    { x: topLeft + topRight - baseRight, y: rightHeight + kneeHeight },
+    { x: topLeft, y: rightHeight + kneeHeight + 130 },
+    { x: 0, y: leftHeight }
+  ];
 
-  const leftX = baseX + leftWall * scale;
-  const doorPx = doorWidth * scale;
-  const fixedPx = fixedWidth * scale;
-  const yTop = baseY - hPx;
+  const xs = poly.map(p => p.x);
+  const ys = poly.map(p => p.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
 
-  ctx.strokeStyle = '#222';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(leftX, yTop, width * scale, hPx);
+  const margin = 72;
+  const scale = Math.min((canvas.width - margin * 2) / (maxX - minX), (canvas.height - margin * 2) / (maxY - minY));
+  const shiftX = margin - minX * scale;
+  const shiftY = margin - minY * scale;
+  const pt = (p) => ({ x: p.x * scale + shiftX, y: p.y * scale + shiftY });
 
-  const doorX = swing === 'left' ? leftX : leftX + fixedPx;
-  const fixedX = swing === 'left' ? leftX + doorPx : leftX;
-
-  ctx.fillStyle = 'rgba(120, 190, 255, 0.35)';
-  if (fixedPx > 0) ctx.fillRect(fixedX, yTop, fixedPx, hPx);
-  ctx.fillStyle = 'rgba(80, 155, 230, 0.45)';
-  ctx.fillRect(doorX, yTop, doorPx, hPx);
-
-  ctx.strokeStyle = '#1b4f72';
-  ctx.lineWidth = 3;
-  const hingeX = swing === 'left' ? doorX : doorX + doorPx;
+  const points = poly.map(pt);
+  const glassFill = 'rgba(211, 234, 205, 0.82)';
   ctx.beginPath();
-  ctx.moveTo(hingeX, yTop + 12);
-  ctx.lineTo(hingeX, baseY - 12);
-  ctx.stroke();
-
-  const swingDir = swing === 'left' ? 1 : -1;
-  ctx.strokeStyle = '#005bbb';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.arc(hingeX, baseY - 40, doorPx * 0.75, swing === 'left' ? -1.5 : -1.65, swing === 'left' ? -0.2 : -2.95, swing !== 'left');
-  ctx.stroke();
-  ctx.beginPath();
-  const tipX = hingeX + swingDir * doorPx * 0.74;
-  const tipY = baseY - 62;
-  ctx.moveTo(tipX, tipY);
-  ctx.lineTo(tipX - swingDir * 8, tipY - 4);
-  ctx.lineTo(tipX - swingDir * 8, tipY + 4);
+  points.forEach((p, idx) => idx ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
   ctx.closePath();
-  ctx.fillStyle = '#005bbb';
+  ctx.fillStyle = glassFill;
   ctx.fill();
+  ctx.strokeStyle = '#9db59c';
+  ctx.lineWidth = 3;
+  ctx.stroke();
 
-  if (layout === 'neo') {
-    ctx.strokeStyle = '#777';
-    ctx.setLineDash([6, 5]);
-    ctx.beginPath();
-    ctx.moveTo(leftX, yTop);
-    ctx.lineTo(leftX - 30, yTop - 25);
-    ctx.moveTo(leftX + width * scale, yTop);
-    ctx.lineTo(leftX + width * scale + 30, yTop - 25);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  } else if (layout === 'slider') {
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(leftX, yTop - 8);
-    ctx.lineTo(leftX + width * scale, yTop - 8);
-    ctx.stroke();
-    ctx.fillStyle = '#333';
-    ctx.fillRect(leftX + 8, yTop - 11, 8, 6);
-    ctx.fillRect(leftX + width * scale - 16, yTop - 11, 8, 6);
-  }
+  const xDoor1 = (topLeft - doorWidth) * scale + shiftX;
+  const xDoor2 = topLeft * scale + shiftX;
+  const yTop = points[0].y + 15;
+  const yBottom = points[6].y - 20;
 
-  ctx.fillStyle = '#111';
-  ctx.font = 'bold 14px Arial';
-  ctx.fillText(`Opening: ${width.toFixed(2)}" x ${height.toFixed(2)}"`, 18, 26);
-  ctx.font = '12px Arial';
-  ctx.fillText(`Door: ${doorWidth.toFixed(2)}" (${swing.toUpperCase()} HINGE)`, 18, 45);
-  ctx.fillText(`Glass: ${glass} | Layout: ${layout.toUpperCase()}`, 18, 62);
+  ctx.strokeStyle = 'rgba(80,110,82,0.5)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(xDoor1, yTop);
+  ctx.lineTo(xDoor1, yBottom);
+  ctx.moveTo(xDoor2, yTop);
+  ctx.lineTo(xDoor2, yBottom);
+  ctx.stroke();
 
-  const areaSqFt = (width * height) / 144;
-  const estWeight = areaSqFt * (glass === '1/2"' ? 6.6 : 4.9);
+  const handleX = swing === 'left' ? xDoor2 - 18 : xDoor1 + 18;
+  const handleY = (yTop + yBottom) / 2;
+  ctx.strokeStyle = '#c2b8aa';
+  ctx.lineWidth = 6;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(handleX, handleY - 16);
+  ctx.lineTo(handleX, handleY + 16);
+  ctx.stroke();
+  ctx.lineCap = 'butt';
+
+  const text = (label, x, y, color='#111', size=30) => {
+    ctx.fillStyle = color;
+    ctx.font = `600 ${size}px Arial`;
+    ctx.fillText(String(label), x, y);
+  };
+
+  text(topLeft, (points[0].x + points[1].x)/2 - 25, points[0].y - 26, '#e56b6f');
+  text(topRight, (points[1].x + points[2].x)/2 - 20, points[1].y - 10, '#51a351');
+  text(leftHeight, points[7].x - 48, (points[7].y + points[0].y)/2, '#4c63db');
+  text(rightHeight, points[3].x + 16, (points[3].y + points[4].y)/2, '#8d4952');
+  text(kneeHeight, points[4].x + 16, (points[4].y + points[5].y)/2, '#b565d9');
+  text(baseLeft, (points[7].x + points[6].x)/2 - 15, points[7].y + 36, '#44aa4b');
+  text(baseCenter, (points[6].x + points[5].x)/2 - 8, points[6].y + 36, '#ee8f33');
+  text(baseRight, (points[5].x + points[4].x)/2 + 12, points[5].y + 24, '#2f8c9a');
+  text(doorWidth, (xDoor1 + xDoor2)/2 - 16, points[6].y - 12, '#555', 34);
+
   const stats = document.getElementById('showerStats');
   if (stats) {
+    const perimeter = topLeft + topRight + rightHeight + kneeHeight + baseCenter + baseLeft + leftHeight;
     stats.innerHTML = `
-      <strong>Estimated Cut List</strong><br>
-      Door Panel: ${doorWidth.toFixed(2)}" × ${height.toFixed(2)}"<br>
-      Fixed Panel: ${fixedWidth.toFixed(2)}" × ${height.toFixed(2)}"<br>
-      Return Walls: Left ${leftWall.toFixed(2)}" / Right ${rightWall.toFixed(2)}"<br>
-      Glass Area: ${areaSqFt.toFixed(2)} sq ft &nbsp;•&nbsp; Estimated Weight: ${estWeight.toFixed(1)} lbs
+      <strong>Configured Layout</strong><br>
+      Style: ${layout.toUpperCase()} &nbsp;•&nbsp; Glass: ${glass}<br>
+      Door: ${doorWidth.toFixed(0)} mm (${swing.toUpperCase()} hinge)<br>
+      Approximate perimeter reference: ${perimeter.toFixed(0)} mm
     `;
   }
 }
@@ -2614,7 +2678,7 @@ function downloadShowerPreview() {
 
 
 window.addEventListener('DOMContentLoaded', () => {
-  ['showerWidth','showerHeight','wallLeft','wallRight','doorWidth','glassTypeSelect','doorSwing','layoutType']
+  ['showerWidth','showerHeight','wallLeft','wallRight','doorWidth','kneeHeight','baseLeft','baseCenter','baseRight','glassTypeSelect','doorSwing','layoutType']
     .forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('input', renderShowerDesign);
