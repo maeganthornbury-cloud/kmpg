@@ -5023,6 +5023,30 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     kympgShowLanding();
 
     const quickInput = document.getElementById('homeQuickSearchInput');
+    const closeOpenSearchUi = () => {
+      const quickResults = document.getElementById('homeQuickResults');
+      if (quickResults && quickResults.innerHTML.trim()) {
+        quickResults.innerHTML = '';
+      }
+
+      document.querySelectorAll('.glassList').forEach((list) => {
+        if (list.style.display === 'block') {
+          list.style.display = 'none';
+        }
+      });
+
+      const customerLookup = document.getElementById('customerLookupList');
+      if (customerLookup && customerLookup.style.display === 'block') {
+        customerLookup.style.display = 'none';
+        calcLookupIndex = -1;
+      }
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      closeOpenSearchUi();
+    });
+
     if (quickInput) {
       quickInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
