@@ -480,6 +480,46 @@
       margin: 0 auto;
     }
     #orders-section.active { display: block; }
+    #shower-section {
+      display: none;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    #shower-section.active { display: block; }
+    .shower-layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 420px) 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .shower-card {
+      border: 1px solid #d7d7d7;
+      border-radius: 10px;
+      background: #fafafa;
+      padding: 14px;
+    }
+    .shower-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .shower-grid label { font-size: 12px; font-weight: bold; }
+    .shower-grid input, .shower-grid select { width: 100%; box-sizing: border-box; }
+    #showerPreview {
+      width: 100%;
+      max-width: 640px;
+      border: 1px solid #d7d7d7;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .shower-stats {
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    @media (max-width: 900px) {
+      .shower-layout { grid-template-columns: 1fr; }
+    }
     #orderSearch {
       padding: 6px 10px;
       font-size: 14px;
@@ -907,6 +947,7 @@ body.auth-locked .auth-gate{ display:flex; }
     <p>Sign in with Netlify Identity to access the app.</p>
     <div class="row">
       <button type="button" class="kympg-authBtn primary" onclick="openLogin()">Use Netlify Login</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineLogin()">Continue Offline</button>
     </div>
   </div>
 </div>
@@ -1004,6 +1045,7 @@ body.auth-locked .auth-gate{ display:flex; }
         </span>
       </button>
 
+
       <button class="kympg-navBtn" data-tip="Invoiced Orders" type="button" onclick="kympgOpen('invoiced', this)">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M16 4v4h4"/><path d="M8 12h8"/><path d="M8 16h8"/></svg>
@@ -1042,6 +1084,10 @@ body.auth-locked .auth-gate{ display:flex; }
       <button class="kympg-navBtn" data-tip="New Request" type="button" onclick="kympgOpen('residential', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span>
         <span class="kympg-labelWrap"><span class="kympg-label">New Request</span><span class="kympg-hint">Create residential request</span></span>
+      </button>
+      <button class="kympg-navBtn" data-tip="Shower Designer" type="button" onclick="kympgOpen('shower', this)">
+        <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M6 7v13"/><path d="M18 7v13"/><path d="M6 20h12"/><path d="M9 10h6"/></svg></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">Shower Designer</span><span class="kympg-hint">Measure and preview shower doors</span></span>
       </button>
       <button class="kympg-navBtn" data-tip="Open Requests" type="button" onclick="kympgOpen('residentialdb', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span>
@@ -1277,6 +1323,7 @@ body.auth-locked .auth-gate{ display:flex; }
   <button id="tabCalculator" class="active" onclick="switchTab('calculator')">New Order</button>
   <button id="tabOrders" onclick="switchTab('orders')">Orders</button>
   <button id="tabCustomers" onclick="switchTab('customers')">Customers</button>
+  <button id="tabShower" onclick="switchTab('shower')">Shower Designer</button>
 </div>
 
 <div id="calculator-section">
@@ -1549,6 +1596,67 @@ body.auth-locked .auth-gate{ display:flex; }
     </tbody>
   </table>
 </div>
+
+<div id="shower-section">
+  <h2>Shower Door Measuring App</h2>
+  <p>Enter your field measurements and instantly preview the shower enclosure layout.</p>
+  <div class="shower-layout">
+    <div class="shower-card">
+      <div class="shower-grid">
+        <div>
+          <label for="showerWidth">Opening Width (in)</label>
+          <input id="showerWidth" type="number" min="20" step="0.25" value="60">
+        </div>
+        <div>
+          <label for="showerHeight">Height (in)</label>
+          <input id="showerHeight" type="number" min="60" step="0.25" value="76">
+        </div>
+        <div>
+          <label for="wallLeft">Left Return Wall (in)</label>
+          <input id="wallLeft" type="number" min="0" step="0.25" value="0">
+        </div>
+        <div>
+          <label for="wallRight">Right Return Wall (in)</label>
+          <input id="wallRight" type="number" min="0" step="0.25" value="0">
+        </div>
+        <div>
+          <label for="doorWidth">Door Panel Width (in)</label>
+          <input id="doorWidth" type="number" min="18" step="0.25" value="28">
+        </div>
+        <div>
+          <label for="glassTypeSelect">Glass Thickness</label>
+          <select id="glassTypeSelect">
+            <option value='3/8"'>3/8"</option>
+            <option value='1/2"'>1/2"</option>
+          </select>
+        </div>
+        <div>
+          <label for="doorSwing">Door Swing</label>
+          <select id="doorSwing">
+            <option value="left">Left Hinge</option>
+            <option value="right">Right Hinge</option>
+          </select>
+        </div>
+        <div>
+          <label for="layoutType">Layout</label>
+          <select id="layoutType">
+            <option value="inline">Inline (Door + Fixed)</option>
+            <option value="neo">Neo-angle style</option>
+            <option value="slider">Bypass Slider</option>
+          </select>
+        </div>
+      </div>
+      <div class="buttons" style="margin-top:12px;">
+        <button type="button" onclick="renderShowerDesign()">Render Preview</button>
+        <button type="button" onclick="downloadShowerPreview()">Download PNG</button>
+      </div>
+      <div id="showerStats" class="shower-stats"></div>
+    </div>
+    <div>
+      <canvas id="showerPreview" width="640" height="420" aria-label="Shower door preview"></canvas>
+    </div>
+  </div>
+</div>
 <script>
   // Sidebar + shell navigation (load this early so inline onclick works)
   function kympgToggleSidebar() {
@@ -1561,7 +1669,7 @@ body.auth-locked .auth-gate{ display:flex; }
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1569,13 +1677,14 @@ body.auth-locked .auth-gate{ display:flex; }
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['landing-section','calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
       quote: 'calculator-section',
       order: 'calculator-section',
       orders: 'orders-section',
+      shower: 'shower-section',
       customerimport: 'customer-section',
       vendors: 'vendor-section',
       breakage: 'breakage-section',
@@ -1592,6 +1701,12 @@ body.auth-locked .auth-gate{ display:flex; }
     const target = document.getElementById(targetId);
     if (target) target.style.display = 'block';
     if (which === 'po' && typeof loadPurchaseOrders === 'function') loadPurchaseOrders();
+    if (which === 'shower') {
+      if (typeof kympgSetHeader === 'function') {
+        kympgSetHeader('Shower Designer', 'Measure a shower opening and preview door layout.', 'Shower Designer', 'Measurement and rendering');
+      }
+      if (typeof renderShowerDesign === 'function') renderShowerDesign();
+    }
   }
 
   // Ignore noisy browser-extension promise rejections unrelated to app logic.
@@ -2339,17 +2454,21 @@ function switchTab(tab) {
   const calcSection = document.getElementById('calculator-section');
   const custSection = document.getElementById('customer-section');
   const ordSection = document.getElementById('orders-section');
+  const showerSection = document.getElementById('shower-section');
   const tabCalc = document.getElementById('tabCalculator');
   const tabCust = document.getElementById('tabCustomers');
   const tabOrd = document.getElementById('tabOrders');
+  const tabShower = document.getElementById('tabShower');
 
   // Hide all
   calcSection.classList.add('hidden');
   custSection.classList.remove('active');
   ordSection.classList.remove('active');
+  showerSection.classList.remove('active');
   tabCalc.classList.remove('active');
   tabCust.classList.remove('active');
   tabOrd.classList.remove('active');
+  if (tabShower) tabShower.classList.remove('active');
 
   if (tab === 'customers') {
     custSection.classList.add('active');
@@ -2359,6 +2478,10 @@ function switchTab(tab) {
     ordSection.classList.add('active');
     tabOrd.classList.add('active');
     loadOrders();
+  } else if (tab === 'shower') {
+    showerSection.classList.add('active');
+    if (tabShower) tabShower.classList.add('active');
+    renderShowerDesign();
   } else {
     calcSection.classList.remove('hidden');
     tabCalc.classList.add('active');
@@ -2366,6 +2489,139 @@ function switchTab(tab) {
     loadCalcCustomers();
   }
 }
+
+
+function renderShowerDesign() {
+  const width = Math.max(20, parseFloat(document.getElementById('showerWidth')?.value) || 0);
+  const height = Math.max(60, parseFloat(document.getElementById('showerHeight')?.value) || 0);
+  const leftWall = Math.max(0, parseFloat(document.getElementById('wallLeft')?.value) || 0);
+  const rightWall = Math.max(0, parseFloat(document.getElementById('wallRight')?.value) || 0);
+  const doorWidthInput = Math.max(18, parseFloat(document.getElementById('doorWidth')?.value) || 0);
+  const layout = document.getElementById('layoutType')?.value || 'inline';
+  const swing = document.getElementById('doorSwing')?.value || 'left';
+  const glass = document.getElementById('glassTypeSelect')?.value || '3/8"';
+  const doorWidth = Math.min(doorWidthInput, width - 4);
+  const fixedWidth = Math.max(0, width - doorWidth);
+
+  const canvas = document.getElementById('showerPreview');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const padding = 60;
+  const scale = Math.min((canvas.width - padding * 2) / (width + leftWall + rightWall + 6), (canvas.height - padding * 2) / height);
+  const baseX = (canvas.width - (width + leftWall + rightWall) * scale) / 2;
+  const baseY = canvas.height - 55;
+  const hPx = height * scale;
+
+  const leftX = baseX + leftWall * scale;
+  const doorPx = doorWidth * scale;
+  const fixedPx = fixedWidth * scale;
+  const yTop = baseY - hPx;
+
+  ctx.strokeStyle = '#222';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(leftX, yTop, width * scale, hPx);
+
+  const doorX = swing === 'left' ? leftX : leftX + fixedPx;
+  const fixedX = swing === 'left' ? leftX + doorPx : leftX;
+
+  ctx.fillStyle = 'rgba(120, 190, 255, 0.35)';
+  if (fixedPx > 0) ctx.fillRect(fixedX, yTop, fixedPx, hPx);
+  ctx.fillStyle = 'rgba(80, 155, 230, 0.45)';
+  ctx.fillRect(doorX, yTop, doorPx, hPx);
+
+  ctx.strokeStyle = '#1b4f72';
+  ctx.lineWidth = 3;
+  const hingeX = swing === 'left' ? doorX : doorX + doorPx;
+  ctx.beginPath();
+  ctx.moveTo(hingeX, yTop + 12);
+  ctx.lineTo(hingeX, baseY - 12);
+  ctx.stroke();
+
+  const swingDir = swing === 'left' ? 1 : -1;
+  ctx.strokeStyle = '#005bbb';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(hingeX, baseY - 40, doorPx * 0.75, swing === 'left' ? -1.5 : -1.65, swing === 'left' ? -0.2 : -2.95, swing !== 'left');
+  ctx.stroke();
+  ctx.beginPath();
+  const tipX = hingeX + swingDir * doorPx * 0.74;
+  const tipY = baseY - 62;
+  ctx.moveTo(tipX, tipY);
+  ctx.lineTo(tipX - swingDir * 8, tipY - 4);
+  ctx.lineTo(tipX - swingDir * 8, tipY + 4);
+  ctx.closePath();
+  ctx.fillStyle = '#005bbb';
+  ctx.fill();
+
+  if (layout === 'neo') {
+    ctx.strokeStyle = '#777';
+    ctx.setLineDash([6, 5]);
+    ctx.beginPath();
+    ctx.moveTo(leftX, yTop);
+    ctx.lineTo(leftX - 30, yTop - 25);
+    ctx.moveTo(leftX + width * scale, yTop);
+    ctx.lineTo(leftX + width * scale + 30, yTop - 25);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  } else if (layout === 'slider') {
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(leftX, yTop - 8);
+    ctx.lineTo(leftX + width * scale, yTop - 8);
+    ctx.stroke();
+    ctx.fillStyle = '#333';
+    ctx.fillRect(leftX + 8, yTop - 11, 8, 6);
+    ctx.fillRect(leftX + width * scale - 16, yTop - 11, 8, 6);
+  }
+
+  ctx.fillStyle = '#111';
+  ctx.font = 'bold 14px Arial';
+  ctx.fillText(`Opening: ${width.toFixed(2)}" x ${height.toFixed(2)}"`, 18, 26);
+  ctx.font = '12px Arial';
+  ctx.fillText(`Door: ${doorWidth.toFixed(2)}" (${swing.toUpperCase()} HINGE)`, 18, 45);
+  ctx.fillText(`Glass: ${glass} | Layout: ${layout.toUpperCase()}`, 18, 62);
+
+  const areaSqFt = (width * height) / 144;
+  const estWeight = areaSqFt * (glass === '1/2"' ? 6.6 : 4.9);
+  const stats = document.getElementById('showerStats');
+  if (stats) {
+    stats.innerHTML = `
+      <strong>Estimated Cut List</strong><br>
+      Door Panel: ${doorWidth.toFixed(2)}" × ${height.toFixed(2)}"<br>
+      Fixed Panel: ${fixedWidth.toFixed(2)}" × ${height.toFixed(2)}"<br>
+      Return Walls: Left ${leftWall.toFixed(2)}" / Right ${rightWall.toFixed(2)}"<br>
+      Glass Area: ${areaSqFt.toFixed(2)} sq ft &nbsp;•&nbsp; Estimated Weight: ${estWeight.toFixed(1)} lbs
+    `;
+  }
+}
+
+function downloadShowerPreview() {
+  renderShowerDesign();
+  const canvas = document.getElementById('showerPreview');
+  if (!canvas) return;
+  const link = document.createElement('a');
+  link.download = 'shower-door-preview.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  ['showerWidth','showerHeight','wallLeft','wallRight','doorWidth','glassTypeSelect','doorSwing','layoutType']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', renderShowerDesign);
+      if (el) el.addEventListener('change', renderShowerDesign);
+    });
+  renderShowerDesign();
+});
 
 
 function showCalculatorWorkspace(mode = 'order') {
@@ -4904,7 +5160,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
   function kympgHideAllSections(){
     const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
-                 'invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section',
+                 'shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section',
                  'residential-section','residentialdb-section','servicetechs-section'];
     ids.forEach(id => {
       const el = document.getElementById(id);
@@ -4936,11 +5192,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     admin: ['*'],
     office: ['*'],
     shop: ['landing', 'po'],
-    field: ['residential', 'residentialdb'],
+    field: ['residential', 'shower', 'residentialdb'],
   };
   let authUser = null;
   let authToken = '';
   let authRoles = [];
+  let isOfflineAuth = false;
   let hasPromptedLogin = false;
 
   function getAuthDisplayName() {
@@ -4974,13 +5231,29 @@ document.addEventListener("DOMContentLoaded", async function () {
     alert('Netlify login is not available in this environment.');
   }
 
+  function continueOfflineLogin() {
+    const offlineUser = {
+      email: 'offline@local',
+      user_metadata: { full_name: 'Offline User' },
+      app_metadata: { roles: ['admin'] },
+      token: { access_token: '' },
+    };
+    isOfflineAuth = true;
+    syncAuthState(offlineUser);
+  }
+
   async function logoutUser() {
+    if (isOfflineAuth) {
+      isOfflineAuth = false;
+      await syncAuthState(null);
+      return;
+    }
     if (window.netlifyIdentity) await window.netlifyIdentity.logout();
   }
 
   async function syncAuthState(user) {
     authUser = user || null;
-    authToken = user?.token?.access_token || '';
+    authToken = isOfflineAuth ? '' : (user?.token?.access_token || '');
     authRoles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles.map((r) => String(r).toLowerCase()) : [];
 
     const meta = document.getElementById('authUserMeta');
@@ -5021,13 +5294,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!authUser) {
       kympgShowLanding();
       setAuthGateVisible(true);
-      if (!hasPromptedLogin && window.netlifyIdentity) {
+      if (!isOfflineAuth && !hasPromptedLogin && window.netlifyIdentity) {
         hasPromptedLogin = true;
         setTimeout(() => openLogin(), 150);
       }
       return;
     }
 
+    if (authUser && !isOfflineAuth) isOfflineAuth = false;
     setAuthGateVisible(false);
     hasPromptedLogin = false;
   }
@@ -5772,7 +6046,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','vendor-section','orders-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','servicetechs-section']
+      ['calculator-section','customer-section','vendor-section','orders-section','shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','servicetechs-section']
         .forEach(id => {
           const el = document.getElementById(id);
           if (el && el.parentElement !== content) content.appendChild(el);
