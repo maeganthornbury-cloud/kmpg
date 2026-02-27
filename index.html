@@ -727,6 +727,7 @@ body{
 .kympg-authBtn{ padding:8px 12px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
 .kympg-authBtn.primary{ background:#0d78f0; color:#fff; }
 .kympg-authBtn.secondary{ background:#e2e8f0; color:#0f172a; }
+.kympg-authBtn.success{ background:#198f42; color:#fff; }
 #roleAdminPanel{ margin-top:16px; padding:12px; border:1px solid #cbd5e1; border-radius:10px; background:#f8fafc; }
 #roleAdminPanel label{ display:block; font-size:12px; font-weight:700; margin-bottom:4px; }
 #roleAdminPanel input{ width:100%; max-width:420px; padding:8px; margin-bottom:10px; }
@@ -762,6 +763,32 @@ body{
 .auth-gate-error{ color:#b91c1c; font-size:13px; min-height:18px; }
 body.auth-locked .kympg-shell{ display:none; }
 body.auth-locked .auth-gate{ display:flex; }
+
+.admin-user-modal{
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, .55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 21000;
+}
+.admin-user-modal.active{ display:flex; }
+.admin-user-card{
+  width: min(520px, 95vw);
+  background:#fff;
+  border-radius:12px;
+  box-shadow: var(--shadow);
+  border:1px solid var(--line);
+  padding:16px;
+}
+.admin-user-card h3{ margin:0 0 10px 0; }
+.admin-user-card label{ display:block; font-size:12px; font-weight:700; margin:8px 0 4px; }
+.admin-user-card input{ width:100%; padding:8px 10px; border:1px solid #cbd5e1; border-radius:8px; text-transform:none; }
+.admin-user-card .roleChecks{ display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+.admin-user-card .roleChecks label{ margin:0; display:flex; align-items:center; gap:4px; }
+.admin-user-actions{ margin-top:12px; display:flex; gap:8px; justify-content:flex-end; }
+.admin-user-status{ margin-top:8px; min-height:18px; font-size:12px; color:#334155; }
 
 .kympg-pageTitle h1{ margin:0; font-size: 22px; letter-spacing:.2px; }
 .kympg-pageTitle p{ margin:0; color: var(--muted); font-size: 13px; }
@@ -882,12 +909,12 @@ body.auth-locked .auth-gate{ display:flex; }
 <div id="authGate" class="auth-gate" aria-hidden="true">
   <div class="auth-gate-card" onclick="event.stopPropagation()">
     <h2>Log In</h2>
-    <p>Temporary test login until Netlify auth is fully configured (admin/admin or tech/tech).</p>
+    <p>Sign in with Netlify Identity. Local fallback login is only for offline/local testing.</p>
     <input id="devLoginUser" type="text" placeholder="Username (admin or tech)" autocomplete="username">
     <input id="devLoginPass" type="password" placeholder="Password (admin or tech)" autocomplete="current-password">
     <div class="row">
-      <button type="button" class="kympg-authBtn primary" onclick="tryDevLogin()">Log In</button>
-      <button type="button" class="kympg-authBtn secondary" onclick="openLogin()">Use Netlify Login</button>
+      <button type="button" class="kympg-authBtn primary" onclick="openLogin()">Use Netlify Login</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="tryDevLogin()">Local Fallback Login</button>
     </div>
     <div id="devLoginError" class="auth-gate-error"></div>
   </div>
@@ -1052,6 +1079,7 @@ body.auth-locked .auth-gate{ display:flex; }
             <span>Ready</span>
           </div>
           <span id="authUserMeta" class="kympg-authMeta">Not signed in</span>
+          <button id="adminCreateUserBtn" type="button" class="kympg-authBtn success" onclick="openAdminCreateUserModal()" style="display:none;">Create User</button>
           <button id="loginBtn" type="button" class="kympg-authBtn primary" onclick="openLogin()">Log In</button>
           <button id="logoutBtn" type="button" class="kympg-authBtn secondary" onclick="logoutUser()" style="display:none;">Log Out</button>
         </div>
@@ -4865,6 +4893,31 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 </script>
 
+<div id="adminUserModal" class="admin-user-modal" onclick="closeAdminCreateUserModal()">
+  <div class="admin-user-card" onclick="event.stopPropagation()">
+    <h3>Create New User</h3>
+    <label for="newUserEmail">Email</label>
+    <input id="newUserEmail" type="email" placeholder="new.user@company.com" autocomplete="email">
+
+    <label for="newUserFullName">Full Name (optional)</label>
+    <input id="newUserFullName" type="text" placeholder="New User" autocomplete="name">
+
+    <label>Roles</label>
+    <div class="roleChecks" id="newUserRoleChecks">
+      <label><input type="checkbox" value="admin"> Admin</label>
+      <label><input type="checkbox" value="office" checked> Office</label>
+      <label><input type="checkbox" value="shop"> Shop</label>
+      <label><input type="checkbox" value="field"> Field</label>
+    </div>
+
+    <div class="admin-user-actions">
+      <button type="button" class="kympg-authBtn secondary" onclick="closeAdminCreateUserModal()">Cancel</button>
+      <button type="button" class="kympg-authBtn success" onclick="createAdminUser()">Create User</button>
+    </div>
+    <div id="adminUserStatus" class="admin-user-status"></div>
+  </div>
+</div>
+
 <script>
   function kympgToggleSidebar(){
     document.getElementById('kympgSidebar')?.classList.toggle('collapsed');
@@ -4911,6 +4964,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   let authUser = null;
   let authToken = '';
   let authRoles = [];
+  let hasPromptedLogin = false;
 
   function getAuthDisplayName() {
     return authUser?.user_metadata?.full_name || authUser?.email || 'Unknown User';
@@ -4946,7 +5000,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
     const err = document.getElementById('devLoginError');
-    if (err) err.textContent = 'Netlify login is not available in this environment. Use admin/admin or tech/tech.';
+    if (err) err.textContent = 'Netlify login is not available in this environment. Use local fallback credentials only for local testing.';
   }
 
   async function tryDevLogin() {
@@ -4969,7 +5023,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
-    if (errEl) errEl.textContent = 'Invalid login. Use admin/admin or tech/tech.';
+    if (errEl) errEl.textContent = 'Invalid local fallback login.';
   }
 
   async function logoutUser() {
@@ -4992,8 +5046,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (loginBtn) loginBtn.style.display = authUser ? 'none' : 'inline-block';
     if (logoutBtn) logoutBtn.style.display = authUser ? 'inline-block' : 'none';
 
+    const isAdmin = authRoles.includes('admin');
     const rolePanel = document.getElementById('roleAdminPanel');
-    if (rolePanel) rolePanel.style.display = authRoles.includes('admin') ? 'block' : 'none';
+    if (rolePanel) rolePanel.style.display = isAdmin ? 'block' : 'none';
+    const createBtn = document.getElementById('adminCreateUserBtn');
+    if (createBtn) createBtn.style.display = isAdmin && authUser ? 'inline-block' : 'none';
+    if (!isAdmin) closeAdminCreateUserModal();
 
     document.querySelectorAll('.kympg-navBtn').forEach((btn) => {
       const oc = btn.getAttribute('onclick') || '';
@@ -5021,113 +5079,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!authUser) {
       kympgShowLanding();
       setAuthGateVisible(true);
-      return;
-    }
-
-    setAuthGateVisible(false);
-  }
-
-  async function saveUserRoles() {
-    if (!authRoles.includes('admin')) return alert('Only admins can set roles.');
-    const target = (document.getElementById('roleTargetInput')?.value || '').trim();
-    const status = document.getElementById('roleAdminStatus');
-    const roles = Array.from(document.querySelectorAll('#roleAdminPanel input[type="checkbox"]:checked')).map((el) => el.value);
-    if (!target) return alert('Enter a user email or user ID.');
-    if (!roles.length) return alert('Select at least one role.');
-
-    const body = target.includes('@') ? { userEmail: target, roles } : { userId: target, roles };
-    const res = await fetchApi('/api/set-role', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const payload = await parseJsonSafe(res);
-    if (!res.ok) {
-      if (status) status.textContent = payload.error || 'Failed to update roles.';
-      return;
-    }
-    if (status) status.textContent = `Updated roles: ${roles.join(', ')}`;
-  }
-
-  const ROLE_PERMISSIONS = {
-    admin: ['*'],
-    office: ['*'],
-    shop: ['landing', 'po'],
-    field: ['residential', 'residentialdb'],
-  };
-  let authUser = null;
-  let authToken = '';
-  let authRoles = [];
-
-  function getAuthDisplayName() {
-    return authUser?.user_metadata?.full_name || authUser?.email || 'Unknown User';
-  }
-  function userCanArea(area) {
-    if (!authUser) return false;
-    const perms = new Set();
-    (authRoles || []).forEach((r) => {
-      (ROLE_PERMISSIONS[r] || []).forEach((p) => perms.add(p));
-    });
-    return perms.has('*') || perms.has(area);
-  }
-  function canDeleteOrders() { return authRoles.includes('admin'); }
-  function canDeleteCustomers() { return authRoles.includes('admin'); }
-
-  let hasPromptedLogin = false;
-
-  function setAuthGateVisible(visible) {
-    document.body.classList.toggle('auth-locked', !!visible);
-    const gate = document.getElementById('authGate');
-    if (gate) gate.style.display = visible ? 'flex' : 'none';
-  }
-
-  function openLogin() {
-    if (window.netlifyIdentity) {
-      window.netlifyIdentity.open('login');
-      return;
-    }
-    alert('Login service unavailable. Please refresh and try again.');
-  }
-
-  async function logoutUser() {
-    if (window.netlifyIdentity) await window.netlifyIdentity.logout();
-  }
-
-  async function syncAuthState(user) {
-    authUser = user || null;
-    authToken = user?.token?.access_token || '';
-    authRoles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles.map((r) => String(r).toLowerCase()) : [];
-
-    const meta = document.getElementById('authUserMeta');
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (meta) meta.textContent = authUser ? `${getAuthDisplayName()} (${authRoles.join(', ') || 'no role'})` : 'Not signed in';
-    if (loginBtn) loginBtn.style.display = authUser ? 'none' : 'inline-block';
-    if (logoutBtn) logoutBtn.style.display = authUser ? 'inline-block' : 'none';
-
-    const rolePanel = document.getElementById('roleAdminPanel');
-    if (rolePanel) rolePanel.style.display = authRoles.includes('admin') ? 'block' : 'none';
-
-    document.querySelectorAll('.kympg-navBtn').forEach((btn) => {
-      const oc = btn.getAttribute('onclick') || '';
-      const m = oc.match(/kympgOpen\('([^']+)'/);
-      const area = m ? m[1] : '';
-      btn.classList.toggle('kympg-hidden-by-role', !userCanArea(area));
-    });
-
-    ['work', 'tools', 'residential'].forEach((g) => {
-      const group = document.getElementById(`group-${g}`);
-      if (!group) return;
-      const hasVisible = !!group.querySelector('.kympg-navBtn:not(.kympg-hidden-by-role)');
-      group.classList.toggle('kympg-hidden-by-role', !hasVisible);
-    });
-
-    const logPo = document.querySelector('.kympg-logPO');
-    if (logPo) logPo.classList.toggle('kympg-hidden-by-role', !userCanArea('po'));
-
-    if (!authUser) {
-      kympgShowLanding();
-      setAuthGateVisible(true);
       if (!hasPromptedLogin && window.netlifyIdentity) {
         hasPromptedLogin = true;
         setTimeout(() => openLogin(), 150);
@@ -5137,6 +5088,52 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     setAuthGateVisible(false);
     hasPromptedLogin = false;
+  }
+
+  function openAdminCreateUserModal() {
+    if (!authRoles.includes('admin')) return;
+    const modal = document.getElementById('adminUserModal');
+    if (modal) modal.classList.add('active');
+    const status = document.getElementById('adminUserStatus');
+    if (status) status.textContent = '';
+  }
+
+  function closeAdminCreateUserModal() {
+    const modal = document.getElementById('adminUserModal');
+    if (modal) modal.classList.remove('active');
+  }
+
+  async function createAdminUser() {
+    if (!authRoles.includes('admin')) return alert('Only admins can create users.');
+    const email = String(document.getElementById('newUserEmail')?.value || '').trim();
+    const fullName = String(document.getElementById('newUserFullName')?.value || '').trim();
+    const status = document.getElementById('adminUserStatus');
+    const roles = Array.from(document.querySelectorAll('#newUserRoleChecks input[type="checkbox"]:checked')).map((el) => el.value);
+
+    if (!email) {
+      if (status) status.textContent = 'Enter an email.';
+      return;
+    }
+    if (!roles.length) {
+      if (status) status.textContent = 'Select at least one role.';
+      return;
+    }
+
+    if (status) status.textContent = 'Creating user...';
+    const res = await fetchApi('/api/admin-create-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, fullName, roles }),
+    });
+    const payload = await parseJsonSafe(res);
+    if (!res.ok) {
+      if (status) status.textContent = payload.error || 'Failed to create user.';
+      return;
+    }
+
+    if (status) status.textContent = `User created: ${email}`;
+    document.getElementById('newUserEmail').value = '';
+    document.getElementById('newUserFullName').value = '';
   }
 
   async function saveUserRoles() {
