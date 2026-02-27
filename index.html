@@ -5049,6 +5049,118 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (status) status.textContent = `Updated roles: ${roles.join(', ')}`;
   }
 
+  const ROLE_PERMISSIONS = {
+    admin: ['*'],
+    office: ['*'],
+    shop: ['landing', 'po'],
+    field: ['residential', 'residentialdb'],
+  };
+  let authUser = null;
+  let authToken = '';
+  let authRoles = [];
+
+  function getAuthDisplayName() {
+    return authUser?.user_metadata?.full_name || authUser?.email || 'Unknown User';
+  }
+  function userCanArea(area) {
+    if (!authUser) return false;
+    const perms = new Set();
+    (authRoles || []).forEach((r) => {
+      (ROLE_PERMISSIONS[r] || []).forEach((p) => perms.add(p));
+    });
+    return perms.has('*') || perms.has(area);
+  }
+  function canDeleteOrders() { return authRoles.includes('admin'); }
+  function canDeleteCustomers() { return authRoles.includes('admin'); }
+
+  let hasPromptedLogin = false;
+
+  function setAuthGateVisible(visible) {
+    document.body.classList.toggle('auth-locked', !!visible);
+    const gate = document.getElementById('authGate');
+    if (gate) gate.style.display = visible ? 'flex' : 'none';
+  }
+
+  function openLogin() {
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.open('login');
+      return;
+    }
+    alert('Login service unavailable. Please refresh and try again.');
+  }
+
+  async function logoutUser() {
+    if (window.netlifyIdentity) await window.netlifyIdentity.logout();
+  }
+
+  async function syncAuthState(user) {
+    authUser = user || null;
+    authToken = user?.token?.access_token || '';
+    authRoles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles.map((r) => String(r).toLowerCase()) : [];
+
+    const meta = document.getElementById('authUserMeta');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (meta) meta.textContent = authUser ? `${getAuthDisplayName()} (${authRoles.join(', ') || 'no role'})` : 'Not signed in';
+    if (loginBtn) loginBtn.style.display = authUser ? 'none' : 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = authUser ? 'inline-block' : 'none';
+
+    const rolePanel = document.getElementById('roleAdminPanel');
+    if (rolePanel) rolePanel.style.display = authRoles.includes('admin') ? 'block' : 'none';
+
+    document.querySelectorAll('.kympg-navBtn').forEach((btn) => {
+      const oc = btn.getAttribute('onclick') || '';
+      const m = oc.match(/kympgOpen\('([^']+)'/);
+      const area = m ? m[1] : '';
+      btn.classList.toggle('kympg-hidden-by-role', !userCanArea(area));
+    });
+
+    ['work', 'tools', 'residential'].forEach((g) => {
+      const group = document.getElementById(`group-${g}`);
+      if (!group) return;
+      const hasVisible = !!group.querySelector('.kympg-navBtn:not(.kympg-hidden-by-role)');
+      group.classList.toggle('kympg-hidden-by-role', !hasVisible);
+    });
+
+    const logPo = document.querySelector('.kympg-logPO');
+    if (logPo) logPo.classList.toggle('kympg-hidden-by-role', !userCanArea('po'));
+
+    if (!authUser) {
+      kympgShowLanding();
+      setAuthGateVisible(true);
+      if (!hasPromptedLogin && window.netlifyIdentity) {
+        hasPromptedLogin = true;
+        setTimeout(() => openLogin(), 150);
+      }
+      return;
+    }
+
+    setAuthGateVisible(false);
+    hasPromptedLogin = false;
+  }
+
+  async function saveUserRoles() {
+    if (!authRoles.includes('admin')) return alert('Only admins can set roles.');
+    const target = (document.getElementById('roleTargetInput')?.value || '').trim();
+    const status = document.getElementById('roleAdminStatus');
+    const roles = Array.from(document.querySelectorAll('#roleAdminPanel input[type="checkbox"]:checked')).map((el) => el.value);
+    if (!target) return alert('Enter a user email or user ID.');
+    if (!roles.length) return alert('Select at least one role.');
+
+    const body = target.includes('@') ? { userEmail: target, roles } : { userId: target, roles };
+    const res = await fetchApi('/api/set-role', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const payload = await parseJsonSafe(res);
+    if (!res.ok) {
+      if (status) status.textContent = payload.error || 'Failed to update roles.';
+      return;
+    }
+    if (status) status.textContent = `Updated roles: ${roles.join(', ')}`;
+  }
+
   async function runHomeQuickSearch() {
     const input = document.getElementById('homeQuickSearchInput');
     const resultsEl = document.getElementById('homeQuickResults');
