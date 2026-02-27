@@ -1,5 +1,16 @@
 import { getStore } from "@netlify/blobs";
 
+
+function normalizeStringsUpper(value) {
+  if (Array.isArray(value)) return value.map(normalizeStringsUpper);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) out[k] = normalizeStringsUpper(v);
+    return out;
+  }
+  return typeof value === "string" ? value.toUpperCase() : value;
+}
+
 export default async (req) => {
   const store = getStore({ name: "vendors", consistency: "strong" });
   const url = new URL(req.url);
@@ -31,7 +42,7 @@ export default async (req) => {
     }
 
     if (req.method === "POST") {
-      const body = await req.json();
+      const body = normalizeStringsUpper(await req.json());
       if (!body.name?.trim()) return new Response(JSON.stringify({ error: "Vendor name is required" }), { status: 400, headers });
       const newId = `vendor_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const vendor = {
@@ -50,7 +61,7 @@ export default async (req) => {
       if (!id) return new Response(JSON.stringify({ error: "Vendor id is required" }), { status: 400, headers });
       const existing = await store.get(id, { type: "json" });
       if (!existing) return new Response(JSON.stringify({ error: "Vendor not found" }), { status: 404, headers });
-      const body = await req.json();
+      const body = normalizeStringsUpper(await req.json());
       const updated = {
         name: body.name ?? existing.name,
         address: body.address ?? existing.address,

@@ -1,5 +1,16 @@
 import { getStore } from "@netlify/blobs";
 
+
+function normalizeStringsUpper(value) {
+  if (Array.isArray(value)) return value.map(normalizeStringsUpper);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) out[k] = normalizeStringsUpper(v);
+    return out;
+  }
+  return typeof value === "string" ? value.toUpperCase() : value;
+}
+
 export default async (req) => {
   const store = getStore({ name: "vendors", consistency: "strong" });
   const headers = {
@@ -13,7 +24,7 @@ export default async (req) => {
   if (req.method !== "POST") return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers });
 
   try {
-    const body = await req.json();
+    const body = normalizeStringsUpper(await req.json());
     const vendors = Array.isArray(body.vendors) ? body.vendors : [];
     if (!vendors.length) return new Response(JSON.stringify({ error: "An array of vendors is required" }), { status: 400, headers });
 
