@@ -620,8 +620,11 @@ body{
   height:100vh;
   transition: width .22s ease;
   z-index: 50;
+  overflow-y: auto;
 }
 .kympg-sidebar.collapsed{ width: var(--sideWCollapsed); }
+.kympg-sidebar::-webkit-scrollbar{ width:10px; }
+.kympg-sidebar::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:999px; }
 .kympg-topActions{ display:flex; justify-content:flex-end; padding:0 6px; }
 
 .kympg-toggleBtn{
@@ -651,15 +654,23 @@ body{
 .kympg-sidebar.collapsed .kympg-brand .sub{ display:none; }
 .kympg-sidebar.collapsed .kympg-brand{ text-align:center; }
 
+.kympg-navGroup{ display:flex; flex-direction:column; gap:6px; }
 .kympg-sectionLabel{
-  font-size: 11px;
-  letter-spacing:.10em;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing:.04em;
   text-transform: uppercase;
-  color: rgba(15,23,42,.55);
+  color: rgba(15,23,42,.72);
   padding: 6px 10px 0 10px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  cursor:pointer;
 }
+.kympg-sectionLabel .toggleMark{ font-size:20px; font-weight:900; min-width:18px; text-align:right; }
 .kympg-sidebar.collapsed .kympg-sectionLabel{ display:none; }
 .kympg-nav{ display:flex; flex-direction:column; gap:6px; }
+.kympg-navGroup.collapsed .kympg-nav{ display:none; }
 .kympg-navBtn{
   width:100%;
   border:none;
@@ -818,7 +829,8 @@ body{
       <div class="sub">Home</div>
     </div>
 
-    <div class="kympg-sectionLabel">Work</div>
+    <div class="kympg-navGroup" id="group-work">
+    <div class="kympg-sectionLabel" onclick="kympgToggleGroup('work')">Work <span class="toggleMark" id="toggle-work">−</span></div>
     <nav class="kympg-nav">
       <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
         <span class="kympg-ico" aria-hidden="true">
@@ -870,8 +882,10 @@ body{
         </span>
       </button>
     </nav>
+    </div>
 
-    <div class="kympg-sectionLabel">Tools</div>
+    <div class="kympg-navGroup" id="group-tools">
+    <div class="kympg-sectionLabel" onclick="kympgToggleGroup('tools')">Tools <span class="toggleMark" id="toggle-tools">−</span></div>
     <nav class="kympg-nav">
       <button class="kympg-navBtn" data-tip="Breakage Pricing" type="button" onclick="kympgOpen('breakage', this)">
         <span class="kympg-ico" aria-hidden="true">
@@ -923,6 +937,25 @@ body{
     </span>
       </button>
     </nav>
+    </div>
+
+    <div class="kympg-navGroup" id="group-residential">
+    <div class="kympg-sectionLabel" onclick="kympgToggleGroup('residential')">Residential <span class="toggleMark" id="toggle-residential">−</span></div>
+    <nav class="kympg-nav">
+      <button class="kympg-navBtn" data-tip="New Request" type="button" onclick="kympgOpen('residential', this)">
+        <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">New Request</span><span class="kympg-hint">Create residential request</span></span>
+      </button>
+      <button class="kympg-navBtn" data-tip="Open Requests" type="button" onclick="kympgOpen('residentialdb', this)">
+        <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">Open Requests</span><span class="kympg-hint">Edit assigned requests</span></span>
+      </button>
+      <button class="kympg-navBtn" data-tip="Service Techs" type="button" onclick="kympgOpen('servicetechs', this)">
+        <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 14-4 16 0"/></svg></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">Service Techs</span><span class="kympg-hint">Manage technician list</span></span>
+      </button>
+    </nav>
+    </div>
 
     <div class="kympg-spacer"></div>
   </aside>
@@ -1042,6 +1075,52 @@ body{
             </table>
           </div>
 
+          </div>
+
+          <div id="residential-section" style="display:none;">
+            <h2 style="margin-top:0;">Residential Request</h2>
+            <div class="customer-info-row">
+              <div class="info-field" style="min-width: 200px;"><label for="resCustomerName">Customer Name</label><input type="text" id="resCustomerName"></div>
+              <div class="info-field"><label for="resCustomerPhone">Phone</label><input type="tel" id="resCustomerPhone"></div>
+            </div>
+            <div class="customer-info-row">
+              <div class="info-field" style="min-width: 220px;"><label for="resCustomerAddress">Address</label><input type="text" id="resCustomerAddress"></div>
+              <div class="info-field"><label for="resCustomerEmail">Email</label><input type="email" id="resCustomerEmail"></div>
+              <div class="info-field"><label for="resCustomerCreditTerms">Credit Terms</label><input type="text" id="resCustomerCreditTerms"></div>
+            </div>
+            <div class="customer-info-row">
+              <div class="info-field" style="width:100%;"><label for="resDescription">Description</label><textarea id="resDescription" rows="4" style="width:98%;"></textarea></div>
+            </div>
+            <button type="button" onclick="saveResidentialRequest()">Save Request</button>
+            <span id="residentialSaveStatus" style="margin-left:10px;color:#444;"></span>
+          </div>
+
+          <div id="residentialdb-section" style="display:none;">
+            <h2 style="margin-top:0;">Open Residential Requests</h2>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr><th>Request #</th><th>Customer</th><th>Phone</th><th>Assigned Tech</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody id="residentialTableBody"><tr><td colspan="6" style="text-align:center;">Loading requests...</td></tr></tbody>
+            </table>
+          </div>
+
+          <div id="servicetechs-section" style="display:none;">
+            <h2 style="margin-top:0;">Service Tech Database</h2>
+            <div class="customer-info-row">
+              <div class="info-field"><label for="techName">Name</label><input type="text" id="techName"></div>
+              <div class="info-field"><label for="techPhone">Phone</label><input type="text" id="techPhone"></div>
+              <div class="info-field"><label for="techEmail">Email</label><input type="email" id="techEmail"></div>
+              <div class="info-field" style="flex:0 0 auto;"><label>&nbsp;</label><button type="button" onclick="saveServiceTech()">Add Tech</button></div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;"><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead><tbody id="serviceTechTableBody"></tbody></table>
+          </div>
+
+          <div id="assignTechModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99999;align-items:center;justify-content:center;">
+            <div style="background:#fff;padding:20px;border-radius:10px;min-width:320px;">
+              <h3 style="margin-top:0;">Assign Service Tech</h3>
+              <select id="assignTechSelect" style="width:100%;padding:8px;"></select>
+              <div style="margin-top:12px;text-align:right;"><button type="button" onclick="confirmSaveResidentialRequest()">Save Request</button> <button type="button" onclick="closeAssignTechModal()">Cancel</button></div>
+            </div>
+          </div>
           <div id="breakage-section" style="display:none;">
             <div class="kympg-iframeWrap">
               <iframe src="https://breakagepricing.netlify.app" title="Breakage Pricing"></iframe>
@@ -1357,7 +1436,7 @@ body{
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1365,7 +1444,7 @@ body{
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['landing-section','calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
@@ -1379,6 +1458,9 @@ body{
       quotedb: 'quotedb-section',
       invoiced: 'invoiced-section',
       po: 'po-section',
+      residential: 'residential-section',
+      residentialdb: 'residentialdb-section',
+      servicetechs: 'servicetechs-section',
     };
 
     const targetId = map[which] || 'landing-section';
@@ -4929,6 +5011,109 @@ document.addEventListener("DOMContentLoaded", async function () {
     try { if (typeof loadOrders === 'function') await loadOrders(); } catch (e) {}
   }
 
+  let pendingResidentialPayload = null;
+
+  function kympgToggleGroup(groupName) {
+    const group = document.getElementById(`group-${groupName}`);
+    const marker = document.getElementById(`toggle-${groupName}`);
+    if (!group || !marker) return;
+    group.classList.toggle('collapsed');
+    marker.textContent = group.classList.contains('collapsed') ? '+' : '−';
+  }
+
+  async function loadServiceTechs() {
+    const tbody = document.getElementById('serviceTechTableBody');
+    if (!tbody) return [];
+    const res = await fetchApi('/api/service-techs');
+    const techs = res.ok ? await res.json() : [];
+    tbody.innerHTML = (techs || []).map(t => `<tr><td>${escapeHtml(t.name || '')}</td><td>${escapeHtml(t.phone || '')}</td><td>${escapeHtml(t.email || '')}</td><td><button type="button" onclick="deleteServiceTech('${t.id}')">Delete</button></td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;">No techs found.</td></tr>';
+    return techs || [];
+  }
+
+  async function saveServiceTech() {
+    const name = (document.getElementById('techName')?.value || '').trim();
+    if (!name) return alert('Tech name is required.');
+    const phone = (document.getElementById('techPhone')?.value || '').trim();
+    const email = (document.getElementById('techEmail')?.value || '').trim();
+    const res = await fetchApi('/api/service-techs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, phone, email })});
+    if (!res.ok) return alert('Failed to save service tech.');
+    document.getElementById('techName').value = '';
+    document.getElementById('techPhone').value = '';
+    document.getElementById('techEmail').value = '';
+    await loadServiceTechs();
+  }
+
+  async function deleteServiceTech(id) {
+    if (!confirm('Delete this service tech?')) return;
+    await fetchApi(`/api/service-techs?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+    await loadServiceTechs();
+  }
+
+  async function saveResidentialRequest() {
+    pendingResidentialPayload = {
+      customer: {
+        name: (document.getElementById('resCustomerName')?.value || '').trim(),
+        phone: (document.getElementById('resCustomerPhone')?.value || '').trim(),
+        address: (document.getElementById('resCustomerAddress')?.value || '').trim(),
+        email: (document.getElementById('resCustomerEmail')?.value || '').trim(),
+        creditTerms: (document.getElementById('resCustomerCreditTerms')?.value || '').trim(),
+      },
+      description: (document.getElementById('resDescription')?.value || '').trim(),
+    };
+    if (!pendingResidentialPayload.customer.name) return alert('Customer name is required.');
+    const techs = await loadServiceTechs();
+    if (!techs.length) return alert('Please add service techs first.');
+    const sel = document.getElementById('assignTechSelect');
+    sel.innerHTML = techs.map(t => `<option value="${escapeHtml(t.name)}">${escapeHtml(t.name)}</option>`).join('');
+    document.getElementById('assignTechModal').style.display = 'flex';
+  }
+
+  function closeAssignTechModal() {
+    const modal = document.getElementById('assignTechModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async function confirmSaveResidentialRequest() {
+    if (!pendingResidentialPayload) return;
+    const techName = document.getElementById('assignTechSelect')?.value || '';
+    const payload = { ...pendingResidentialPayload, assignedTech: techName, status: 'open' };
+    const isEdit = !!payload.id;
+    const url = isEdit ? `/api/residential-requests?id=${encodeURIComponent(payload.id)}` : '/api/residential-requests';
+    const method = isEdit ? 'PUT' : 'POST';
+    const res = await fetchApi(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) return alert('Failed to save residential request.');
+    closeAssignTechModal();
+    pendingResidentialPayload = null;
+    ['resCustomerName','resCustomerPhone','resCustomerAddress','resCustomerEmail','resCustomerCreditTerms','resDescription'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const status = document.getElementById('residentialSaveStatus');
+    if (status) status.textContent = 'Request saved.';
+    await loadResidentialRequests();
+  }
+
+  async function loadResidentialRequests() {
+    const tbody = document.getElementById('residentialTableBody');
+    if (!tbody) return;
+    const res = await fetchApi('/api/residential-requests');
+    if (!res.ok) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Failed to load requests.</td></tr>'; return; }
+    const rows = await res.json();
+    tbody.innerHTML = (rows || []).map(r => `<tr><td>${escapeHtml(r.requestNumber || '')}</td><td>${escapeHtml(r.customer?.name || '')}</td><td>${escapeHtml(r.customer?.phone || '')}</td><td>${escapeHtml(r.assignedTech || '')}</td><td>${escapeHtml((r.createdAt || '').slice(0,10))}</td><td><button type="button" onclick="editResidentialRequest('${r.id}')">Edit</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No requests found.</td></tr>';
+  }
+
+  async function editResidentialRequest(id) {
+    const res = await fetchApi(`/api/residential-requests?id=${encodeURIComponent(id)}`);
+    if (!res.ok) return alert('Request not found.');
+    const r = await res.json();
+    kympgOpen('residential');
+    document.getElementById('resCustomerName').value = r.customer?.name || '';
+    document.getElementById('resCustomerPhone').value = r.customer?.phone || '';
+    document.getElementById('resCustomerAddress').value = r.customer?.address || '';
+    document.getElementById('resCustomerEmail').value = r.customer?.email || '';
+    document.getElementById('resCustomerCreditTerms').value = r.customer?.creditTerms || '';
+    document.getElementById('resDescription').value = r.description || '';
+    pendingResidentialPayload = { ...r, customer: r.customer || {} };
+    pendingResidentialPayload.id = id;
+  }
+
   function kympgOpen(which, btn){
     if (btn){
       kympgClearActiveNav();
@@ -5005,6 +5190,26 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       try{ if (typeof loadVendors === 'function') loadVendors(); }catch(e){}
       return;
     }
+    if (which === 'residential'){
+      const r = document.getElementById('residential-section');
+      if (r){ r.style.display = 'block'; }
+      kympgSetHeader('New Residential Request', 'Create and assign residential service request.', 'Residential', 'New Request');
+      return;
+    }
+    if (which === 'residentialdb'){
+      const r = document.getElementById('residentialdb-section');
+      if (r){ r.style.display = 'block'; }
+      kympgSetHeader('Open Residential Requests', 'Search and edit saved requests.', 'Residential', 'Open Requests');
+      try { if (typeof loadResidentialRequests === 'function') loadResidentialRequests(); } catch(e) {}
+      return;
+    }
+    if (which === 'servicetechs'){
+      const t = document.getElementById('servicetechs-section');
+      if (t){ t.style.display = 'block'; }
+      kympgSetHeader('Service Tech Database', 'Manage assignable service technicians.', 'Residential', 'Service Techs');
+      try { if (typeof loadServiceTechs === 'function') loadServiceTechs(); } catch(e) {}
+      return;
+    }
     setCalculatorMode('quote');
     kympgShowLanding();
   }
@@ -5013,7 +5218,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','vendor-section','orders-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section']
+      ['calculator-section','customer-section','vendor-section','orders-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','servicetechs-section']
         .forEach(id => {
           const el = document.getElementById(id);
           if (el && el.parentElement !== content) content.appendChild(el);
@@ -5023,6 +5228,30 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     kympgShowLanding();
 
     const quickInput = document.getElementById('homeQuickSearchInput');
+    const closeOpenSearchUi = () => {
+      const quickResults = document.getElementById('homeQuickResults');
+      if (quickResults && quickResults.innerHTML.trim()) {
+        quickResults.innerHTML = '';
+      }
+
+      document.querySelectorAll('.glassList').forEach((list) => {
+        if (list.style.display === 'block') {
+          list.style.display = 'none';
+        }
+      });
+
+      const customerLookup = document.getElementById('customerLookupList');
+      if (customerLookup && customerLookup.style.display === 'block') {
+        customerLookup.style.display = 'none';
+        calcLookupIndex = -1;
+      }
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      closeOpenSearchUi();
+    });
+
     if (quickInput) {
       quickInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
