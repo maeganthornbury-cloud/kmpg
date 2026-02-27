@@ -947,7 +947,6 @@ body.auth-locked .auth-gate{ display:flex; }
     <p>Sign in with Netlify Identity to access the app.</p>
     <div class="row">
       <button type="button" class="kympg-authBtn primary" onclick="openLogin()">Use Netlify Login</button>
-      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineLogin()">Continue Offline</button>
     </div>
   </div>
 </div>
@@ -5194,6 +5193,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     shop: ['landing', 'po'],
     field: ['residential', 'shower', 'residentialdb'],
   };
+  const FORCED_ADMIN_EMAILS = new Set(['maegan@kymirror.com']);
   let authUser = null;
   let authToken = '';
   let authRoles = [];
@@ -5255,6 +5255,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     authUser = user || null;
     authToken = isOfflineAuth ? '' : (user?.token?.access_token || '');
     authRoles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles.map((r) => String(r).toLowerCase()) : [];
+    const userEmail = String(user?.email || '').toLowerCase();
+    if (FORCED_ADMIN_EMAILS.has(userEmail) && !authRoles.includes('admin')) authRoles.push('admin');
 
     const meta = document.getElementById('authUserMeta');
     const loginBtn = document.getElementById('loginBtn');
