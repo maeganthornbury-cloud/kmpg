@@ -722,6 +722,47 @@ body{
 .kympg-shellInner{ max-width: 1400px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
 
 .kympg-topBar{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.kympg-authBox{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+.kympg-authMeta{ font-size:12px; color:#334155; font-weight:700; }
+.kympg-authBtn{ padding:8px 12px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
+.kympg-authBtn.primary{ background:#0d78f0; color:#fff; }
+.kympg-authBtn.secondary{ background:#e2e8f0; color:#0f172a; }
+#roleAdminPanel{ margin-top:16px; padding:12px; border:1px solid #cbd5e1; border-radius:10px; background:#f8fafc; }
+#roleAdminPanel label{ display:block; font-size:12px; font-weight:700; margin-bottom:4px; }
+#roleAdminPanel input{ width:100%; max-width:420px; padding:8px; margin-bottom:10px; }
+#roleAdminPanel .roleChecks{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+#roleAdminPanel .roleChecks label{ display:flex; align-items:center; gap:4px; margin:0; }
+.kympg-hidden-by-role{ display:none !important; }
+
+.auth-gate{
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+  background:rgba(15,23,42,.76); z-index:10; padding:20px;
+}
+.auth-gate-card{
+  width:min(420px, 94vw);
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 20px 55px rgba(2,6,23,.35);
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.auth-gate-card h2{ margin:0; font-size:24px; }
+.auth-gate-card p{ margin:0; color:#475569; font-size:14px; }
+.auth-gate-card input{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  font-size:14px;
+  text-transform:none;
+}
+.auth-gate-card .row{ display:flex; gap:8px; flex-wrap:wrap; }
+.auth-gate-error{ color:#b91c1c; font-size:13px; min-height:18px; }
+body.auth-locked .kympg-shell{ display:none; }
+body.auth-locked .auth-gate{ display:flex; }
+
 .kympg-pageTitle h1{ margin:0; font-size: 22px; letter-spacing:.2px; }
 .kympg-pageTitle p{ margin:0; color: var(--muted); font-size: 13px; }
 
@@ -811,8 +852,23 @@ body{
 
 </style>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
+
+<div id="authGate" class="auth-gate" aria-hidden="true">
+  <div class="auth-gate-card" onclick="event.stopPropagation()">
+    <h2>Log In</h2>
+    <p>Temporary test login until Netlify auth is fully configured.</p>
+    <input id="devLoginUser" type="text" placeholder="Username (default: admin)" autocomplete="username">
+    <input id="devLoginPass" type="password" placeholder="Password (default: admin)" autocomplete="current-password">
+    <div class="row">
+      <button type="button" class="kympg-authBtn primary" onclick="tryDevLogin()">Log In</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="openLogin()">Use Netlify Login</button>
+    </div>
+    <div id="devLoginError" class="auth-gate-error"></div>
+  </div>
+</div>
 
 <div class="kympg-shell">
   <aside class="kympg-sidebar" id="kympgSidebar">
@@ -967,9 +1023,14 @@ body{
           <h1 id="kympgPageTitle">Kentucky Mirror and Plate Glass</h1>
           <p id="kympgPageSub">Select an option on the left to get started.</p>
         </div>
-        <div class="kympg-pill" title="App status">
-          <span class="dot"></span>
-          <span>Ready</span>
+        <div class="kympg-authBox">
+          <div class="kympg-pill" title="App status">
+            <span class="dot"></span>
+            <span>Ready</span>
+          </div>
+          <span id="authUserMeta" class="kympg-authMeta">Not signed in</span>
+          <button id="loginBtn" type="button" class="kympg-authBtn primary" onclick="openLogin()">Log In</button>
+          <button id="logoutBtn" type="button" class="kympg-authBtn secondary" onclick="logoutUser()" style="display:none;">Log Out</button>
         </div>
       </div>
 
@@ -1008,6 +1069,20 @@ body{
                   <button type="button" onclick="logReceivedPO()">Log Received</button>
                 </div>
                 <div id="homeLogPoStatus" class="kympg-logPOStatus"></div>
+              </div>
+
+              <div id="roleAdminPanel" style="display:none;">
+                <h3 style="margin-top:0;">Admin: Set User Roles</h3>
+                <label for="roleTargetInput">User Email (preferred) or User ID</label>
+                <input id="roleTargetInput" type="text" placeholder="name@email.com or user-id">
+                <div class="roleChecks">
+                  <label><input type="checkbox" value="admin"> Admin</label>
+                  <label><input type="checkbox" value="office"> Office</label>
+                  <label><input type="checkbox" value="shop"> Shop</label>
+                  <label><input type="checkbox" value="field"> Field</label>
+                </div>
+                <button type="button" onclick="saveUserRoles()">Save Roles</button>
+                <div id="roleAdminStatus" class="kympg-logPOStatus"></div>
               </div>
             </div>
           </div>
@@ -2502,7 +2577,7 @@ function renderCustomerTable(customers) {
       <td>${escapeHtml(c.creditTerms || '')}</td>
       <td class="actions-cell">
         <button class="btn-edit" onclick="editCustomer('${c.id}')">Edit</button>
-        <button class="btn-delete" onclick="deleteCustomer('${c.id}')">Delete</button>
+        ${canDeleteCustomers() ? `<button class="btn-delete" onclick="deleteCustomer('${c.id}')">Delete</button>` : ''}
       </td>
     </tr>
   `).join('');
@@ -2516,20 +2591,27 @@ function escapeHtml(text) {
 
 
 async function fetchApi(path, options) {
+  const opts = { ...(options || {}) };
+  const headers = new Headers(opts.headers || {});
+  if (authToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${authToken}`);
+  }
+  opts.headers = headers;
+
   if (!path.startsWith('/api/')) {
-    return fetch(path, options);
+    return fetch(path, opts);
   }
 
   const fallbackPath = `/.netlify/functions/${path.slice(5)}`;
 
   try {
-    const primary = await fetch(path, options);
+    const primary = await fetch(path, opts);
     if (primary.ok) return primary;
   } catch (e) {
     // fall through to function-path fallback
   }
 
-  return fetch(fallbackPath, options);
+  return fetch(fallbackPath, opts);
 }
 
 
@@ -2629,6 +2711,7 @@ async function saveCustomer(event) {
 }
 
 async function deleteCustomer(id) {
+  if (!canDeleteCustomers()) return alert('Only admins can delete customers.');
   if (!confirm('Are you sure you want to delete this customer?')) return;
 
   try {
@@ -3478,6 +3561,7 @@ function printDoc(type) {
 }
 
 async function deleteCurrentOrder() {
+  if (!canDeleteOrders()) return alert('Only admins can delete orders.');
   const idToDelete = currentOrderId || lastSavedOrderId;
   if (!idToDelete) {
     alert('No saved order available to delete.');
@@ -4783,6 +4867,140 @@ document.addEventListener("DOMContentLoaded", async function () {
     kympgSetHeader('Kentucky Mirror and Plate Glass', 'Select an option on the left to get started.', 'Home', 'Welcome');
   }
 
+  const ROLE_PERMISSIONS = {
+    admin: ['*'],
+    office: ['*'],
+    shop: ['landing', 'po'],
+    field: ['residential', 'residentialdb'],
+  };
+  let authUser = null;
+  let authToken = '';
+  let authRoles = [];
+
+  function getAuthDisplayName() {
+    return authUser?.user_metadata?.full_name || authUser?.email || 'Unknown User';
+  }
+  function userCanArea(area) {
+    if (!authUser) return false;
+    const perms = new Set();
+    (authRoles || []).forEach((r) => {
+      (ROLE_PERMISSIONS[r] || []).forEach((p) => perms.add(p));
+    });
+    return perms.has('*') || perms.has(area);
+  }
+  function canDeleteOrders() { return authRoles.includes('admin'); }
+  function canDeleteCustomers() { return authRoles.includes('admin'); }
+
+  const DEV_FALLBACK_CREDENTIALS = { username: 'admin', password: 'admin' };
+
+  function setAuthGateVisible(visible) {
+    document.body.classList.toggle('auth-locked', !!visible);
+    const gate = document.getElementById('authGate');
+    if (gate) gate.style.display = visible ? 'flex' : 'none';
+  }
+
+  function openLogin() {
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.open('login');
+      return;
+    }
+    const err = document.getElementById('devLoginError');
+    if (err) err.textContent = 'Netlify login is not available in this environment. Use admin / admin.';
+  }
+
+  async function tryDevLogin() {
+    const userEl = document.getElementById('devLoginUser');
+    const passEl = document.getElementById('devLoginPass');
+    const errEl = document.getElementById('devLoginError');
+    const username = String(userEl?.value || '').trim();
+    const password = String(passEl?.value || '').trim();
+
+    if (username === DEV_FALLBACK_CREDENTIALS.username && password === DEV_FALLBACK_CREDENTIALS.password) {
+      if (errEl) errEl.textContent = '';
+      await syncAuthState({
+        __isLocalFallback: true,
+        email: 'admin@local.test',
+        user_metadata: { full_name: 'Admin (Local)' },
+        app_metadata: { roles: ['admin'] },
+        token: { access_token: 'local-dev-token' },
+      });
+      return;
+    }
+
+    if (errEl) errEl.textContent = 'Invalid login. Use username: admin and password: admin.';
+  }
+
+  async function logoutUser() {
+    if (authUser?.__isLocalFallback) {
+      await syncAuthState(null);
+      return;
+    }
+    if (window.netlifyIdentity) await window.netlifyIdentity.logout();
+  }
+
+  async function syncAuthState(user) {
+    authUser = user || null;
+    authToken = user?.token?.access_token || '';
+    authRoles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles.map((r) => String(r).toLowerCase()) : [];
+
+    const meta = document.getElementById('authUserMeta');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (meta) meta.textContent = authUser ? `${getAuthDisplayName()} (${authRoles.join(', ') || 'no role'})` : 'Not signed in';
+    if (loginBtn) loginBtn.style.display = authUser ? 'none' : 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = authUser ? 'inline-block' : 'none';
+
+    const rolePanel = document.getElementById('roleAdminPanel');
+    if (rolePanel) rolePanel.style.display = authRoles.includes('admin') ? 'block' : 'none';
+
+    document.querySelectorAll('.kympg-navBtn').forEach((btn) => {
+      const oc = btn.getAttribute('onclick') || '';
+      const m = oc.match(/kympgOpen\('([^']+)'/);
+      const area = m ? m[1] : '';
+      btn.classList.toggle('kympg-hidden-by-role', !userCanArea(area));
+    });
+
+    ['work', 'tools', 'residential'].forEach((g) => {
+      const group = document.getElementById(`group-${g}`);
+      if (!group) return;
+      const hasVisible = !!group.querySelector('.kympg-navBtn:not(.kympg-hidden-by-role)');
+      group.classList.toggle('kympg-hidden-by-role', !hasVisible);
+    });
+
+    const logPo = document.querySelector('.kympg-logPO');
+    if (logPo) logPo.classList.toggle('kympg-hidden-by-role', !userCanArea('po'));
+
+    if (!authUser) {
+      kympgShowLanding();
+      setAuthGateVisible(true);
+      return;
+    }
+
+    setAuthGateVisible(false);
+  }
+
+  async function saveUserRoles() {
+    if (!authRoles.includes('admin')) return alert('Only admins can set roles.');
+    const target = (document.getElementById('roleTargetInput')?.value || '').trim();
+    const status = document.getElementById('roleAdminStatus');
+    const roles = Array.from(document.querySelectorAll('#roleAdminPanel input[type="checkbox"]:checked')).map((el) => el.value);
+    if (!target) return alert('Enter a user email or user ID.');
+    if (!roles.length) return alert('Select at least one role.');
+
+    const body = target.includes('@') ? { userEmail: target, roles } : { userId: target, roles };
+    const res = await fetchApi('/api/set-role', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const payload = await parseJsonSafe(res);
+    if (!res.ok) {
+      if (status) status.textContent = payload.error || 'Failed to update roles.';
+      return;
+    }
+    if (status) status.textContent = `Updated roles: ${roles.join(', ')}`;
+  }
+
   async function runHomeQuickSearch() {
     const input = document.getElementById('homeQuickSearchInput');
     const resultsEl = document.getElementById('homeQuickResults');
@@ -4874,6 +5092,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
   }
 
+  function getActorStamp() {
+    return {
+      name: getAuthDisplayName(),
+      email: authUser?.email || '',
+      at: new Date().toISOString(),
+    };
+  }
+
   async function logReceivedPO() {
     const input = document.getElementById('homeLogPoInput');
     const statusEl = document.getElementById('homeLogPoStatus');
@@ -4905,13 +5131,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         ? 'Completed by Shop'
         : 'Received';
 
+      const actor = getActorStamp();
+      const updateBody = {
+        status: nextStatus,
+        receivedAt: today,
+      };
+      if (nextStatus.toLowerCase().includes('completed')) updateBody.completedBy = actor;
+      if (nextStatus.toLowerCase().includes('received')) updateBody.receivedBy = actor;
       const updateRes = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(po.id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: nextStatus,
-          receivedAt: today,
-        }),
+        body: JSON.stringify(updateBody),
       });
 
       if (!updateRes.ok) {
@@ -4983,6 +5213,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (hasEstimatedDelivery) return 'In Progress';
         return po.status || 'Pending';
       };
+      const statusWithActor = (po = {}) => {
+        const status = getPoStatusFromDates(po);
+        const actor = status.toLowerCase().includes('received') ? po.receivedBy : po.completedBy;
+        if (!actor) return status;
+        const actorName = actor.name || actor.email || '';
+        return actorName ? `${status} (${actorName})` : status;
+      };
 
       tbody.innerHTML = data.map(po => `
         <tr>
@@ -4991,7 +5228,7 @@ document.addEventListener("DOMContentLoaded", async function () {
           <td>${po.poNumber || ''}</td>
           <td>${(po.requestedDate || '').slice(0, 10)}</td>
           <td><input type="date" id="po_delivery_${po.id}" value="${(po.deliveryDate || '').slice(0, 10)}"></td>
-          <td>${escapeHtml(getPoStatusFromDates(po))}</td>
+          <td>${escapeHtml(statusWithActor(po))}</td>
           <td><input type="date" id="po_received_${po.id}" value="${(po.receivedAt || '').slice(0, 10)}"></td>
           <td><button type="button" onclick="editPurchaseOrder('${po.id}')">Open</button> <button type="button" onclick="updatePurchaseOrder('${po.id}')">Save</button></td>
         </tr>
@@ -5003,14 +5240,19 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   async function updatePurchaseOrder(id) {
+    if (!userCanArea('po')) return alert('Your role cannot update purchase orders.');
     const deliveryDate = document.getElementById(`po_delivery_${id}`)?.value || '';
     const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
     const status = receivedAt ? 'Received' : (deliveryDate ? 'In Progress' : 'Pending');
+    const actor = getActorStamp();
+
+    const payload = { deliveryDate, status, receivedAt };
+    if (status === 'Received') payload.receivedBy = actor;
 
     const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deliveryDate, status, receivedAt }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
@@ -5210,7 +5452,16 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!tbody) return;
     const res = await fetchApi('/api/residential-requests');
     if (!res.ok) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Failed to load requests.</td></tr>'; return; }
-    const rows = await res.json();
+    let rows = await res.json();
+    if (authRoles.includes('field')) {
+      const myEmail = String(authUser?.email || '').toLowerCase();
+      const myName = String(getAuthDisplayName() || '').toLowerCase();
+      rows = (rows || []).filter((r) => {
+        const assignedEmail = String(r.assignedTechEmail || '').toLowerCase();
+        const assignedName = String(r.assignedTech || '').toLowerCase();
+        return !assignedEmail || assignedEmail === myEmail || (assignedName && assignedName === myName);
+      });
+    }
     tbody.innerHTML = (rows || []).map(r => `<tr><td>${escapeHtml(r.requestNumber || '')}</td><td>${escapeHtml(r.customer?.name || '')}</td><td>${escapeHtml(r.customer?.phone || '')}</td><td>${escapeHtml(r.assignedTech || '')}</td><td>${escapeHtml((r.createdAt || '').slice(0,10))}</td><td><button type="button" onclick="editResidentialRequest('${r.id}')">Edit</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No requests found.</td></tr>';
   }
 
@@ -5230,6 +5481,14 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
   function kympgOpen(which, btn){
+    if (!authUser) {
+      alert('Please log in to continue.');
+      return;
+    }
+    if (!userCanArea(which)) {
+      alert('Your role does not have access to this area.');
+      return;
+    }
     if (btn){
       kympgClearActiveNav();
       btn.classList.add('active');
@@ -5329,7 +5588,21 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     kympgShowLanding();
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
+  window.addEventListener('DOMContentLoaded', async () => {
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on('init', syncAuthState);
+      window.netlifyIdentity.on('login', async (user) => {
+        window.netlifyIdentity.close();
+        await syncAuthState(user);
+      });
+      window.netlifyIdentity.on('logout', async () => {
+        await syncAuthState(null);
+      });
+      window.netlifyIdentity.init();
+    } else {
+      console.warn('Netlify Identity widget unavailable.');
+    }
+
     // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
@@ -5398,6 +5671,23 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
           logReceivedPO();
         }
       });
+    }
+
+
+    const devUser = document.getElementById('devLoginUser');
+    const devPass = document.getElementById('devLoginPass');
+    [devUser, devPass].forEach((el) => {
+      if (!el) return;
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          tryDevLogin();
+        }
+      });
+    });
+
+    if (window.netlifyIdentity && typeof window.netlifyIdentity.currentUser === 'function') {
+      await syncAuthState(window.netlifyIdentity.currentUser());
     }
   });
 </script>
