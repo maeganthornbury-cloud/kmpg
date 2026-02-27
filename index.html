@@ -738,6 +738,28 @@ body{
   position:fixed; inset:0; display:none; align-items:center; justify-content:center;
   background:rgba(15,23,42,.76); z-index:10; padding:20px;
 }
+.auth-gate-card{
+  width:min(420px, 94vw);
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 20px 55px rgba(2,6,23,.35);
+  padding:22px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.auth-gate-card h2{ margin:0; font-size:24px; }
+.auth-gate-card p{ margin:0; color:#475569; font-size:14px; }
+.auth-gate-card input{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid #cbd5e1;
+  border-radius:8px;
+  font-size:14px;
+  text-transform:none;
+}
+.auth-gate-card .row{ display:flex; gap:8px; flex-wrap:wrap; }
+.auth-gate-error{ color:#b91c1c; font-size:13px; min-height:18px; }
 body.auth-locked .kympg-shell{ display:none; }
 body.auth-locked .auth-gate{ display:flex; }
 
@@ -822,6 +844,29 @@ body.auth-locked .auth-gate{ display:flex; }
 .kympg-logPO button{ width:auto; padding:10px 18px; border:none; border-radius:10px; background:#198f42; color:#fff; font-weight:700; cursor:pointer; }
 .kympg-logPOStatus{ margin-top:8px; font-size:13px; color:#444; }
 
+.tech-home-wrap{
+  margin-top:12px;
+  width:min(1100px, 98%);
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:14px;
+  box-shadow: var(--shadow2);
+  text-align:left;
+}
+.tech-home-wrap h3{ margin:0 0 8px 0; font-size:16px; }
+.tech-home-wrap table{ width:100%; border-collapse:collapse; }
+.tech-home-wrap th,.tech-home-wrap td{ border:1px solid #d8dee8; padding:8px; font-size:12px; text-align:left; }
+.tech-home-wrap th{ background:#f1f5f9; }
+.measure-modal{ position:fixed; inset:0; background:rgba(2,6,23,.55); display:none; align-items:center; justify-content:center; z-index:20000; }
+.measure-card{ width:min(620px, 95vw); background:#fff; border-radius:12px; padding:16px; }
+.measure-card h3{ margin:0 0 8px 0; }
+.measure-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-bottom:12px; }
+.measure-grid .full{ grid-column:1 / -1; }
+.measure-card label{ display:block; font-size:12px; font-weight:700; margin-bottom:4px; }
+.measure-card input,.measure-card select,.measure-card textarea{ width:100%; text-transform:none; }
+.measure-actions{ display:flex; gap:8px; justify-content:flex-end; }
+
 .kympg-iframeWrap{ border:1px solid var(--line); border-radius: var(--radius2); overflow:hidden; height:min(72vh, 860px); background:#fff; }
 .kympg-iframeWrap iframe{ width:100%; height:100%; border:none; }
 
@@ -834,7 +879,19 @@ body.auth-locked .auth-gate{ display:flex; }
 </head>
 <body>
 
-<div id="authGate" class="auth-gate" aria-hidden="true" onclick="openLogin()" title="Click to log in"></div>
+<div id="authGate" class="auth-gate" aria-hidden="true">
+  <div class="auth-gate-card" onclick="event.stopPropagation()">
+    <h2>Log In</h2>
+    <p>Temporary test login until Netlify auth is fully configured (admin/admin or tech/tech).</p>
+    <input id="devLoginUser" type="text" placeholder="Username (admin or tech)" autocomplete="username">
+    <input id="devLoginPass" type="password" placeholder="Password (admin or tech)" autocomplete="current-password">
+    <div class="row">
+      <button type="button" class="kympg-authBtn primary" onclick="tryDevLogin()">Log In</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="openLogin()">Use Netlify Login</button>
+    </div>
+    <div id="devLoginError" class="auth-gate-error"></div>
+  </div>
+</div>
 
 <div class="kympg-shell">
   <aside class="kympg-sidebar" id="kympgSidebar">
@@ -1049,6 +1106,18 @@ body.auth-locked .auth-gate{ display:flex; }
                 </div>
                 <button type="button" onclick="saveUserRoles()">Save Roles</button>
                 <div id="roleAdminStatus" class="kympg-logPOStatus"></div>
+              </div>
+
+              <div id="techHomeRequests" class="tech-home-wrap" style="display:none;">
+                <h3>Open Residential Requests</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Request #</th><th>Request Date</th><th>Customer</th><th>Address</th><th>Phone</th><th>Work Type</th><th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="techHomeRequestsBody"><tr><td colspan="7" style="text-align:center;">Loading requests...</td></tr></tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -1831,7 +1900,6 @@ function printBreakdown() {
 
   breakdownWindow.document.write(`<h3>${grandTotal}</h3>`);
   breakdownWindow.document.write(`<h3>${grandTotalTax}</h3>`);
-
   breakdownWindow.document.write('</body></html>');
   breakdownWindow.document.close();
   breakdownWindow.print();
@@ -4831,6 +4899,154 @@ document.addEventListener("DOMContentLoaded", async function () {
     const el = document.getElementById('landing-section');
     if (el){ el.style.display = 'block'; el.classList.add('active'); }
     kympgSetHeader('Kentucky Mirror and Plate Glass', 'Select an option on the left to get started.', 'Home', 'Welcome');
+    if (authUser && isFieldTechUser()) { try { loadTechHomeRequests(); } catch (e) {} }
+  }
+
+  const ROLE_PERMISSIONS = {
+    admin: ['*'],
+    office: ['*'],
+    shop: ['landing', 'po'],
+    field: ['residential', 'residentialdb'],
+  };
+  let authUser = null;
+  let authToken = '';
+  let authRoles = [];
+
+  function getAuthDisplayName() {
+    return authUser?.user_metadata?.full_name || authUser?.email || 'Unknown User';
+  }
+  function userCanArea(area) {
+    if (!authUser) return false;
+    const perms = new Set();
+    (authRoles || []).forEach((r) => {
+      (ROLE_PERMISSIONS[r] || []).forEach((p) => perms.add(p));
+    });
+    return perms.has('*') || perms.has(area);
+  }
+  function canDeleteOrders() { return authRoles.includes('admin'); }
+  function canDeleteCustomers() { return authRoles.includes('admin'); }
+  function isFieldTechUser() { return authRoles.includes('field'); }
+
+  let currentMeasureRequest = null;
+
+  const DEV_FALLBACK_USERS = {
+    admin: { password: 'admin', fullName: 'Admin (Local)', email: 'admin@local.test', roles: ['admin'] },
+    tech: { password: 'tech', fullName: 'Tech (Local)', email: 'tech@local.test', roles: ['field'] },
+  };
+
+  function setAuthGateVisible(visible) {
+    document.body.classList.toggle('auth-locked', !!visible);
+    const gate = document.getElementById('authGate');
+    if (gate) gate.style.display = visible ? 'flex' : 'none';
+  }
+
+  function openLogin() {
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.open('login');
+      return;
+    }
+    const err = document.getElementById('devLoginError');
+    if (err) err.textContent = 'Netlify login is not available in this environment. Use admin/admin or tech/tech.';
+  }
+
+  async function tryDevLogin() {
+    const userEl = document.getElementById('devLoginUser');
+    const passEl = document.getElementById('devLoginPass');
+    const errEl = document.getElementById('devLoginError');
+    const username = String(userEl?.value || '').trim();
+    const password = String(passEl?.value || '').trim();
+
+    const profile = DEV_FALLBACK_USERS[username];
+    if (profile && password === profile.password) {
+      if (errEl) errEl.textContent = '';
+      await syncAuthState({
+        __isLocalFallback: true,
+        email: profile.email,
+        user_metadata: { full_name: profile.fullName },
+        app_metadata: { roles: profile.roles },
+        token: { access_token: `local-dev-token-${username}` },
+      });
+      return;
+    }
+
+    if (errEl) errEl.textContent = 'Invalid login. Use admin/admin or tech/tech.';
+  }
+
+  async function logoutUser() {
+    if (authUser?.__isLocalFallback) {
+      await syncAuthState(null);
+      return;
+    }
+    if (window.netlifyIdentity) await window.netlifyIdentity.logout();
+  }
+
+  async function syncAuthState(user) {
+    authUser = user || null;
+    authToken = user?.token?.access_token || '';
+    authRoles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles.map((r) => String(r).toLowerCase()) : [];
+
+    const meta = document.getElementById('authUserMeta');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (meta) meta.textContent = authUser ? `${getAuthDisplayName()} (${authRoles.join(', ') || 'no role'})` : 'Not signed in';
+    if (loginBtn) loginBtn.style.display = authUser ? 'none' : 'inline-block';
+    if (logoutBtn) logoutBtn.style.display = authUser ? 'inline-block' : 'none';
+
+    const rolePanel = document.getElementById('roleAdminPanel');
+    if (rolePanel) rolePanel.style.display = authRoles.includes('admin') ? 'block' : 'none';
+
+    document.querySelectorAll('.kympg-navBtn').forEach((btn) => {
+      const oc = btn.getAttribute('onclick') || '';
+      const m = oc.match(/kympgOpen\('([^']+)'/);
+      const area = m ? m[1] : '';
+      btn.classList.toggle('kympg-hidden-by-role', !userCanArea(area));
+    });
+
+    ['work', 'tools', 'residential'].forEach((g) => {
+      const group = document.getElementById(`group-${g}`);
+      if (!group) return;
+      const hasVisible = !!group.querySelector('.kympg-navBtn:not(.kympg-hidden-by-role)');
+      group.classList.toggle('kympg-hidden-by-role', !hasVisible);
+    });
+
+    const logPo = document.querySelector('.kympg-logPO');
+    if (logPo) logPo.classList.toggle('kympg-hidden-by-role', !userCanArea('po'));
+
+    const techHomeWrap = document.getElementById('techHomeRequests');
+    if (techHomeWrap) techHomeWrap.style.display = isFieldTechUser() ? 'block' : 'none';
+    if (authUser && isFieldTechUser()) {
+      try { await loadTechHomeRequests(); } catch (e) {}
+    }
+
+    if (!authUser) {
+      kympgShowLanding();
+      setAuthGateVisible(true);
+      return;
+    }
+
+    setAuthGateVisible(false);
+  }
+
+  async function saveUserRoles() {
+    if (!authRoles.includes('admin')) return alert('Only admins can set roles.');
+    const target = (document.getElementById('roleTargetInput')?.value || '').trim();
+    const status = document.getElementById('roleAdminStatus');
+    const roles = Array.from(document.querySelectorAll('#roleAdminPanel input[type="checkbox"]:checked')).map((el) => el.value);
+    if (!target) return alert('Enter a user email or user ID.');
+    if (!roles.length) return alert('Select at least one role.');
+
+    const body = target.includes('@') ? { userEmail: target, roles } : { userId: target, roles };
+    const res = await fetchApi('/api/set-role', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const payload = await parseJsonSafe(res);
+    if (!res.ok) {
+      if (status) status.textContent = payload.error || 'Failed to update roles.';
+      return;
+    }
+    if (status) status.textContent = `Updated roles: ${roles.join(', ')}`;
   }
 
   const ROLE_PERMISSIONS = {
@@ -5346,6 +5562,95 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (lookupList) lookupList.style.display = 'none';
   }
 
+  async function loadTechHomeRequests() {
+    const tbody = document.getElementById('techHomeRequestsBody');
+    if (!tbody) return;
+    const res = await fetchApi('/api/residential-requests');
+    if (!res.ok) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#b91c1c;">Failed to load requests.</td></tr>';
+      return;
+    }
+    let rows = await res.json();
+    rows = (rows || []).filter((r) => String(r.status || 'open').toLowerCase() === 'open');
+
+    if (isFieldTechUser()) {
+      const myEmail = String(authUser?.email || '').toLowerCase();
+      const myName = String(getAuthDisplayName() || '').toLowerCase();
+      rows = rows.filter((r) => {
+        const assignedEmail = String(r.assignedTechEmail || '').toLowerCase();
+        const assignedName = String(r.assignedTech || '').toLowerCase();
+        return !assignedEmail || assignedEmail === myEmail || (assignedName && assignedName === myName);
+      });
+    }
+
+    const detectWorkType = (r) => {
+      const text = String(r.measureCategory || r.description || '').toLowerCase();
+      if (text.includes('shower')) return 'Shower';
+      if (text.includes('mirror')) return 'Mirror';
+      if (text.includes('shel')) return 'Shelving';
+      return r.measureCategory || r.description || '';
+    };
+
+    tbody.innerHTML = rows.map((r) => `
+      <tr>
+        <td>${escapeHtml(r.requestNumber || '')}</td>
+        <td>${escapeHtml(String((r.createdAt || '')).slice(0,10))}</td>
+        <td>${escapeHtml(r.customer?.name || '')}</td>
+        <td>${escapeHtml(r.customer?.address || '')}</td>
+        <td>${escapeHtml(r.customer?.phone || '')}</td>
+        <td>${escapeHtml(detectWorkType(r))}</td>
+        <td><button type="button" onclick="openMeasureModal('${r.id}')">Measure</button></td>
+      </tr>
+    `).join('') || '<tr><td colspan="7" style="text-align:center;">No open requests found.</td></tr>';
+  }
+
+  async function openMeasureModal(id) {
+    const res = await fetchApi(`/api/residential-requests?id=${encodeURIComponent(id)}`);
+    if (!res.ok) return alert('Could not load request details.');
+    const r = await res.json();
+    currentMeasureRequest = r;
+    document.getElementById('measureRequestNumber').value = r.requestNumber || '';
+    document.getElementById('measureRequestDate').value = String(r.createdAt || '').slice(0,10);
+    document.getElementById('measureCustomerName').value = r.customer?.name || '';
+    document.getElementById('measureCustomerPhone').value = r.customer?.phone || '';
+    document.getElementById('measureCustomerAddress').value = r.customer?.address || '';
+    document.getElementById('measureDescription').value = r.description || '';
+    document.getElementById('measureCategory').value = r.measureCategory || '';
+    document.getElementById('measureNotes').value = r.measureNotes || '';
+    document.getElementById('measureStatus').textContent = '';
+    const modal = document.getElementById('measureModal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeMeasureModal() {
+    const modal = document.getElementById('measureModal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async function saveMeasureSelection() {
+    if (!currentMeasureRequest?.id) return;
+    const measureCategory = (document.getElementById('measureCategory')?.value || '').trim();
+    const measureNotes = (document.getElementById('measureNotes')?.value || '').trim();
+    const statusEl = document.getElementById('measureStatus');
+    if (!measureCategory) {
+      if (statusEl) statusEl.textContent = 'Please pick shower door, mirror, or shelving.';
+      return;
+    }
+
+    const payload = { ...currentMeasureRequest, measureCategory, measureNotes, measuredAt: new Date().toISOString(), measuredBy: getAuthDisplayName() };
+    const res = await fetchApi(`/api/residential-requests?id=${encodeURIComponent(currentMeasureRequest.id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      if (statusEl) statusEl.textContent = 'Failed to save measure details.';
+      return;
+    }
+    if (statusEl) statusEl.textContent = 'Saved.';
+    await loadTechHomeRequests();
+  }
+
   async function saveResidentialRequest() {
     pendingResidentialPayload = {
       customer: {
@@ -5617,11 +5922,53 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       });
     }
 
+
+    const devUser = document.getElementById('devLoginUser');
+    const devPass = document.getElementById('devLoginPass');
+    [devUser, devPass].forEach((el) => {
+      if (!el) return;
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          tryDevLogin();
+        }
+      });
+    });
+
     if (window.netlifyIdentity && typeof window.netlifyIdentity.currentUser === 'function') {
       await syncAuthState(window.netlifyIdentity.currentUser());
     }
   });
 </script>
+
+
+<div id="measureModal" class="measure-modal" onclick="closeMeasureModal()">
+  <div class="measure-card" onclick="event.stopPropagation()">
+    <h3>Measure Request</h3>
+    <div class="measure-grid">
+      <div><label>Request #</label><input id="measureRequestNumber" type="text" readonly></div>
+      <div><label>Date</label><input id="measureRequestDate" type="text" readonly></div>
+      <div><label>Customer</label><input id="measureCustomerName" type="text" readonly></div>
+      <div><label>Phone</label><input id="measureCustomerPhone" type="text" readonly></div>
+      <div class="full"><label>Address</label><input id="measureCustomerAddress" type="text" readonly></div>
+      <div class="full"><label>Description</label><textarea id="measureDescription" rows="3" readonly></textarea></div>
+      <div class="full"><label>Pick Type</label>
+        <select id="measureCategory">
+          <option value="">Select one...</option>
+          <option value="shower door">Shower Door</option>
+          <option value="mirror">Mirror</option>
+          <option value="shelving">Shelving</option>
+        </select>
+      </div>
+      <div class="full"><label>Measure Notes</label><textarea id="measureNotes" rows="3" placeholder="Optional notes..."></textarea></div>
+    </div>
+    <div class="measure-actions">
+      <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureModal()">Close</button>
+      <button type="button" class="kympg-authBtn primary" onclick="saveMeasureSelection()">Save</button>
+    </div>
+    <div id="measureStatus" class="kympg-logPOStatus"></div>
+  </div>
+</div>
 
 </body>
 </html>
