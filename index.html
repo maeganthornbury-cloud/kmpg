@@ -480,6 +480,73 @@
       margin: 0 auto;
     }
     #orders-section.active { display: block; }
+    #shower-section {
+      display: none;
+      max-width: 1240px;
+      margin: 0 auto;
+      border: 1px solid #d5dbe2;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(16,24,40,.08);
+    }
+    #shower-section.active { display: block; }
+    .shower-topbar {
+      background: linear-gradient(90deg, #142028, #233544);
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .shower-topbar h2 { margin: 0; font-size: 30px; color:#fff; }
+    .shower-tabs { display:flex; gap:22px; padding:10px 16px; border-bottom:1px solid #d5dbe2; font-weight:700; }
+    .shower-tabs span { color:#334155; }
+    .shower-tabs .active { color:#0891b2; border-bottom:3px solid #22d3ee; padding-bottom:8px; }
+    .shower-layout {
+      display: grid;
+      grid-template-columns: minmax(340px, 470px) 1fr;
+      gap: 0;
+      align-items: stretch;
+      min-height: 600px;
+    }
+    .shower-card {
+      border-right: 1px solid #d5dbe2;
+      background: #f8fafc;
+      padding: 14px;
+    }
+    .shower-card h3 { margin: 4px 0 12px 0; }
+    .shower-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .shower-grid label { font-size: 12px; font-weight: bold; color:#1e293b; }
+    .shower-grid input, .shower-grid select {
+      width: 100%; box-sizing: border-box; border:1px solid #cbd5e1; border-radius:6px; padding:8px;
+      background:#fff; text-transform:none;
+    }
+    .shower-canvas-wrap { background:#ffffff; padding: 12px; }
+    #showerPreview {
+      width: 100%;
+      max-width: 760px;
+      border: 1px solid #d7d7d7;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .shower-stats {
+      margin-top: 10px;
+      font-size: 13px;
+      line-height: 1.5;
+      background:#fff;
+      border:1px solid #d5dbe2;
+      border-radius:8px;
+      padding:8px;
+    }
+    @media (max-width: 900px) {
+      .shower-layout { grid-template-columns: 1fr; }
+      .shower-card { border-right: none; border-bottom:1px solid #d5dbe2; }
+    }
     #orderSearch {
       padding: 6px 10px;
       font-size: 14px;
@@ -907,6 +974,7 @@ body.auth-locked .auth-gate{ display:flex; }
     <p>Sign in with Netlify Identity to access the app.</p>
     <div class="row">
       <button type="button" class="kympg-authBtn primary" onclick="openLogin()">Use Netlify Login</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineLogin()">Continue Offline</button>
     </div>
   </div>
 </div>
@@ -1004,6 +1072,7 @@ body.auth-locked .auth-gate{ display:flex; }
         </span>
       </button>
 
+
       <button class="kympg-navBtn" data-tip="Invoiced Orders" type="button" onclick="kympgOpen('invoiced', this)">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M16 4v4h4"/><path d="M8 12h8"/><path d="M8 16h8"/></svg>
@@ -1042,6 +1111,10 @@ body.auth-locked .auth-gate{ display:flex; }
       <button class="kympg-navBtn" data-tip="New Request" type="button" onclick="kympgOpen('residential', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span>
         <span class="kympg-labelWrap"><span class="kympg-label">New Request</span><span class="kympg-hint">Create residential request</span></span>
+      </button>
+      <button class="kympg-navBtn" data-tip="Shower Designer" type="button" onclick="kympgOpen('shower', this)">
+        <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M6 7v13"/><path d="M18 7v13"/><path d="M6 20h12"/><path d="M9 10h6"/></svg></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">Shower Designer</span><span class="kympg-hint">Measure and preview shower doors</span></span>
       </button>
       <button class="kympg-navBtn" data-tip="Open Requests" type="button" onclick="kympgOpen('residentialdb', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span>
@@ -1277,6 +1350,7 @@ body.auth-locked .auth-gate{ display:flex; }
   <button id="tabCalculator" class="active" onclick="switchTab('calculator')">New Order</button>
   <button id="tabOrders" onclick="switchTab('orders')">Orders</button>
   <button id="tabCustomers" onclick="switchTab('customers')">Customers</button>
+  <button id="tabShower" onclick="switchTab('shower')">Shower Designer</button>
 </div>
 
 <div id="calculator-section">
@@ -1549,6 +1623,76 @@ body.auth-locked .auth-gate{ display:flex; }
     </tbody>
   </table>
 </div>
+
+<div id="shower-section">
+  <div class="shower-topbar">
+    <div>
+      <h2>Shower Designer</h2>
+      <div style="font-size:12px; opacity:.9;">Project: Shower Door Layout Preview</div>
+    </div>
+    <div style="font-size:14px;">Residential Tool</div>
+  </div>
+  <div class="shower-tabs">
+    <span>Template</span><span>Layout</span><span class="active">Design</span><span>Hardware</span><span>Panels</span><span>Summary</span>
+  </div>
+  <div class="shower-layout">
+    <div class="shower-card">
+      <h3>Design Details</h3>
+      <div class="shower-grid">
+        <div>
+          <label for="showerWidth">Front Width (in)</label>
+          <input id="showerWidth" type="number" min="20" step="0.25" value="60">
+        </div>
+        <div>
+          <label for="showerHeight">Glass Height (in)</label>
+          <input id="showerHeight" type="number" min="60" step="0.25" value="76">
+        </div>
+        <div>
+          <label for="wallLeft">Left Return (in)</label>
+          <input id="wallLeft" type="number" min="0" step="0.25" value="24">
+        </div>
+        <div>
+          <label for="wallRight">Right Return (in)</label>
+          <input id="wallRight" type="number" min="0" step="0.25" value="16">
+        </div>
+        <div>
+          <label for="doorWidth">Door Width (in)</label>
+          <input id="doorWidth" type="number" min="18" step="0.25" value="28">
+        </div>
+        <div>
+          <label for="glassTypeSelect">Glass</label>
+          <select id="glassTypeSelect">
+            <option value='3/8"'>10mm Clear (3/8")</option>
+            <option value='1/2"'>12mm Clear (1/2")</option>
+          </select>
+        </div>
+        <div>
+          <label for="doorSwing">Door Hinge</label>
+          <select id="doorSwing">
+            <option value="left">Left Hinge</option>
+            <option value="right">Right Hinge</option>
+          </select>
+        </div>
+        <div>
+          <label for="layoutType">Enclosure</label>
+          <select id="layoutType">
+            <option value="inline">Inline</option>
+            <option value="neo">Neo-angle</option>
+            <option value="slider">Bypass Slider</option>
+          </select>
+        </div>
+      </div>
+      <div class="buttons" style="margin-top:12px;">
+        <button type="button" onclick="renderShowerDesign()">Reapply</button>
+        <button type="button" onclick="downloadShowerPreview()">Save PNG</button>
+      </div>
+      <div id="showerStats" class="shower-stats"></div>
+    </div>
+    <div class="shower-canvas-wrap">
+      <canvas id="showerPreview" width="760" height="620" aria-label="Shower door preview"></canvas>
+    </div>
+  </div>
+</div>
 <script>
   // Sidebar + shell navigation (load this early so inline onclick works)
   function kympgToggleSidebar() {
@@ -1561,7 +1705,7 @@ body.auth-locked .auth-gate{ display:flex; }
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1569,13 +1713,14 @@ body.auth-locked .auth-gate{ display:flex; }
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['landing-section','calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
       quote: 'calculator-section',
       order: 'calculator-section',
       orders: 'orders-section',
+      shower: 'shower-section',
       customerimport: 'customer-section',
       vendors: 'vendor-section',
       breakage: 'breakage-section',
@@ -1592,6 +1737,12 @@ body.auth-locked .auth-gate{ display:flex; }
     const target = document.getElementById(targetId);
     if (target) target.style.display = 'block';
     if (which === 'po' && typeof loadPurchaseOrders === 'function') loadPurchaseOrders();
+    if (which === 'shower') {
+      if (typeof kympgSetHeader === 'function') {
+        kympgSetHeader('Shower Designer', 'Measure a shower opening and preview door layout.', 'Shower Designer', 'Measurement and rendering');
+      }
+      if (typeof renderShowerDesign === 'function') renderShowerDesign();
+    }
   }
 
   // Ignore noisy browser-extension promise rejections unrelated to app logic.
@@ -2339,17 +2490,21 @@ function switchTab(tab) {
   const calcSection = document.getElementById('calculator-section');
   const custSection = document.getElementById('customer-section');
   const ordSection = document.getElementById('orders-section');
+  const showerSection = document.getElementById('shower-section');
   const tabCalc = document.getElementById('tabCalculator');
   const tabCust = document.getElementById('tabCustomers');
   const tabOrd = document.getElementById('tabOrders');
+  const tabShower = document.getElementById('tabShower');
 
   // Hide all
   calcSection.classList.add('hidden');
   custSection.classList.remove('active');
   ordSection.classList.remove('active');
+  showerSection.classList.remove('active');
   tabCalc.classList.remove('active');
   tabCust.classList.remove('active');
   tabOrd.classList.remove('active');
+  if (tabShower) tabShower.classList.remove('active');
 
   if (tab === 'customers') {
     custSection.classList.add('active');
@@ -2359,6 +2514,10 @@ function switchTab(tab) {
     ordSection.classList.add('active');
     tabOrd.classList.add('active');
     loadOrders();
+  } else if (tab === 'shower') {
+    showerSection.classList.add('active');
+    if (tabShower) tabShower.classList.add('active');
+    renderShowerDesign();
   } else {
     calcSection.classList.remove('hidden');
     tabCalc.classList.add('active');
@@ -2366,6 +2525,167 @@ function switchTab(tab) {
     loadCalcCustomers();
   }
 }
+
+
+function renderShowerDesign() {
+  const width = Math.max(20, parseFloat(document.getElementById('showerWidth')?.value) || 0);
+  const height = Math.max(60, parseFloat(document.getElementById('showerHeight')?.value) || 0);
+  const leftWall = Math.max(0, parseFloat(document.getElementById('wallLeft')?.value) || 0);
+  const rightWall = Math.max(0, parseFloat(document.getElementById('wallRight')?.value) || 0);
+  const doorWidthInput = Math.max(18, parseFloat(document.getElementById('doorWidth')?.value) || 0);
+  const layout = document.getElementById('layoutType')?.value || 'inline';
+  const swing = document.getElementById('doorSwing')?.value || 'left';
+  const glass = document.getElementById('glassTypeSelect')?.value || '3/8"';
+  const doorWidth = Math.min(doorWidthInput, width - 6);
+
+  const canvas = document.getElementById('showerPreview');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#f8fafc';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Isometric-like projection based on sample UI.
+  const originX = canvas.width * 0.53;
+  const originY = canvas.height * 0.70;
+  const unit = Math.min(4.8, (canvas.height - 140) / height);
+  const isoX = 0.62;
+  const isoY = 0.26;
+
+  const frontW = width * unit;
+  const leftD = leftWall * unit;
+  const rightD = rightWall * unit;
+  const h = height * unit;
+
+  const A = { x: originX - frontW / 2, y: originY }; // front-left bottom
+  const B = { x: originX + frontW / 2, y: originY }; // front-right bottom
+  const C = { x: B.x + rightD * isoX, y: B.y - rightD * isoY }; // right return bottom
+  const D = { x: A.x - leftD * isoX, y: A.y - leftD * isoY }; // left return bottom
+
+  const A2 = { x: A.x, y: A.y - h };
+  const B2 = { x: B.x, y: B.y - h };
+  const C2 = { x: C.x, y: C.y - h };
+  const D2 = { x: D.x, y: D.y - h };
+
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#7d8ea0';
+
+  function poly(points, fill) {
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    points.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+    ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    ctx.stroke();
+  }
+
+  poly([D, A, A2, D2], 'rgba(205, 231, 206, .55)');
+  poly([A, B, B2, A2], 'rgba(185, 220, 186, .50)');
+  poly([B, C, C2, B2], 'rgba(170, 212, 172, .55)');
+
+  // Door split on front panel
+  const splitRatio = Math.max(0.1, Math.min(0.9, doorWidth / width));
+  const splitX = swing === 'left' ? A.x + frontW * splitRatio : B.x - frontW * splitRatio;
+  ctx.strokeStyle = '#64748b';
+  ctx.beginPath();
+  ctx.moveTo(splitX, A.y);
+  ctx.lineTo(splitX, A2.y);
+  ctx.stroke();
+
+  // Handle + hinge hints
+  const handleX = swing === 'left' ? splitX + (B.x - splitX) * 0.55 : splitX - (splitX - A.x) * 0.55;
+  ctx.strokeStyle = '#94a3b8';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(handleX, originY - h * 0.58);
+  ctx.lineTo(handleX, originY - h * 0.47);
+  ctx.stroke();
+
+  // Top rake for neo-angle style.
+  if (layout === 'neo') {
+    ctx.strokeStyle = '#94a3b8';
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(D2.x, D2.y);
+    ctx.lineTo(A2.x, A2.y - 18);
+    ctx.lineTo(B2.x, B2.y - 8);
+    ctx.lineTo(C2.x, C2.y + 10);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  if (layout === 'slider') {
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(A2.x, A2.y - 10);
+    ctx.lineTo(B2.x, B2.y - 10);
+    ctx.stroke();
+  }
+
+  // Color-coded dimension lines similar to reference screenshot.
+  function dim(p1, p2, color, text, offsetX = 0, offsetY = 0) {
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+    const mx = (p1.x + p2.x) / 2 + offsetX;
+    const my = (p1.y + p2.y) / 2 + offsetY;
+    ctx.font = 'bold 33px Arial';
+    ctx.fillText(text, mx, my);
+  }
+
+  dim({ x: D2.x, y: D2.y - 30 }, { x: A2.x, y: A2.y - 30 }, '#ef4444', `${leftWall.toFixed(0)}`, -10, -8);
+  dim({ x: B2.x, y: B2.y - 30 }, { x: C2.x, y: C2.y - 30 }, '#22c55e', `${rightWall.toFixed(0)}`, 10, -8);
+  dim({ x: D2.x - 45, y: D2.y }, { x: D2.x - 45, y: D.y }, '#3b82f6', `${height.toFixed(0)}`, -12, 0);
+  dim({ x: A.x, y: A.y + 24 }, { x: B.x, y: B.y + 24 }, '#22c55e', `${width.toFixed(0)}`, -10, 24);
+  dim({ x: swing === 'left' ? A.x : splitX, y: A.y + 8 }, { x: swing === 'left' ? splitX : B.x, y: A.y + 8 }, '#111827', `${doorWidth.toFixed(0)}`, -8, -6);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = 'bold 22px Arial';
+  ctx.fillText('Shower Design Preview', 20, 34);
+  ctx.font = '16px Arial';
+  ctx.fillText(`Glass: ${glass}  •  Layout: ${layout.toUpperCase()}  •  Hinge: ${swing.toUpperCase()}`, 20, 62);
+
+  const fixedWidth = Math.max(0, width - doorWidth);
+  const areaSqFt = ((width + leftWall + rightWall) * height) / 144;
+  const estWeight = areaSqFt * (glass === '1/2"' ? 6.6 : 4.9);
+  const stats = document.getElementById('showerStats');
+  if (stats) {
+    stats.innerHTML = `<strong>Estimated Cut List</strong><br>
+      Door Panel: ${doorWidth.toFixed(2)}" × ${height.toFixed(2)}"<br>
+      Front Fixed: ${fixedWidth.toFixed(2)}" × ${height.toFixed(2)}"<br>
+      Left Return: ${leftWall.toFixed(2)}" × ${height.toFixed(2)}"<br>
+      Right Return: ${rightWall.toFixed(2)}" × ${height.toFixed(2)}"<br>
+      Total Glass Area: ${areaSqFt.toFixed(2)} sq ft &nbsp;•&nbsp; Estimated Weight: ${estWeight.toFixed(1)} lbs`;
+  }
+}
+
+function downloadShowerPreview() {
+  renderShowerDesign();
+  const canvas = document.getElementById('showerPreview');
+  if (!canvas) return;
+  const link = document.createElement('a');
+  link.download = 'shower-door-preview.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  ['showerWidth','showerHeight','wallLeft','wallRight','doorWidth','glassTypeSelect','doorSwing','layoutType']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', renderShowerDesign);
+      if (el) el.addEventListener('change', renderShowerDesign);
+    });
+  renderShowerDesign();
+});
 
 
 function showCalculatorWorkspace(mode = 'order') {
@@ -4904,7 +5224,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
   function kympgHideAllSections(){
     const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
-                 'invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section',
+                 'shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section',
                  'residential-section','residentialdb-section','servicetechs-section'];
     ids.forEach(id => {
       const el = document.getElementById(id);
@@ -4936,11 +5256,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     admin: ['*'],
     office: ['*'],
     shop: ['landing', 'po'],
-    field: ['residential', 'residentialdb'],
+    field: ['residential', 'shower', 'residentialdb'],
   };
   let authUser = null;
   let authToken = '';
   let authRoles = [];
+  let isOfflineAuth = false;
   let hasPromptedLogin = false;
 
   function getAuthDisplayName() {
@@ -4974,13 +5295,29 @@ document.addEventListener("DOMContentLoaded", async function () {
     alert('Netlify login is not available in this environment.');
   }
 
+  function continueOfflineLogin() {
+    const offlineUser = {
+      email: 'offline@local',
+      user_metadata: { full_name: 'Offline User' },
+      app_metadata: { roles: ['admin'] },
+      token: { access_token: '' },
+    };
+    isOfflineAuth = true;
+    syncAuthState(offlineUser);
+  }
+
   async function logoutUser() {
+    if (isOfflineAuth) {
+      isOfflineAuth = false;
+      await syncAuthState(null);
+      return;
+    }
     if (window.netlifyIdentity) await window.netlifyIdentity.logout();
   }
 
   async function syncAuthState(user) {
     authUser = user || null;
-    authToken = user?.token?.access_token || '';
+    authToken = isOfflineAuth ? '' : (user?.token?.access_token || '');
     authRoles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles.map((r) => String(r).toLowerCase()) : [];
 
     const meta = document.getElementById('authUserMeta');
@@ -5021,13 +5358,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!authUser) {
       kympgShowLanding();
       setAuthGateVisible(true);
-      if (!hasPromptedLogin && window.netlifyIdentity) {
+      if (!isOfflineAuth && !hasPromptedLogin && window.netlifyIdentity) {
         hasPromptedLogin = true;
         setTimeout(() => openLogin(), 150);
       }
       return;
     }
 
+    if (authUser && !isOfflineAuth) isOfflineAuth = false;
     setAuthGateVisible(false);
     hasPromptedLogin = false;
   }
@@ -5736,6 +6074,13 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       kympgSetHeader('New Residential Request', 'Create and assign residential service request.', 'Residential', 'New Request');
       return;
     }
+    if (which === 'shower'){
+      const sh = document.getElementById('shower-section');
+      if (sh){ sh.style.display = 'block'; }
+      kympgSetHeader('Shower Designer', 'Measure a shower opening and preview door layout.', 'Shower Designer', 'Measurement and rendering');
+      try { if (typeof renderShowerDesign === 'function') renderShowerDesign(); } catch(e) {}
+      return;
+    }
     if (which === 'residentialdb'){
       const r = document.getElementById('residentialdb-section');
       if (r){ r.style.display = 'block'; }
@@ -5772,7 +6117,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','vendor-section','orders-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','servicetechs-section']
+      ['calculator-section','customer-section','vendor-section','orders-section','shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','servicetechs-section']
         .forEach(id => {
           const el = document.getElementById(id);
           if (el && el.parentElement !== content) content.appendChild(el);
