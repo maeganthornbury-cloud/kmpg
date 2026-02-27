@@ -2203,7 +2203,6 @@ async function saveVendor(event) {
 
 async function deleteVendor(id) {
   if (!confirm('Delete this vendor?')) return;
-  const res = await fetchApi(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   const res = await fetch(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   if (!res.ok) {
     alert('Failed to delete vendor');
@@ -2249,7 +2248,6 @@ async function handleVendorImportFile(event) {
     return;
   }
 
-  const res = await fetchApi('/api/vendors-import', {
   const res = await fetch('/api/vendors-import', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -2379,13 +2377,13 @@ async function saveCustomer(event) {
   try {
     let res;
     if (id) {
-      res = await fetchApi(`/api/customers?id=${encodeURIComponent(id)}`, {
+      res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
     } else {
-      res = await fetchApi('/api/customers', {
+      res = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -2408,7 +2406,7 @@ async function deleteCustomer(id) {
   if (!confirm('Are you sure you want to delete this customer?')) return;
 
   try {
-    const res = await fetchApi(`/api/customers?id=${encodeURIComponent(id)}`, {
+    const res = await fetch(`/api/customers?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete customer');
@@ -2662,7 +2660,7 @@ async function saveQuickAddCustomer() {
   };
 
   try {
-    const res = await fetchApi('/api/customers', {
+    const res = await fetch('/api/customers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -2863,7 +2861,7 @@ async function printQuote(quoteId) {
   }
 
   try {
-    const res = await fetchApi(`/api/quotes?id=${encodeURIComponent(idToPrint)}`);
+    const res = await fetch(`/api/quotes?id=${encodeURIComponent(idToPrint)}`);
     if (!res.ok) throw new Error('Quote not found');
     const quote = await res.json();
 
@@ -3068,7 +3066,7 @@ async function convertCurrentQuoteToOrder() {
     data.status = 'shop production';
     data.sequenceNumber = savedQuote.sequenceNumber;
 
-    const orderRes = await fetchApi('/api/orders', {
+    const orderRes = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
@@ -3081,7 +3079,7 @@ async function convertCurrentQuoteToOrder() {
 
     const createdOrder = await orderRes.json();
 
-    await fetchApi(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
+    await fetch(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
@@ -3191,7 +3189,6 @@ async function saveOrder() {
     if (poType === 'internal') {
       const poNumberGenerated = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}`;
       vendorPoNumber = poNumberGenerated;
-      await fetchApi(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
       await fetch(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -3216,7 +3213,6 @@ async function saveOrder() {
         dateOrdered: savedOrder.createdAt,
         status: 'Pending',
       };
-      await fetchApi('/api/purchase-orders', {
       await fetch('/api/purchase-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -3300,7 +3296,7 @@ async function searchOrders() {
   }
 
   try {
-    const res = await fetchApi(`/api/orders?search=${encodeURIComponent(query)}`);
+    const res = await fetch(`/api/orders?search=${encodeURIComponent(query)}`);
     if (!res.ok) throw new Error('Search failed');
     const results = await res.json();
     renderOrderTable(results);
@@ -3314,7 +3310,7 @@ async function deleteOrder(id) {
   if (!confirm('Are you sure you want to delete this order?')) return false;
 
   try {
-    const res = await fetchApi(`/api/orders?id=${encodeURIComponent(id)}`, {
+    const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete order');
@@ -3462,7 +3458,7 @@ async function loadOrderIntoCalculator(id) {
   const order = allOrders.find(o => o.id === id);
   if (!order) {
     try {
-      const res = await fetchApi(`/api/orders?id=${encodeURIComponent(id)}`);
+      const res = await fetch(`/api/orders?id=${encodeURIComponent(id)}`);
       if (!res.ok) throw new Error('Order not found');
       const fetched = await res.json();
       populateCalculatorFromOrder(fetched);
@@ -3538,7 +3534,7 @@ let allQuotes = [];
 
 async function loadQuotes() {
   try {
-    const res = await fetchApi('/api/quotes');
+    const res = await fetch('/api/quotes');
     if (!res.ok) throw new Error('Failed to load quotes');
     allQuotes = await res.json();
     renderQuoteTable(allQuotes);
@@ -3618,7 +3614,7 @@ async function convertSavedQuoteToOrder(id) {
   };
 
   try {
-    const orderRes = await fetchApi('/api/orders', {
+    const orderRes = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderPayload),
@@ -3626,7 +3622,7 @@ async function convertSavedQuoteToOrder(id) {
     if (!orderRes.ok) throw new Error('Failed to create order from quote');
     const createdOrder = await orderRes.json();
 
-    await fetchApi(`/api/quotes?id=${encodeURIComponent(id)}`, {
+    await fetch(`/api/quotes?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'closed as ordered', convertedOrderId: createdOrder.id, closedReason: 'ordered' }),
@@ -3855,7 +3851,7 @@ async function confirmImport() {
   statusEl.textContent = `Importing ${customers.length} customer(s)...`;
 
   try {
-    const res = await fetchApi('/api/customers-import', {
+    const res = await fetch('/api/customers-import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ customers }),
@@ -3981,7 +3977,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const status = document.getElementById(`po_status_${id}`)?.value || 'Pending';
     const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
 
-    const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
     const res = await fetch(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
