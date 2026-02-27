@@ -279,7 +279,7 @@
       font-style: italic;
     }
     .customer-lookup-list li .cust-detail {
-      font-size: 11px;
+      font-size: 14px;
       color: #666;
       display: block;
     }
@@ -651,13 +651,27 @@ body{
 .kympg-sidebar.collapsed .kympg-brand{ text-align:center; }
 
 .kympg-sectionLabel{
-  font-size: 11px;
+  font-size: 16px;
   letter-spacing:.10em;
   text-transform: uppercase;
+  font-weight: 800;
   color: rgba(15,23,42,.55);
   padding: 6px 10px 0 10px;
 }
 .kympg-sidebar.collapsed .kympg-sectionLabel{ display:none; }
+.kympg-navGroup{ margin-top: 6px; }
+.kympg-groupToggle{
+  width:100%; border:none; background:transparent; cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 8px 10px 4px 10px;
+}
+.kympg-groupTitle{ display:flex; align-items:center; gap:8px; }
+.kympg-groupSign{ font-size:18px; font-weight:900; width:18px; text-align:center; color:#1e3a8a; }
+.kympg-groupToggle .kympg-sectionLabel{ padding:0; }
+.kympg-groupChevron{ display:none; }
+.kympg-groupBody{ display:flex; flex-direction:column; gap:6px; }
+.kympg-navGroup.collapsed .kympg-groupBody{ display:none; }
+.kympg-sidebar.collapsed .kympg-groupToggle{ display:none; }
 .kympg-nav{ display:flex; flex-direction:column; gap:6px; }
 .kympg-navBtn{
   width:100%;
@@ -779,101 +793,129 @@ body{
       <div class="sub">Home</div>
     </div>
 
-    <div class="kympg-sectionLabel">Work</div>
-    <nav class="kympg-nav">
-      <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">New Quote</span>
-          <span class="kympg-hint">Create a new quote</span>
-        </span>
+    <div class="kympg-navGroup" id="kympgGroupWillCall">
+      <button type="button" class="kympg-groupToggle" onclick="kympgToggleGroup('kympgGroupWillCall')">
+        <span class="kympg-groupTitle"><span class="kympg-groupSign">−</span><span class="kympg-sectionLabel">Will Call</span></span>
+        <span class="kympg-groupChevron">▾</span>
       </button>
+      <nav class="kympg-nav kympg-groupBody">
+        <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">New Quote</span>
+            <span class="kympg-hint">Create a new quote</span>
+          </span>
+        </button>
 
-      <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">New Order</span>
-          <span class="kympg-hint">Start an order</span>
-        </span>
-      </button>
+        <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">New Order</span>
+            <span class="kympg-hint">Start an order</span>
+          </span>
+        </button>
 
-      <button class="kympg-navBtn" data-tip="Search / Open Orders" type="button" onclick="kympgOpen('orders', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Search / Open Orders</span>
-          <span class="kympg-hint">Find past orders</span>
-        </span>
-      </button>
+        <button class="kympg-navBtn" data-tip="Search / Open Orders" type="button" onclick="kympgOpen('orders', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">Search / Open Orders</span>
+            <span class="kympg-hint">Find past orders</span>
+          </span>
+        </button>
 
-      <button class="kympg-navBtn" data-tip="Open Quotes" type="button" onclick="kympgOpen('quotedb', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M7 7h10"/><path d="M7 11h10"/><path d="M7 15h6"/><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Open Quotes</span>
-          <span class="kympg-hint">Saved quotes</span>
-        </span>
-      </button>
+        <button class="kympg-navBtn" data-tip="Open Quotes" type="button" onclick="kympgOpen('quotedb', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M7 7h10"/><path d="M7 11h10"/><path d="M7 15h6"/><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">Open Quotes</span>
+            <span class="kympg-hint">Saved quotes</span>
+          </span>
+        </button>
 
-      <button class="kympg-navBtn" data-tip="Purchase Orders" type="button" onclick="kympgOpen('po', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 3h18v4H3z"/><path d="M3 7v14h18V7"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Purchase Orders</span>
-          <span class="kympg-hint">Vendor POs</span>
-        </span>
-      </button>
-    </nav>
+        <button class="kympg-navBtn" data-tip="Purchase Orders" type="button" onclick="kympgOpen('po', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 3h18v4H3z"/><path d="M3 7v14h18V7"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">Purchase Orders</span>
+            <span class="kympg-hint">Vendor POs</span>
+          </span>
+        </button>
+      </nav>
+    </div>
 
-    <div class="kympg-sectionLabel">Tools</div>
-    <nav class="kympg-nav">
-      <button class="kympg-navBtn" data-tip="Breakage Pricing" type="button" onclick="kympgOpen('breakage', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Breakage Pricing</span>
-          <span class="kympg-hint">Open breakage tool</span>
-        </span>
+    <div class="kympg-navGroup" id="kympgGroupTools">
+      <button type="button" class="kympg-groupToggle" onclick="kympgToggleGroup('kympgGroupTools')">
+        <span class="kympg-groupTitle"><span class="kympg-groupSign">−</span><span class="kympg-sectionLabel">Tools</span></span>
+        <span class="kympg-groupChevron">▾</span>
       </button>
+      <nav class="kympg-nav kympg-groupBody">
+        <button class="kympg-navBtn" data-tip="Breakage Pricing" type="button" onclick="kympgOpen('breakage', this)"> 
+          <span class="kympg-ico" aria-hidden="true"> 
+            <svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">Breakage Pricing</span>
+            <span class="kympg-hint">Open breakage tool</span>
+          </span>
+        </button>
 
-      <button class="kympg-navBtn" data-tip="Sq Ft Price List" type="button" onclick="kympgOpen('pricelist', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Sq Ft Price List</span>
-          <span class="kympg-hint">Reference pricing</span>
-        </span>
-      </button>
+        <button class="kympg-navBtn" data-tip="Sq Ft Price List" type="button" onclick="kympgOpen('pricelist', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">Sq Ft Price List</span>
+            <span class="kympg-hint">Reference pricing</span>
+          </span>
+        </button>
 
-      <button class="kympg-navBtn" data-tip="Customer List" type="button" onclick="kympgOpen('customerimport', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Customer List</span>
-          <span class="kympg-hint">Upload customer list</span>
-    </span>
-      </button>
+        <button class="kympg-navBtn" data-tip="Customer List" type="button" onclick="kympgOpen('customerimport', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">Customer List</span>
+            <span class="kympg-hint">Upload customer list</span>
+          </span>
+        </button>
 
-      <button class="kympg-navBtn" data-tip="Vendor List" type="button" onclick="kympgOpen('vendors', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M19 6v12"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Vendor List</span>
-          <span class="kympg-hint">Upload vendor list</span>
-    </span>
+        <button class="kympg-navBtn" data-tip="Vendor List" type="button" onclick="kympgOpen('vendors', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M19 6v12"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">Vendor List</span>
+            <span class="kympg-hint">Upload vendor list</span>
+          </span>
+        </button>
+      </nav>
+    </div>
+
+    <div class="kympg-navGroup" id="kympgGroupResidential">
+      <button type="button" class="kympg-groupToggle" onclick="kympgToggleGroup('kympgGroupResidential')">
+        <span class="kympg-groupTitle"><span class="kympg-groupSign">−</span><span class="kympg-sectionLabel">Residential Request</span></span>
+        <span class="kympg-groupChevron">▾</span>
       </button>
-    </nav>
+      <nav class="kympg-nav kympg-groupBody">
+        <button class="kympg-navBtn" data-tip="Residential Quote Requests" type="button" onclick="kympgOpen('resrequests', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 10l8-6 8 6"/><path d="M6 10v10h12V10"/><path d="M9 14h6"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">Residential Requests</span>
+            <span class="kympg-hint">Assign field quote visits</span>
+          </span>
+        </button>
+      </nav>
+    </div>
 
     <div class="kympg-spacer"></div>
   </aside>
@@ -952,6 +994,47 @@ body{
                 <tr><td colspan="8" style="text-align:center;">Loading purchase orders...</td></tr>
               </tbody>
             </table>
+          </div>
+
+
+
+          <div id="resrequests-section" style="display:none;">
+            <h2 style="margin-top:0;">Residential Quote Request</h2>
+            <div style="display:flex;gap:8px;margin-bottom:14px;">
+              <button type="button" id="rqTabNew" onclick="switchResidentialTab('new')" style="padding:8px 14px;border:1px solid #007bff;border-radius:8px;background:#007bff;color:#fff;font-weight:700;">New Request</button>
+              <button type="button" id="rqTabSaved" onclick="switchResidentialTab('saved')" style="padding:8px 14px;border:1px solid #007bff;border-radius:8px;background:#fff;color:#007bff;font-weight:700;">Saved Requests</button>
+            </div>
+
+            <div id="rqNewPane">
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:12px;margin-bottom:12px;">
+                <div>
+                  <label for="rqCustomerSelect" style="font-weight:600;font-size:13px;display:block;margin-bottom:4px;">Customer</label>
+                  <select id="rqCustomerSelect" onchange="selectResidentialCustomer(this.value)" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;"></select>
+                </div>
+                <div style="display:flex;align-items:flex-end;gap:8px;">
+                  <button type="button" onclick="addResidentialCustomer()" style="padding:8px 14px;border:none;border-radius:6px;background:#007bff;color:#fff;">+ Add Customer</button>
+                </div>
+                <div><label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px;">Phone</label><input id="rqCustomerPhone" readonly style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;background:#f5f5f5;"></div>
+                <div><label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px;">Email</label><input id="rqCustomerEmail" readonly style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;background:#f5f5f5;"></div>
+                <div style="grid-column:1 / -1;"><label style="font-weight:600;font-size:13px;display:block;margin-bottom:4px;">Address</label><input id="rqCustomerAddress" readonly style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;background:#f5f5f5;"></div>
+                <div style="grid-column:1 / -1;"><label for="rqDescription" style="font-weight:600;font-size:13px;display:block;margin-bottom:4px;">Work Description</label><textarea id="rqDescription" rows="4" placeholder="Describe what needs to be quoted in the field..." style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;"></textarea></div>
+              </div>
+              <button type="button" onclick="saveResidentialRequest()" style="padding:10px 16px;border:none;border-radius:6px;background:#28a745;color:#fff;font-weight:700;">Save Residential Quote Request</button>
+            </div>
+
+            <div id="rqSavedPane" style="display:none;">
+              <input type="text" id="rqSearch" placeholder="Search by request #, customer, tech, or description..." oninput="searchResidentialRequests()" style="width:100%;max-width:420px;margin:10px 0;padding:8px;border:1px solid #ccc;border-radius:4px;">
+              <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                  <tr>
+                    <th>Request #</th><th>Customer</th><th>Phone</th><th>Assigned Tech</th><th>Description</th><th>Status</th><th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="rqTableBody">
+                  <tr><td colspan="7" style="text-align:center;">Loading requests...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <div id="breakage-section" style="display:none;">
@@ -1258,7 +1341,7 @@ body{
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','resrequests-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1266,7 +1349,7 @@ body{
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section']
+    ['landing-section','calculator-section','orders-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','resrequests-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
@@ -1279,6 +1362,7 @@ body{
       pricelist: 'pricelist-section',
       quotedb: 'quotedb-section',
       po: 'po-section',
+      resrequests: 'resrequests-section',
     };
 
     const targetId = map[which] || 'landing-section';
@@ -2204,7 +2288,6 @@ async function saveVendor(event) {
 async function deleteVendor(id) {
   if (!confirm('Delete this vendor?')) return;
   const res = await fetchApi(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
-  const res = await fetch(`/api/vendors?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
   if (!res.ok) {
     alert('Failed to delete vendor');
     return;
@@ -2250,7 +2333,6 @@ async function handleVendorImportFile(event) {
   }
 
   const res = await fetchApi('/api/vendors-import', {
-  const res = await fetch('/api/vendors-import', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ vendors }),
@@ -3123,8 +3205,8 @@ async function saveOrder() {
   let vendorName = '';
   let vendorPoNumber = '';
   let requestedDate = '';
-
   let poType = '';
+
   if (isNewOrder) {
     poType = await showPOTypeModal();
     if (poType === 'external' || poType === 'internal') {
@@ -3141,20 +3223,6 @@ async function saveOrder() {
     }
   } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').includes('(vendor)')) {
     sourceType = 'on order (vendor)';
-  if (isNewOrder) {
-    const isVendorPO = confirm('Create purchase order? Click OK for PURCHASE ORDER, Cancel for SHOP TICKET.');
-    if (isVendorPO) {
-      sourceType = 'vendor';
-      vendorName = prompt('Enter vendor name:') || '';
-      vendorPoNumber = prompt('Enter vendor PO #:') || '';
-      requestedDate = prompt('Enter requested date (YYYY-MM-DD):', new Date().toISOString().slice(0, 10)) || '';
-      if (!vendorName.trim() || !vendorPoNumber.trim()) {
-        alert('Vendor and PO # are required for purchase orders.');
-        return;
-      }
-    }
-  } else if ((allOrders.find(o => o.id === currentOrderId)?.status || '').startsWith('vendor')) {
-    sourceType = 'vendor';
     vendorName = allOrders.find(o => o.id === currentOrderId)?.vendorName || '';
     vendorPoNumber = allOrders.find(o => o.id === currentOrderId)?.vendorPoNumber || '';
     requestedDate = allOrders.find(o => o.id === currentOrderId)?.requestedDate || '';
@@ -3184,7 +3252,6 @@ async function saveOrder() {
     }
 
     const savedOrder = await res.json();
-
     currentOrderId = savedOrder.id;
     lastSavedOrderId = savedOrder.id;
 
@@ -3192,7 +3259,6 @@ async function saveOrder() {
       const poNumberGenerated = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}`;
       vendorPoNumber = poNumberGenerated;
       await fetchApi(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
-      await fetch(`/api/orders?id=${encodeURIComponent(savedOrder.id)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -3204,8 +3270,7 @@ async function saveOrder() {
       });
     }
 
-    if (poType === 'external' || poType === 'internal') {
-    if (sourceType === 'vendor') {
+    if ((poType === 'external' || poType === 'internal') && vendorName) {
       const poPayload = {
         orderId: savedOrder.id,
         orderNumber: savedOrder.orderNumber,
@@ -3217,12 +3282,14 @@ async function saveOrder() {
         status: 'Pending',
       };
       await fetchApi('/api/purchase-orders', {
-      await fetch('/api/purchase-orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(poPayload),
       });
-      window.open(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=purchase-order`, '_blank');
+
+      if (poType === 'external') {
+        window.open(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=purchase-order`, '_blank');
+      }
     } else if (isNewOrder) {
       window.open(`/api/orders?id=${encodeURIComponent(savedOrder.id)}&print=ticket`, '_blank');
     }
@@ -3233,7 +3300,6 @@ async function saveOrder() {
     try { await loadOrders(); } catch (e) {}
     try { await loadPurchaseOrders(); } catch (e) {}
     if (isNewOrder) startNewOrder();
-
   } catch (err) {
     alert('Error saving order: ' + err.message);
   } finally {
@@ -3884,6 +3950,203 @@ async function confirmImport() {
   }
 }
 
+
+
+// ===================== RESIDENTIAL QUOTE REQUESTS =====================
+let allTechnicians = [];
+let allResidentialRequests = [];
+let selectedResidentialCustomer = null;
+
+
+function switchResidentialTab(tab) {
+  const newPane = document.getElementById('rqNewPane');
+  const savedPane = document.getElementById('rqSavedPane');
+  const newBtn = document.getElementById('rqTabNew');
+  const savedBtn = document.getElementById('rqTabSaved');
+  const isSaved = tab === 'saved';
+  if (newPane) newPane.style.display = isSaved ? 'none' : 'block';
+  if (savedPane) savedPane.style.display = isSaved ? 'block' : 'none';
+  if (newBtn) {
+    newBtn.style.background = isSaved ? '#fff' : '#007bff';
+    newBtn.style.color = isSaved ? '#007bff' : '#fff';
+  }
+  if (savedBtn) {
+    savedBtn.style.background = isSaved ? '#007bff' : '#fff';
+    savedBtn.style.color = isSaved ? '#fff' : '#007bff';
+  }
+}
+
+function fillResidentialCustomerFields(customer) {
+  document.getElementById('rqCustomerPhone').value = customer?.phone || '';
+  document.getElementById('rqCustomerEmail').value = customer?.email || '';
+  document.getElementById('rqCustomerAddress').value = customer?.address || '';
+}
+
+function renderResidentialCustomerOptions() {
+  const select = document.getElementById('rqCustomerSelect');
+  if (!select) return;
+  const options = ['<option value="">Select customer...</option>'].concat(
+    calcCustomers.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name || '')}</option>`)
+  );
+  select.innerHTML = options.join('');
+}
+
+function selectResidentialCustomer(id) {
+  selectedResidentialCustomer = calcCustomers.find(c => c.id === id) || null;
+  fillResidentialCustomerFields(selectedResidentialCustomer);
+}
+
+async function addResidentialCustomer() {
+  openQuickAddCustomer('');
+  const modal = document.getElementById('quickAddModal');
+  if (!modal) return;
+  const observer = new MutationObserver(async () => {
+    if (modal.style.display === 'none') {
+      observer.disconnect();
+      await loadCalcCustomers();
+      renderResidentialCustomerOptions();
+      if (calcCustomers.length) {
+        const last = calcCustomers[calcCustomers.length - 1];
+        document.getElementById('rqCustomerSelect').value = last.id;
+        selectResidentialCustomer(last.id);
+      }
+    }
+  });
+  observer.observe(modal, { attributes: true, attributeFilter: ['style'] });
+}
+
+async function loadTechnicians() {
+  const res = await fetchApi('/api/technicians');
+  if (!res.ok) throw new Error('Failed to load technicians');
+  allTechnicians = await res.json();
+}
+
+async function loadResidentialRequests() {
+  const tbody = document.getElementById('rqTableBody');
+  if (!tbody) return;
+  try {
+    const res = await fetchApi('/api/service-requests');
+    if (!res.ok) throw new Error('Failed to load requests');
+    allResidentialRequests = await res.json();
+    renderResidentialRequestsTable(allResidentialRequests);
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Failed to load requests.</td></tr>';
+  }
+}
+
+function renderResidentialRequestsTable(rows) {
+  const tbody = document.getElementById('rqTableBody');
+  if (!tbody) return;
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No requests found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.requestNumber || '')}</td>
+      <td>${escapeHtml(r.customer?.name || '')}</td>
+      <td>${escapeHtml(r.customer?.phone || '')}</td>
+      <td>${escapeHtml(r.assignedTechName || '')}</td>
+      <td style="text-align:left;">${escapeHtml(r.description || '')}</td>
+      <td>${escapeHtml(r.status || '')}</td>
+      <td>${escapeHtml(r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '')}</td>
+    </tr>
+  `).join('');
+}
+
+function searchResidentialRequests() {
+  const q = (document.getElementById('rqSearch')?.value || '').trim().toLowerCase();
+  if (!q) return renderResidentialRequestsTable(allResidentialRequests);
+  const filtered = allResidentialRequests.filter(r =>
+    [r.requestNumber, r.customer?.name, r.assignedTechName, r.description]
+      .join(' ')
+      .toLowerCase()
+      .includes(q)
+  );
+  renderResidentialRequestsTable(filtered);
+}
+
+async function saveResidentialRequest() {
+  if (!selectedResidentialCustomer) {
+    alert('Please select a customer first.');
+    return;
+  }
+  const description = (document.getElementById('rqDescription').value || '').trim();
+  if (!description) {
+    alert('Please enter a description of work needed.');
+    return;
+  }
+
+  if (!allTechnicians.length) {
+    await loadTechnicians();
+  }
+
+  if (!allTechnicians.length) {
+    const newTechName = (prompt('No technicians found. Enter technician name to create:') || '').trim();
+    if (!newTechName) return;
+    const createRes = await fetchApi('/api/technicians', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: newTechName }),
+    });
+    if (!createRes.ok) {
+      alert('Could not create technician.');
+      return;
+    }
+    await loadTechnicians();
+  }
+
+  const techList = allTechnicians.map((t, idx) => `${idx + 1}. ${t.name}`).join('\n');
+  const pick = prompt(`Assign request to which technician?\n\n${techList}`);
+  if (!pick) return;
+  const idx = Number(pick) - 1;
+  const selectedTech = Number.isInteger(idx) && allTechnicians[idx] ? allTechnicians[idx] : allTechnicians.find(t => t.name.toLowerCase() === pick.toLowerCase());
+  if (!selectedTech) {
+    alert('Invalid technician selection.');
+    return;
+  }
+
+  const payload = {
+    customer: {
+      id: selectedResidentialCustomer.id,
+      name: selectedResidentialCustomer.name,
+      address: selectedResidentialCustomer.address || '',
+      email: selectedResidentialCustomer.email || '',
+      phone: selectedResidentialCustomer.phone || '',
+      creditTerms: selectedResidentialCustomer.creditTerms || '',
+    },
+    description,
+    assignedTechId: selectedTech.id,
+    assignedTechName: selectedTech.name,
+    status: 'Requested',
+  };
+
+  const res = await fetchApi('/api/service-requests', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    alert(err.error || 'Failed to save residential quote request.');
+    return;
+  }
+
+  document.getElementById('rqDescription').value = '';
+  await loadResidentialRequests();
+  alert('Residential quote request saved and assigned.');
+}
+
+async function initResidentialRequestForm() {
+  await loadCalcCustomers();
+  renderResidentialCustomerOptions();
+  fillResidentialCustomerFields(null);
+  try { await loadTechnicians(); } catch (e) { allTechnicians = []; }
+  await loadResidentialRequests();
+  switchResidentialTab('new');
+}
+
+
 // ===================== STARTUP =====================
 document.addEventListener("DOMContentLoaded", async function () {
   const specialToggle = document.getElementById('specialPricingToggle');
@@ -3907,12 +4170,24 @@ document.addEventListener("DOMContentLoaded", async function () {
   function kympgToggleSidebar(){
     document.getElementById('kympgSidebar')?.classList.toggle('collapsed');
   }
+  function kympgSetGroupSign(el){
+    if (!el) return;
+    const sign = el.querySelector('.kympg-groupSign');
+    if (!sign) return;
+    sign.textContent = el.classList.contains('collapsed') ? '+' : '−';
+  }
+  function kympgToggleGroup(groupId){
+    const el = document.getElementById(groupId);
+    if (!el) return;
+    el.classList.toggle('collapsed');
+    kympgSetGroupSign(el);
+  }
   function kympgClearActiveNav(){
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
   }
   function kympgHideAllSections(){
     const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
-                 'quotedb-section','po-section','breakage-section','pricelist-section'];
+                 'quotedb-section','po-section','resrequests-section','breakage-section','pricelist-section'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -3982,7 +4257,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     const receivedAt = document.getElementById(`po_received_${id}`)?.value || '';
 
     const res = await fetchApi(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
-    const res = await fetch(`/api/purchase-orders?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ deliveryDate, status, receivedAt }),
@@ -4040,6 +4314,13 @@ document.addEventListener("DOMContentLoaded", async function () {
       loadPurchaseOrders();
       return;
     }
+    if (which === 'resrequests') {
+      const r = document.getElementById('resrequests-section');
+      if (r){ r.style.display = 'block'; }
+      kympgSetHeader('Residential Quote Requests', 'Create and assign residential field quote requests.', 'Residential Requests', 'Field quoting workflow');
+      try { if (typeof initResidentialRequestForm === 'function') initResidentialRequestForm(); } catch (e) {}
+      return;
+    }
     if (which === 'breakage'){
       const b = document.getElementById('breakage-section');
       if (b){ b.style.display = 'block'; }
@@ -4074,7 +4355,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','vendor-section','orders-section','quotedb-section','po-section','breakage-section','pricelist-section']
+      ['calculator-section','customer-section','vendor-section','orders-section','quotedb-section','po-section','resrequests-section','breakage-section','pricelist-section']
         .forEach(id => {
           const el = document.getElementById(id);
           if (el && el.parentElement !== content) content.appendChild(el);
@@ -4082,6 +4363,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
         });
     }
     // Keep existing section structure intact; just initialize on landing.
+    ['kympgGroupWillCall','kympgGroupTools','kympgGroupResidential'].forEach(id => kympgSetGroupSign(document.getElementById(id)));
     kympgShowLanding();
   });
 </script>
