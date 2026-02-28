@@ -482,90 +482,51 @@
     #orders-section.active { display: block; }
     #shower-section {
       display: none;
-      max-width: 1100px;
+      max-width: 1240px;
       margin: 0 auto;
     }
     #shower-section.active { display: block; }
-    .shower-layout {
-      display: grid;
-      grid-template-columns: minmax(390px, 470px) 1fr;
-      gap: 0;
-      align-items: start;
-      border: 1px solid #d8dde5;
-      border-radius: 14px;
-      background: #fff;
-      overflow: hidden;
-      box-shadow: 0 12px 28px rgba(10, 20, 36, 0.08);
-    }
-    .shower-card {
-      border-right: 1px solid #d8dde5;
-      background: #f7f8fb;
-      padding: 16px;
-    }
-    .shower-card h3 {
-      margin: 0 0 10px;
-      font-size: 28px;
-      letter-spacing: .2px;
-    }
-    .shower-subtabs {
-      display: flex;
-      gap: 20px;
-      margin-bottom: 12px;
-      border-bottom: 1px solid #d8dde5;
-      padding-bottom: 8px;
-    }
-    .shower-subtabs span {
-      font-weight: 700;
-      color: #75849b;
-    }
-    .shower-subtabs .active {
-      color: #5ca8b7;
-      border-bottom: 3px solid #5ca8b7;
-      padding-bottom: 6px;
-    }
-    .shower-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .shower-grid label { font-size: 11px; font-weight: 700; color: #6c7687; text-transform: uppercase; }
-    .shower-grid input, .shower-grid select {
-      width: 100%;
-      box-sizing: border-box;
-      border: 1px solid #cfd5df;
-      border-radius: 6px;
-      background: #fff;
-      padding: 8px 10px;
-      color: #243248;
-      font-weight: 600;
-    }
-    .shower-grid .full { grid-column: 1 / -1; }
-    .shower-primary-btn {
-      width: 100%;
-      background: #8f969f;
-      color: #fff;
-      font-weight: 700;
-      border: none;
-      border-radius: 8px;
-      padding: 11px;
-      margin-top: 2px;
-      cursor: pointer;
-    }
-    #showerPreview {
-      width: 100%;
-      max-width: 640px;
-      border-left: 1px solid #d8dde5;
-      background: #fff;
-    }
-    .shower-stats {
-      margin-top: 12px;
-      font-size: 12px;
-      line-height: 1.5;
-      color: #344154;
-    }
-    @media (max-width: 900px) {
-      .shower-layout { grid-template-columns: 1fr; }
-    }
+    .shower-layout { display:grid; grid-template-columns: minmax(460px, 560px) 1fr; gap:16px; align-items:start; }
+    .shower-card { border:1px solid #d8dde5; border-radius:14px; background:#f7f8fb; padding:16px; box-shadow:0 12px 28px rgba(10,20,36,0.08); }
+    .shower-card h3 { margin:0 0 12px; font-size:24px; }
+    .shower-screen { display:none; border:1px solid #d8dde5; border-radius:10px; background:#fff; padding:12px; margin-bottom:10px; }
+    .shower-screen.active { display:block; }
+    .shower-screen h4 { margin:0 0 10px; font-size:15px; color:#243248; }
+    .shower-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .shower-grid label { font-size:11px; font-weight:700; color:#6c7687; text-transform:uppercase; }
+    .shower-grid input, .shower-grid select, .shower-grid textarea { width:100%; box-sizing:border-box; border:1px solid #cfd5df; border-radius:6px; background:#fff; padding:8px 10px; color:#243248; font-weight:600; }
+    .shower-grid .full { grid-column:1 / -1; }
+    .layout-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+    .layout-option { border:1px solid #cbd4df; border-radius:8px; background:#fff; padding:8px; cursor:pointer; text-align:left; font-size:12px; font-weight:700; }
+    .layout-option.active { border-color:#2f6fa0; box-shadow:inset 0 0 0 2px rgba(47,111,160,0.16); }
+    .layout-sketch { display:block; width:100%; height:52px; margin-bottom:6px; background:linear-gradient(#f6f7f9,#eceff3); border:1px solid #dde3ea; border-radius:4px; object-fit:contain; object-position:center; }
+    .layout-item-actions { display:flex; gap:6px; margin-top:6px; }
+    .layout-item-actions button { border:none; border-radius:6px; padding:5px 8px; cursor:pointer; font-size:11px; font-weight:700; }
+    .layout-item-edit { background:#ffc107; color:#2c2c2c; }
+    .layout-item-delete { background:#dc3545; color:#fff; }
+    .layout-creator { margin-bottom:10px; border:1px solid #d8dde5; border-radius:8px; padding:10px; background:#fbfcff; }
+    .layout-empty { font-size:12px; color:#6b7483; padding:8px; border:1px dashed #cbd4df; border-radius:8px; }
+    .shower-stepper { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+    .step-chip { background:#dfe6ef; color:#243248; border-radius:999px; padding:5px 10px; font-size:11px; font-weight:700; border:none; cursor:pointer; }
+    .step-chip.active { background:#2f6fa0; color:#fff; }
+    .shower-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .shower-actions button { border:none; border-radius:8px; padding:10px 12px; font-weight:700; cursor:pointer; }
+    .shower-primary-btn { background:#3e7cb1; color:#fff; }
+    .shower-secondary-btn { background:#dfe6ef; color:#243248; }
+    .shower-preview-wrap { position:relative; width:100%; max-width:760px; }
+    #showerPreview { width:100%; max-width:760px; border:1px solid #d8dde5; border-radius:14px; background:#fff; }
+    #sideEditor { position:absolute; display:none; width:172px; background:#fff; border:1px solid #9ba9b8; border-radius:8px; padding:8px; box-shadow:0 8px 24px rgba(0,0,0,0.16); z-index:5; }
+    #sideEditor label { display:block; font-size:11px; font-weight:700; margin-top:6px; color:#3f5168; }
+    #sideEditor input, #sideEditor select { width:100%; box-sizing:border-box; padding:6px 8px; border:1px solid #c6cfda; border-radius:6px; }
+    #sideEditor .mini-actions { display:flex; gap:6px; margin-top:8px; }
+    #sideEditor button { flex:1; border:none; border-radius:6px; padding:6px 8px; font-weight:700; cursor:pointer; }
+    #sideEditorApply { background:#2f6fa0; color:#fff; }
+    #sideEditorClose { background:#dfe6ef; color:#243248; }
+    .shower-stats { margin-top:12px; font-size:12px; line-height:1.5; color:#344154; }
+    #showerUploadList { margin:6px 0 0; padding-left:18px; font-size:12px; }
+    #showerPmQueue { margin-top:12px; border-top:1px solid #d8dde5; padding-top:10px; }
+    .pm-request { border:1px solid #d8dde5; border-radius:8px; padding:8px; margin-bottom:8px; background:#fff; }
+    @media (max-width: 900px) { .shower-layout { grid-template-columns:1fr; } .layout-options{grid-template-columns:repeat(2,minmax(0,1fr));} }
     #orderSearch {
       padding: 6px 10px;
       font-size: 14px;
@@ -654,7 +615,7 @@
       color: #666;
       margin-bottom: 2px;
     }
-  
+
 /* ===== KY MPG Modern Shell (SPA) ===== */
 :root{
   --bg:#f6f7fb;
@@ -1131,6 +1092,10 @@ body.auth-locked .auth-gate{ display:flex; }
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span>
         <span class="kympg-labelWrap"><span class="kympg-label">New Request</span><span class="kympg-hint">Create residential request</span></span>
       </button>
+      <button class="kympg-navBtn" data-tip="New Shower Layout" type="button" onclick="kympgOpen('showerlayout', this)">
+        <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 12h8"/><path d="M12 8v8"/></svg></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">New Shower Layout</span><span class="kympg-hint">Build layout library</span></span>
+      </button>
       <button class="kympg-navBtn" data-tip="Shower Designer" type="button" onclick="kympgOpen('shower', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M6 7v13"/><path d="M18 7v13"/><path d="M6 20h12"/><path d="M9 10h6"/></svg></span>
         <span class="kympg-labelWrap"><span class="kympg-label">Shower Designer</span><span class="kympg-hint">Measure and preview shower doors</span></span>
@@ -1286,7 +1251,7 @@ body.auth-locked .auth-gate{ display:flex; }
 
           <div id="residential-section" style="display:none;">
             <h2 style="margin-top:0;">Residential Request</h2>
-            <div class="customer-info-row">
+                        <div class="customer-info-row">
               <div class="info-field" style="min-width: 200px;">
                 <label for="resCustomerName">Customer Name</label>
                 <div class="customer-lookup-container">
@@ -1320,7 +1285,53 @@ body.auth-locked .auth-gate{ display:flex; }
             </table>
           </div>
 
-          <div id="servicetechs-section" style="display:none;">
+
+
+          <div id="showerlayout-section" style="display:none;">
+            <h2 style="margin-top:0;">New Shower Layout</h2>
+            <p style="margin:0 0 10px; font-size:12px; color:#5e6a7c;">Create layouts here. Saved entries appear as layout options in Shower Designer.</p>
+<div style="margin:10px 0 16px;">
+<div class="shower-card" id="showerLayoutLibrary" style="margin-bottom:14px;">
+                    <h3>Shower Layout Library</h3>
+                    <p style="margin:0 0 10px; font-size:12px; color:#5e6a7c;">Create layout options separately from measuring. Upload a layout picture, define notes, and assign what must be measured/hardware specifics.</p>
+                    <div class="layout-creator">
+                                                  <div class="shower-grid">
+                                                            <div><label for="newLayoutName">Layout Name</label><input id="newLayoutName" type="text" placeholder="e.g. Door & Panel"></div>
+                                                            <div><label for="newLayoutImage">Layout Picture</label><input id="newLayoutImage" type="file" accept="image/*"></div>
+                                                            <div><label for="newLayoutKind">Rendering Type</label>
+                                                                      <select id="newLayoutKind">
+                                                                                <option value="swing">Swing Door</option>
+                                                                                <option value="door_panel">Door & Panel</option>
+                                                                                <option value="door_half">Door & Half Panel</option>
+                                                                                <option value="door_notched">Door & Notched Panel</option>
+                                                                                <option value="panel_door_panel">Panel, Door & Panel</option>
+                                                                                <option value="panel_door_half">Panel, Door & Half Panel</option>
+                                                                                <option value="panel_door_notched">Panel, Door & Notched Panel</option>
+                                                                                <option value="return_door">Return Panel & Door</option>
+                                                                                <option value="half_return_door">Half Return Panel & Door</option>
+                                                                                <option value="notched_return_door">Notched Return Panel & Door</option>
+                                                                                <option value="door_panel_return">Door, Panel & Return</option>
+                                                                                <option value="door_notched_half_return">Door, Notched Panel, & Half Return</option>
+                                                                                <option value="neo">Neo Angle Door</option>
+                                                                                <option value="bypass">Bypass Door</option>
+                                                                                <option value="barn">Barn Style Door</option>
+                                                                      </select>
+                                                            </div>
+                                                            <div class="full"><label for="newLayoutOptionsNote">Options / Notes</label><input id="newLayoutOptionsNote" type="text" placeholder="hinge to wall, clips, etc."></div>
+                                                            <div class="full"><label for="newLayoutMeasureNote">Measurement Notes</label><input id="newLayoutMeasureNote" type="text" placeholder="A=left, B=bottom, C=right, D=top segment"></div>
+                                                            <div class="full"><label>Measured Parts Required</label><div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:#334154;"><label><input type="checkbox" id="measurePartA" checked> A</label><label><input type="checkbox" id="measurePartB" checked> B</label><label><input type="checkbox" id="measurePartC" checked> C</label><label><input type="checkbox" id="measurePartD" checked> D</label></div></div>
+                                                            <div class="full"><label for="newLayoutHardwareSpec">Hardware Specifics</label><input id="newLayoutHardwareSpec" type="text" placeholder="hinge to wall, clips, channel, handle type..."></div>
+                                                  </div>
+                                                  <div class="shower-actions" style="margin-top:8px;">
+                                                            <button type="button" class="shower-primary-btn" id="layoutSaveBtn" onclick="addShowerLayoutOption()">+ Add Layout Option</button>
+                                                                        <button type="button" class="shower-secondary-btn" onclick="resetShowerLayoutForm()">Clear</button>
+                                                  </div>
+                                        </div>
+                                        <div class="layout-options" id="layoutLibraryOptions"></div>
+                              </div>
+
+          </div>
+<div id="servicetechs-section" style="display:none;">
             <h2 style="margin-top:0;">Service Tech Database</h2>
             <div class="customer-info-row">
               <div class="info-field"><label for="techName">Name</label><input type="text" id="techName"></div>
@@ -1644,82 +1655,86 @@ body.auth-locked .auth-gate{ display:flex; }
 </div>
 
 <div id="shower-section">
-  <h2>Shower Designer</h2>
-  <p>Configure panel dimensions and preview a multi-panel enclosure similar to the design layout.</p>
-  <div class="shower-layout">
+  <h2>Shower Quote Request</h2>
+  <p>Follow each step to build a shower request, then save and send to project management for quoting.</p>
+
+    <div class="shower-layout">
     <div class="shower-card">
-      <h3>Design</h3>
-      <div class="shower-subtabs"><span class="active">Details</span><span>Measurement Grid</span></div>
-      <div class="shower-grid">
-        <div>
-          <label for="showerWidth">Top Left (inches)</label>
-          <input id="showerWidth" type="number" min="12" step="0.1" value="47.2">
-        </div>
-        <div>
-          <label for="showerHeight">Top Right (inches)</label>
-          <input id="showerHeight" type="number" min="12" step="0.1" value="31.3">
-        </div>
-        <div>
-          <label for="wallLeft">Left Side Height (inches)</label>
-          <input id="wallLeft" type="number" min="24" step="0.1" value="70.9">
-        </div>
-        <div>
-          <label for="wallRight">Right Side Height (inches)</label>
-          <input id="wallRight" type="number" min="24" step="0.1" value="44.5">
-        </div>
-        <div>
-          <label for="doorWidth">Door Width (inches)</label>
-          <input id="doorWidth" type="number" min="14" step="0.1" value="27.6">
-        </div>
-        <div>
-          <label for="kneeHeight">Knee Return (inches)</label>
-          <input id="kneeHeight" type="number" min="8" step="0.1" value="20.7">
-        </div>
-        <div>
-          <label for="baseLeft">Base Left (inches)</label>
-          <input id="baseLeft" type="number" min="8" step="0.1" value="47.2">
-        </div>
-        <div>
-          <label for="baseCenter">Base Center (inches)</label>
-          <input id="baseCenter" type="number" min="8" step="0.1" value="19.7">
-        </div>
-        <div>
-          <label for="baseRight">Base Right (inches)</label>
-          <input id="baseRight" type="number" min="8" step="0.1" value="17.5">
-        </div>
-        <div>
-          <label for="glassTypeSelect">Glass Thickness</label>
-          <select id="glassTypeSelect">
-            <option value='3/8" clear'>3/8" Clear</option>
-            <option value='1/2" clear'>1/2" Clear</option>
-          </select>
-        </div>
-        <div>
-          <label for="doorSwing">Door Swing</label>
-          <select id="doorSwing">
-            <option value="left">Left Hinge</option>
-            <option value="right">Right Hinge</option>
-          </select>
-        </div>
-        <div class="full">
-          <label for="layoutType">Layout</label>
-          <select id="layoutType">
-            <option value="raked">Raked Corner with Knee Return</option>
-            <option value="inline">Inline (Door + Fixed)</option>
-            <option value="neo">Neo-angle style</option>
-          </select>
+      <h3>Shower Measuring Wizard</h3>
+      <p style="margin:0 0 10px;font-size:12px;color:#5e6a7c;">Choose from saved layouts created in Service Request layout library.</p>
+      <div class="shower-stepper" id="showerStepper"></div>
+
+      <div class="shower-screen" data-step="1">
+        <h4>Step 1 — Pick a saved layout from library</h4>
+        <div class="layout-options" id="layoutOptions"></div>
+      </div>
+
+      <div class="shower-screen" data-step="2">
+        <h4>Step 2 — Pick door side</h4>
+        <div class="shower-grid">
+          <div class="full"><label for="doorSwing">Door Side</label><select id="doorSwing"><option value="right">Door on Right</option><option value="left">Door on Left</option></select></div>
         </div>
       </div>
-      <div class="buttons" style="margin-top:12px;">
-        <button type="button" class="shower-primary-btn" onclick="renderShowerDesign()">Reapply</button>
-        <button type="button" onclick="downloadShowerPreview()">Download PNG</button>
+
+      <div class="shower-screen" data-step="4">
+        <h4>Step 4 — Click a glass side to enter size, outage fraction, and in/out</h4>
+        <p style="margin:0;font-size:12px;color:#5c6b80;">Click side A, B, C, or D on the drawing. A small box appears next to that side for size + outage details.</p>
       </div>
+
+      <div class="shower-screen" data-step="5">
+        <h4>Step 5 — Glass + hardware options</h4>
+        <div class="shower-grid">
+          <div><label for="glassColor">Glass Color</label><select id="glassColor"><option>Clear</option><option>Low-Iron</option><option>Bronze</option><option>Grey</option></select></div>
+          <div><label for="hardwareFinish">Hardware Finish</label><select id="hardwareFinish"><option>Chrome</option><option>Brushed Nickel</option><option>Matte Black</option><option>Brass</option></select></div>
+          <div><label for="hingeType">Hinge Type</label><select id="hingeType"><option>Square</option><option>Beveled</option></select></div>
+          <div><label for="hingeMount">Hinge Mount</label><select id="hingeMount"><option value="wall">Hinge to Wall</option><option value="glass">Hinge to Glass</option></select></div>
+          <div><label for="panelMount">Panel Mount</label><select id="panelMount"><option value="clips">Clips</option><option value="channel">Channel</option></select></div>
+          <div><label for="clipPositions">Clip Positions</label><select id="clipPositions"><option value="corners">Corners</option><option value="top-bottom">Top/Bottom</option><option value="centered">Centered Pair</option></select></div>
+          <div><label for="handleType">Handle Option</label><select id="handleType"><option>None</option><option>Ladder Pull</option><option>Knob</option><option>Towel Bar</option></select></div>
+          <div class="full"><label for="glassCoating">Glass Coating</label><select id="glassCoating"><option>None</option><option>Clear Shield</option><option>Enduro Shield</option></select></div>
+        </div>
+      </div>
+
+      <div class="shower-screen" data-step="6">
+        <h4>Step 6 — Attach pictures</h4>
+        <div class="shower-grid"><div class="full"><label for="showerPhotos">Attach pictures</label><input id="showerPhotos" type="file" multiple accept="image/*"><ul id="showerUploadList"></ul></div></div>
+      </div>
+
+      <div class="shower-screen" data-step="7">
+        <h4>Step 7 — Save request + notify project manager</h4>
+        <div class="shower-actions">
+          <button type="button" class="shower-secondary-btn" onclick="downloadShowerPreview()">Download Rendering PNG</button>
+          <button type="button" class="shower-primary-btn" onclick="saveShowerQuoteRequest()">Save + Notify PM</button>
+        </div>
+      </div>
+
+      <div class="shower-actions">
+        <button type="button" class="shower-secondary-btn" onclick="showerPrevStep()">Back</button>
+        <button type="button" class="shower-primary-btn" onclick="showerNextStep()">Next</button>
+      </div>
+
       <div id="showerStats" class="shower-stats"></div>
+      <div id="showerPmQueue" class="shower-stats"></div>
     </div>
-    <div>
-      <canvas id="showerPreview" width="640" height="420" aria-label="Shower door preview"></canvas>
+
+    <div class="shower-preview-wrap">
+      <canvas id="showerPreview" width="820" height="560" aria-label="Shower door preview"></canvas>
+      <div id="sideEditor">
+        <div style="font-weight:700;color:#243248;" id="sideEditorTitle">Side</div>
+        <label for="sideSizeInput">Size</label>
+        <input id="sideSizeInput" type="number" min="1" step="0.1" />
+        <label for="sideOutageFrac">Outage (fraction)</label>
+        <input id="sideOutageFrac" type="text" placeholder="e.g. 1/4" />
+        <label for="sideOutageDir">Outage direction</label>
+        <select id="sideOutageDir"><option value="none">?/ (none)</option><option value="in">In</option><option value="out">Out</option></select>
+        <div class="mini-actions">
+          <button id="sideEditorApply" type="button">Apply</button>
+          <button id="sideEditorClose" type="button">Close</button>
+        </div>
+      </div>
     </div>
   </div>
+</div>
 </div>
 <script>
   // Sidebar + shell navigation (load this early so inline onclick works)
@@ -1733,7 +1748,7 @@ body.auth-locked .auth-gate{ display:flex; }
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','showerlayout-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1741,7 +1756,7 @@ body.auth-locked .auth-gate{ display:flex; }
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['landing-section','calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','showerlayout-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
@@ -1758,6 +1773,7 @@ body.auth-locked .auth-gate{ display:flex; }
       po: 'po-section',
       residential: 'residential-section',
       residentialdb: 'residentialdb-section',
+      showerlayout: 'showerlayout-section',
       servicetechs: 'servicetechs-section',
     };
 
@@ -1770,6 +1786,12 @@ body.auth-locked .auth-gate{ display:flex; }
         kympgSetHeader('Shower Designer', 'Measure a shower opening and preview door layout.', 'Shower Designer', 'Measurement and rendering');
       }
       if (typeof renderShowerDesign === 'function') renderShowerDesign();
+    }
+    if (which === 'showerlayout') {
+      if (typeof kympgSetHeader === 'function') {
+        kympgSetHeader('New Shower Layout', 'Create and manage shower layout library entries.', 'Residential', 'Shower Layout Library');
+      }
+      if (typeof renderLayoutLibraryOptions === 'function') renderLayoutLibraryOptions();
     }
   }
 
@@ -2027,7 +2049,7 @@ function printBreakdown() {
 
   breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
   breakdownWindow.document.write('</head><body>');
-  
+
   if (orderNumber && orderNumber !== 'Will be assigned on save') {
     breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${orderNumber}</h3>`);
   }
@@ -2555,138 +2577,791 @@ function switchTab(tab) {
 }
 
 
-function renderShowerDesign() {
-  const topLeft = Math.max(12, parseFloat(document.getElementById('showerWidth')?.value) || 47.2);
-  const topRight = Math.max(12, parseFloat(document.getElementById('showerHeight')?.value) || 31.3);
-  const leftHeight = Math.max(24, parseFloat(document.getElementById('wallLeft')?.value) || 70.9);
-  const rightHeight = Math.max(24, parseFloat(document.getElementById('wallRight')?.value) || 44.5);
-  const doorWidth = Math.max(14, parseFloat(document.getElementById('doorWidth')?.value) || 27.6);
-  const kneeHeight = Math.max(8, parseFloat(document.getElementById('kneeHeight')?.value) || 20.7);
-  const baseLeft = Math.max(8, parseFloat(document.getElementById('baseLeft')?.value) || 47.2);
-  const baseCenter = Math.max(8, parseFloat(document.getElementById('baseCenter')?.value) || 19.7);
-  const baseRight = Math.max(8, parseFloat(document.getElementById('baseRight')?.value) || 17.5);
-  const layout = document.getElementById('layoutType')?.value || 'raked';
-  const swing = document.getElementById('doorSwing')?.value || 'left';
-  const glass = document.getElementById('glassTypeSelect')?.value || '3/8" clear';
+let showerStep = 1;
+const SHOWER_STEPS = [1,2,4,5,6,7];
+const SHOWER_LAYOUTS_KEY = 'kympg_shower_layout_options';
+const SHOWER_LAYOUT_KINDS = {
+  swing: 'Swing Door',
+  door_panel: 'Door & Panel',
+  door_half: 'Door & Half Panel',
+  door_notched: 'Door & Notched Panel',
+  panel_door_panel: 'Panel, Door & Panel',
+  panel_door_half: 'Panel, Door & Half Panel',
+  panel_door_notched: 'Panel, Door & Notched Panel',
+  return_door: 'Return Panel & Door',
+  half_return_door: 'Half Return Panel & Door',
+  notched_return_door: 'Notched Return Panel & Door',
+  door_panel_return: 'Door, Panel & Return',
+  door_notched_half_return: 'Door, Notched Panel, & Half Return',
+  neo: 'Neo Angle Door',
+  bypass: 'Bypass Door',
+  barn: 'Barn Style Door'
+};
+let showerLayouts = [];
+let selectedLayoutId = null;
+let activeSideKey = null;
+let sideMeasures = {
+  A: { size: 32, outageFraction: '', outageDir: 'none' },
+  B: { size: 76, outageFraction: '', outageDir: 'none' },
+  C: { size: 58, outageFraction: '', outageDir: 'none' },
+  D: { size: 26, outageFraction: '', outageDir: 'none' }
+};
+let lastSideLines = [];
+let lastSideLabels = {};
 
+function getDefaultShowerLayout() {
+  return {
+    id: `layout-${Date.now()}`,
+    name: 'Door & Panel',
+    kind: 'door_panel',
+    optionsNote: '',
+    measureNote: 'A=left, B=bottom, C=right, D=top segment'
+  };
+}
+
+function loadShowerLayouts() {
+  try {
+    const rows = JSON.parse(localStorage.getItem(SHOWER_LAYOUTS_KEY) || '[]');
+    showerLayouts = Array.isArray(rows) ? rows : [];
+  } catch (e) {
+    showerLayouts = [];
+  }
+  if (!selectedLayoutId || !showerLayouts.find((x) => x.id === selectedLayoutId)) {
+    selectedLayoutId = showerLayouts[0]?.id || null;
+  }
+}
+
+function saveShowerLayouts() {
+  localStorage.setItem(SHOWER_LAYOUTS_KEY, JSON.stringify(showerLayouts));
+}
+
+function currentLayout() {
+  return showerLayouts.find((x) => x.id === selectedLayoutId) || showerLayouts[0] || { id: 'none', name: 'No Layout Selected', kind: 'door_panel', optionsNote: '', measureNote: '', measuredParts:['A','B','C','D'], hardwareSpec:'', imageData:'' };
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve) => {
+    if (!file) return resolve('');
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+}
+
+function parseFractionToNumber(txt) {
+  const v = (txt || '').trim();
+  if (!v) return 0;
+  if (v.includes('/')) {
+    const [a,b] = v.split('/').map(Number);
+    if (!Number.isFinite(a) || !Number.isFinite(b) || b === 0) return 0;
+    return a / b;
+  }
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function layoutFlags(kind) {
+  return {
+    hasReturn: ['return_door','half_return_door','notched_return_door','door_panel_return','door_notched_half_return'].includes(kind),
+    hasHalf: ['door_half','panel_door_half','half_return_door','door_notched_half_return'].includes(kind),
+    hasNotch: ['door_notched','panel_door_notched','notched_return_door','door_notched_half_return'].includes(kind),
+    isNeo: kind === 'neo',
+    isBypass: kind === 'bypass',
+    isBarn: kind === 'barn',
+    isSingle: kind === 'swing',
+    hasExtraPanel: ['panel_door_panel','panel_door_half','panel_door_notched'].includes(kind)
+  };
+}
+
+function drawMiniLayoutSketch(canvas, layout) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const w = canvas.width = 120;
+  const h = canvas.height = 52;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = '#f4f7fa';
+  ctx.fillRect(0,0,w,h);
+
+  const lx = 10, ty = 6, rw = 96, rh = 40;
+  ctx.fillStyle = 'rgba(175,208,219,0.58)';
+  ctx.strokeStyle = '#596b73';
+  ctx.lineWidth = 1.2;
+
+  const f = layoutFlags(layout.kind || 'door_panel');
+
+  if (f.isNeo) {
+    ctx.beginPath();
+    ctx.moveTo(lx+18, ty+4); ctx.lineTo(lx+rw-18, ty+4); ctx.lineTo(lx+rw, ty+18);
+    ctx.lineTo(lx+rw-8, ty+rh); ctx.lineTo(lx+8, ty+rh); ctx.lineTo(lx, ty+18); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(lx, ty);
+    if (f.hasNotch) {
+      ctx.lineTo(lx+rw, ty); ctx.lineTo(lx+rw, ty+rh*0.55); ctx.lineTo(lx+rw*0.55, ty+rh*0.55); ctx.lineTo(lx+rw*0.55, ty+rh); ctx.lineTo(lx, ty+rh);
+    } else if (f.hasHalf) {
+      ctx.lineTo(lx+rw, ty); ctx.lineTo(lx+rw, ty+rh*0.62); ctx.lineTo(lx+rw*0.55, ty+rh*0.62); ctx.lineTo(lx+rw*0.55, ty+rh); ctx.lineTo(lx, ty+rh);
+    } else {
+      ctx.lineTo(lx+rw, ty); ctx.lineTo(lx+rw, ty+rh); ctx.lineTo(lx, ty+rh);
+    }
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+
+  if (f.hasReturn) {
+    ctx.beginPath();
+    ctx.moveTo(lx, ty); ctx.lineTo(lx-16, ty-8); ctx.lineTo(lx-16, ty+rh-7); ctx.lineTo(lx, ty+rh); ctx.closePath();
+    ctx.fillStyle = 'rgba(175,208,219,0.42)';
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(175,208,219,0.58)';
+  }
+
+  if (!f.isSingle && !f.isBypass && !f.isBarn && !f.isNeo) {
+    const sx = lx + rw * 0.5;
+    ctx.beginPath(); ctx.moveTo(sx, ty); ctx.lineTo(sx, ty+rh); ctx.stroke();
+  }
+  if (f.hasExtraPanel) {
+    const sx2 = lx + rw * 0.28;
+    ctx.beginPath(); ctx.moveTo(sx2, ty); ctx.lineTo(sx2, ty+rh); ctx.stroke();
+  }
+
+  if (f.isBarn) {
+    ctx.strokeStyle = '#43545c'; ctx.lineWidth = 2.1;
+    ctx.beginPath(); ctx.moveTo(lx-2, ty+4); ctx.lineTo(lx+rw+2, ty+4); ctx.stroke();
+  } else if (f.isBypass) {
+    ctx.strokeStyle = '#43545c';
+    ctx.beginPath(); ctx.moveTo(lx+rw/2, ty+2); ctx.lineTo(lx+rw/2, ty+rh-2); ctx.stroke();
+  } else {
+    ctx.fillStyle = '#43545c';
+    ctx.fillRect(lx+rw*0.72, ty+rh*0.45, 3, 12);
+  }
+}
+
+let editingLayoutId = null;
+
+function setLayoutSaveButtonMode() {
+  const btn = document.getElementById('layoutSaveBtn');
+  if (!btn) return;
+  btn.textContent = editingLayoutId ? 'Save Layout Changes' : '+ Add Layout Option';
+}
+
+function resetShowerLayoutForm() {
+  editingLayoutId = null;
+  const fields = ['newLayoutName','newLayoutOptionsNote','newLayoutMeasureNote','newLayoutHardwareSpec'];
+  fields.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const kind = document.getElementById('newLayoutKind');
+  if (kind) kind.value = 'door_panel';
+  const fileInput = document.getElementById('newLayoutImage');
+  if (fileInput) fileInput.value = '';
+  ['A','B','C','D'].forEach((part) => {
+    const box = document.getElementById(`measurePart${part}`);
+    if (box) box.checked = true;
+  });
+  setLayoutSaveButtonMode();
+}
+
+function editShowerLayoutOption(layoutId) {
+  const row = showerLayouts.find((x) => x.id === layoutId);
+  if (!row) return;
+  editingLayoutId = row.id;
+  selectedLayoutId = row.id;
+  const name = document.getElementById('newLayoutName');
+  const kind = document.getElementById('newLayoutKind');
+  const options = document.getElementById('newLayoutOptionsNote');
+  const measure = document.getElementById('newLayoutMeasureNote');
+  const hardware = document.getElementById('newLayoutHardwareSpec');
+  if (name) name.value = row.name || '';
+  if (kind) kind.value = row.kind || 'door_panel';
+  if (options) options.value = row.optionsNote || '';
+  if (measure) measure.value = row.measureNote || '';
+  if (hardware) hardware.value = row.hardwareSpec || '';
+  ['A','B','C','D'].forEach((part) => {
+    const box = document.getElementById(`measurePart${part}`);
+    if (box) box.checked = (row.measuredParts || []).includes(part);
+  });
+  const fileInput = document.getElementById('newLayoutImage');
+  if (fileInput) fileInput.value = '';
+  setLayoutSaveButtonMode();
+  renderLayoutLibraryOptions();
+}
+
+function deleteShowerLayoutOption(layoutId) {
+  const row = showerLayouts.find((x) => x.id === layoutId);
+  if (!row) return;
+  const ok = window.confirm(`Delete layout "${row.name}"?`);
+  if (!ok) return;
+  showerLayouts = showerLayouts.filter((x) => x.id !== layoutId);
+  if (selectedLayoutId === layoutId) {
+    selectedLayoutId = showerLayouts[0]?.id || null;
+  }
+  if (editingLayoutId === layoutId) {
+    resetShowerLayoutForm();
+  }
+  saveShowerLayouts();
+  renderLayoutLibraryOptions();
+  renderLayoutOptions();
+  renderShowerDesign();
+}
+
+async function addShowerLayoutOption() {
+  const name = (document.getElementById('newLayoutName')?.value || '').trim();
+  const kind = document.getElementById('newLayoutKind')?.value || 'door_panel';
+  const optionsNote = (document.getElementById('newLayoutOptionsNote')?.value || '').trim();
+  const measureNote = (document.getElementById('newLayoutMeasureNote')?.value || '').trim();
+  const hardwareSpec = (document.getElementById('newLayoutHardwareSpec')?.value || '').trim();
+  const measuredParts = ['A','B','C','D'].filter((k) => document.getElementById(`measurePart${k}`)?.checked);
+  const imageFile = document.getElementById('newLayoutImage')?.files?.[0];
+  const imageData = await readFileAsDataUrl(imageFile);
+
+  const finalName = name || SHOWER_LAYOUT_KINDS[kind] || 'New Layout';
+  if (editingLayoutId) {
+    const idx = showerLayouts.findIndex((x) => x.id === editingLayoutId);
+    if (idx > -1) {
+      const prev = showerLayouts[idx];
+      showerLayouts[idx] = {
+        ...prev,
+        name: finalName,
+        kind,
+        optionsNote,
+        measureNote,
+        measuredParts,
+        hardwareSpec,
+        imageData: imageData || prev.imageData || ''
+      };
+      selectedLayoutId = editingLayoutId;
+    }
+  } else {
+    const row = {
+      id: `layout-${Date.now()}-${Math.floor(Math.random()*1000)}`,
+      name: finalName,
+      kind,
+      optionsNote,
+      measureNote,
+      measuredParts,
+      hardwareSpec,
+      imageData
+    };
+    showerLayouts.push(row);
+    selectedLayoutId = row.id;
+  }
+
+  saveShowerLayouts();
+  renderLayoutLibraryOptions();
+  renderLayoutOptions();
+  renderShowerDesign();
+  resetShowerLayoutForm();
+  showerAdvanceFrom(1);
+}
+
+function renderLayoutLibraryOptions() {
+  const root = document.getElementById('layoutLibraryOptions');
+  if (!root) return;
+  if (!showerLayouts.length) {
+    root.innerHTML = '<div class="layout-empty">No layout options yet. Add one above to continue.</div>';
+    return;
+  }
+  root.innerHTML = showerLayouts.map((row, idx) => `
+    <div class="layout-option ${row.id===selectedLayoutId?'active':''}" data-layout-id="${row.id}">
+      <button type="button" class="layout-option-select" data-layout-id="${row.id}" style="all:unset;display:block;width:100%;cursor:pointer;">
+        ${row.imageData ? `<img src="${row.imageData}" alt="${row.name}" class="layout-sketch" />` : `<canvas class="layout-sketch" id="layoutLibrarySketch${idx}" width="120" height="52" aria-hidden="true"></canvas>`}
+        ${row.name}
+        <div style="font-size:10px;color:#687487;margin-top:3px;">${row.hardwareSpec || row.optionsNote || (SHOWER_LAYOUT_KINDS[row.kind] || row.kind)}</div>
+        <div style="font-size:10px;color:#8a94a5;">Measure: ${(row.measuredParts || []).join(', ') || '—'}</div>
+      </button>
+      <div class="layout-item-actions">
+        <button type="button" class="layout-item-edit" data-action="edit" data-layout-id="${row.id}">Edit</button>
+        <button type="button" class="layout-item-delete" data-action="delete" data-layout-id="${row.id}">Delete</button>
+      </div>
+    </div>
+  `).join('');
+
+  showerLayouts.forEach((row, idx) => {
+    if (row.imageData) return;
+    const cv = document.getElementById(`layoutLibrarySketch${idx}`);
+    if (cv) drawMiniLayoutSketch(cv, row);
+  });
+
+  root.querySelectorAll('[data-action="edit"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const layoutId = btn.getAttribute('data-layout-id') || '';
+      editShowerLayoutOption(layoutId);
+    });
+  });
+
+  root.querySelectorAll('[data-action="delete"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const layoutId = btn.getAttribute('data-layout-id') || '';
+      deleteShowerLayoutOption(layoutId);
+    });
+  });
+
+  root.querySelectorAll('.layout-option-select').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectedLayoutId = btn.getAttribute('data-layout-id') || selectedLayoutId;
+      renderLayoutLibraryOptions();
+      renderLayoutOptions();
+      renderShowerDesign();
+    });
+  });
+}
+
+function renderLayoutOptions() {
+  const root = document.getElementById('layoutOptions');
+  if (!root) return;
+  if (!showerLayouts.length) {
+    root.innerHTML = '<div class="layout-empty">No saved layouts. Add one in Layout Library first.</div>';
+    return;
+  }
+  root.innerHTML = showerLayouts.map((row, idx) => `
+    <button type="button" class="layout-option ${row.id===selectedLayoutId?'active':''}" data-layout-id="${row.id}">
+      ${row.imageData ? `<img src="${row.imageData}" alt="${row.name}" class="layout-sketch" />` : `<canvas class="layout-sketch" id="layoutSketch${idx}" width="120" height="52" aria-hidden="true"></canvas>`}
+      ${row.name}
+      <div style="font-size:10px;color:#687487;margin-top:3px;">Measure: ${(row.measuredParts || []).join(', ') || '—'}</div>
+    </button>
+  `).join('');
+
+  showerLayouts.forEach((row, idx) => {
+    if (row.imageData) return;
+    const cv = document.getElementById(`layoutSketch${idx}`);
+    if (cv) drawMiniLayoutSketch(cv, row);
+  });
+
+  root.querySelectorAll('.layout-option').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectedLayoutId = btn.getAttribute('data-layout-id') || selectedLayoutId;
+      renderLayoutOptions();
+      showerAdvanceFrom(1);
+      renderShowerDesign();
+    });
+  });
+}
+
+function getShowerState() {
+  const doorSide = document.getElementById('doorSwing')?.value || 'right';
+  const hingeType = document.getElementById('hingeType')?.value || 'Square';
+  const hingeMount = document.getElementById('hingeMount')?.value || 'wall';
+  const panelMount = document.getElementById('panelMount')?.value || 'clips';
+  const clipPositions = document.getElementById('clipPositions')?.value || 'corners';
+  const layout = currentLayout();
+  return {
+    layoutId: layout.id,
+    layoutName: layout.name,
+    layoutKind: layout.kind,
+    layoutOptionsNote: layout.optionsNote || '',
+    layoutMeasureNote: layout.measureNote || '',
+    layoutMeasuredParts: layout.measuredParts || ['A','B','C','D'],
+    layoutHardwareSpec: layout.hardwareSpec || '',
+    doorSide, hingeType, hingeMount, panelMount, clipPositions, sides: sideMeasures
+  };
+}
+
+function drawOutageOnSide(ctx, line, side) {
+  const frac = parseFractionToNumber(side.outageFraction);
+  if (!frac || side.outageDir === 'none') return;
+  const mx = (line.x1 + line.x2)/2;
+  const my = (line.y1 + line.y2)/2;
+  const len = Math.min(24, 8 + frac * 32);
+  let vx = 0, vy = 0;
+  if (line.key === 'A' || line.key === 'D' || line.key === 'C') vy = side.outageDir === 'in' ? 1 : -1;
+  if (line.key === 'B') vx = side.outageDir === 'in' ? -1 : 1;
+  ctx.strokeStyle = '#b34141';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(mx - 7, my - 7);
+  ctx.lineTo(mx + vx * len, my + vy * len);
+  ctx.lineTo(mx + 7, my + 7);
+  ctx.stroke();
+  ctx.fillStyle = '#b34141';
+  ctx.font = '600 12px Arial';
+  ctx.fillText(`${line.key} ${side.outageDir.toUpperCase()} ${side.outageFraction || '0'}`, mx + 10, my - 10);
+}
+
+function renderShowerDesign() {
+  const st = getShowerState();
   const canvas = document.getElementById('showerPreview');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#f2f2f2';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.font = '700 32px Arial';
+  ctx.fillText('SHOWER LAYOUT OPTIONS', 210, 42);
 
-  const poly = [
-    { x: 0, y: 0 },
-    { x: topLeft, y: -240 },
-    { x: topLeft + topRight, y: 0 },
-    { x: topLeft + topRight, y: rightHeight },
-    { x: topLeft + topRight - baseRight, y: rightHeight },
-    { x: topLeft + topRight - baseRight, y: rightHeight + kneeHeight },
-    { x: topLeft, y: rightHeight + kneeHeight + 130 },
-    { x: 0, y: leftHeight }
+  const leftX = 170, topY = 110;
+  const scale = 4.9;
+  const A = sideMeasures.A.size * scale;
+  const B = sideMeasures.B.size * scale;
+  const C = sideMeasures.C.size * scale;
+  const D = sideMeasures.D.size * scale;
+  const rightX = leftX + C;
+  const bottomY = topY + B;
+  const splitX = st.doorSide === 'right' ? rightX - A : leftX + A;
+
+  const flags = layoutFlags(st.layoutKind || 'door_panel');
+  const hasReturn = flags.hasReturn;
+  const hasHalf = flags.hasHalf;
+  const hasNotch = flags.hasNotch;
+  const isNeo = flags.isNeo;
+  const isBypass = flags.isBypass;
+  const isBarn = flags.isBarn;
+
+  const glass = () => { ctx.fillStyle = 'rgba(175,208,219,0.55)'; ctx.strokeStyle = '#57b8bb'; ctx.lineWidth = 2; };
+  glass();
+
+  if (isNeo) {
+    ctx.beginPath();
+    ctx.moveTo(leftX+70, topY); ctx.lineTo(rightX-70, topY); ctx.lineTo(rightX, topY+40);
+    ctx.lineTo(rightX-8, bottomY); ctx.lineTo(leftX+8, bottomY); ctx.lineTo(leftX, topY+40);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(leftX, topY);
+    if (hasNotch) {
+      const notchX = splitX + (st.doorSide === 'right' ? -36 : 36);
+      const notchY = topY + B * 0.54;
+      ctx.lineTo(rightX, topY); ctx.lineTo(rightX, notchY); ctx.lineTo(notchX, notchY); ctx.lineTo(notchX, bottomY); ctx.lineTo(leftX, bottomY);
+    } else if (hasHalf) {
+      const halfY = topY + B * 0.62;
+      ctx.lineTo(rightX, topY); ctx.lineTo(rightX, halfY); ctx.lineTo(splitX, halfY); ctx.lineTo(splitX, bottomY); ctx.lineTo(leftX, bottomY);
+    } else {
+      ctx.lineTo(rightX, topY); ctx.lineTo(rightX, bottomY); ctx.lineTo(leftX, bottomY);
+    }
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+
+  if (hasReturn) {
+    ctx.beginPath();
+    ctx.moveTo(leftX, topY); ctx.lineTo(leftX-100, topY-40); ctx.lineTo(leftX-100, bottomY-30); ctx.lineTo(leftX, bottomY); ctx.closePath();
+    ctx.fillStyle = 'rgba(175,208,219,0.45)'; ctx.fill(); ctx.strokeStyle = '#57b8bb'; ctx.stroke();
+  }
+
+  // splits
+  if (!flags.isSingle && !isBypass && !isNeo && !isBarn) {
+    ctx.beginPath(); ctx.moveTo(splitX, topY); ctx.lineTo(splitX, bottomY); ctx.strokeStyle='#57b8bb'; ctx.stroke();
+  }
+  if (flags.hasExtraPanel) {
+    const extraX = st.doorSide === 'right' ? leftX + D : rightX - D;
+    ctx.beginPath(); ctx.moveTo(extraX, topY); ctx.lineTo(extraX, bottomY); ctx.strokeStyle='#57b8bb'; ctx.stroke();
+  }
+
+  // hardware
+  if (isBarn) {
+    ctx.strokeStyle='#3a4a51'; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(leftX-4, topY+8); ctx.lineTo(rightX+4, topY+8); ctx.stroke();
+    [leftX+40, splitX, rightX-40].forEach(x=>{ctx.fillStyle='#3a4a51';ctx.fillRect(x-4, topY+4, 8, 8);});
+  } else if (isBypass) {
+    ctx.beginPath(); ctx.moveTo(splitX, topY+6); ctx.lineTo(splitX, bottomY-6); ctx.strokeStyle='#3a4a51'; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle='#3a4a51'; ctx.fillRect(leftX + C*0.22, topY + B*0.5, 34, 4); ctx.fillRect(leftX + C*0.62, topY + B*0.5, 34, 4);
+  } else {
+    const hx = st.doorSide==='right' ? rightX-22 : leftX+22;
+    ctx.fillStyle='#3a4a51'; ctx.fillRect(hx-3, topY + B*0.45, 6, 42);
+    const hingeX = st.hingeMount==='wall' ? (st.doorSide==='right' ? rightX : leftX) : splitX;
+    ctx.fillStyle='#3a4a51'; ctx.fillRect(hingeX-7, topY+18, 14, 14); ctx.fillRect(hingeX-7, bottomY-32, 14, 14);
+  }
+
+  // panel mount
+  if (st.panelMount === 'channel') {
+    const px = st.doorSide==='right' ? leftX : rightX;
+    ctx.strokeStyle='#3a4a51'; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(px, topY+8); ctx.lineTo(px, bottomY-8); ctx.stroke();
+  } else {
+    const px = st.doorSide==='right' ? leftX+8 : rightX-8;
+    let ys=[topY+16,bottomY-16,(topY+bottomY)/2];
+    if (st.clipPositions==='top-bottom') ys=[topY+16,bottomY-16];
+    if (st.clipPositions==='centered') ys=[(topY+bottomY)/2-20,(topY+bottomY)/2+20];
+    ys.forEach(y=>{ctx.fillStyle='#3a4a51';ctx.fillRect(px-6,y-6,12,12);});
+  }
+
+  // side lines for click + labels next to sides
+  const sideLines = [
+    { key:'A', x1:leftX-22, y1:topY, x2:leftX-22, y2:bottomY },
+    { key:'B', x1:leftX, y1:bottomY+22, x2:rightX, y2:bottomY+22 },
+    { key:'C', x1:rightX+22, y1:topY, x2:rightX+22, y2:bottomY },
+    { key:'D', x1:leftX, y1:topY-22, x2:splitX, y2:topY-22 }
   ];
+  lastSideLines = sideLines;
 
-  const xs = poly.map(p => p.x);
-  const ys = poly.map(p => p.y);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys);
-  const maxY = Math.max(...ys);
+  ctx.strokeStyle='#222'; ctx.lineWidth=1.3;
+  sideLines.forEach((l)=>{ctx.beginPath();ctx.moveTo(l.x1,l.y1);ctx.lineTo(l.x2,l.y2);ctx.stroke();});
+  ctx.fillStyle='#222'; ctx.font='700 30px Arial';
+  ctx.fillText('A', leftX - 46, (topY+bottomY)/2 + 10);
+  ctx.fillText('B', (leftX+rightX)/2 - 10, bottomY + 52);
+  ctx.fillText('C', rightX + 30, (topY+bottomY)/2 + 10);
+  ctx.fillText('D', (leftX+splitX)/2 - 10, topY - 30);
 
-  const margin = 72;
-  const scale = Math.min((canvas.width - margin * 2) / (maxX - minX), (canvas.height - margin * 2) / (maxY - minY));
-  const shiftX = margin - minX * scale;
-  const shiftY = margin - minY * scale;
-  const pt = (p) => ({ x: p.x * scale + shiftX, y: p.y * scale + shiftY });
-
-  const points = poly.map(pt);
-  const glassFill = 'rgba(211, 234, 205, 0.82)';
-  ctx.beginPath();
-  points.forEach((p, idx) => idx ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-  ctx.closePath();
-  ctx.fillStyle = glassFill;
-  ctx.fill();
-  ctx.strokeStyle = '#9db59c';
-  ctx.lineWidth = 3;
-  ctx.stroke();
-
-  const xDoor1 = (topLeft - doorWidth) * scale + shiftX;
-  const xDoor2 = topLeft * scale + shiftX;
-  const yTop = points[0].y + 15;
-  const yBottom = points[6].y - 20;
-
-  ctx.strokeStyle = 'rgba(80,110,82,0.5)';
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.moveTo(xDoor1, yTop);
-  ctx.lineTo(xDoor1, yBottom);
-  ctx.moveTo(xDoor2, yTop);
-  ctx.lineTo(xDoor2, yBottom);
-  ctx.stroke();
-
-  const handleX = swing === 'left' ? xDoor2 - 18 : xDoor1 + 18;
-  const handleY = (yTop + yBottom) / 2;
-  ctx.strokeStyle = '#c2b8aa';
-  ctx.lineWidth = 6;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(handleX, handleY - 16);
-  ctx.lineTo(handleX, handleY + 16);
-  ctx.stroke();
-  ctx.lineCap = 'butt';
-
-  const text = (label, x, y, color='#111', size=30) => {
-    ctx.fillStyle = color;
-    ctx.font = `600 ${size}px Arial`;
-    ctx.fillText(String(label), x, y);
+  lastSideLabels = {
+    A: { x: leftX - 38, y: (topY+bottomY)/2 },
+    B: { x: (leftX+rightX)/2, y: bottomY + 44 },
+    C: { x: rightX + 36, y: (topY+bottomY)/2 },
+    D: { x: (leftX+splitX)/2, y: topY - 36 }
   };
 
-  text(topLeft, (points[0].x + points[1].x)/2 - 25, points[0].y - 26, '#e56b6f');
-  text(topRight, (points[1].x + points[2].x)/2 - 20, points[1].y - 10, '#51a351');
-  text(leftHeight, points[7].x - 48, (points[7].y + points[0].y)/2, '#4c63db');
-  text(rightHeight, points[3].x + 16, (points[3].y + points[4].y)/2, '#8d4952');
-  text(kneeHeight, points[4].x + 16, (points[4].y + points[5].y)/2, '#b565d9');
-  text(baseLeft, (points[7].x + points[6].x)/2 - 15, points[7].y + 36, '#44aa4b');
-  text(baseCenter, (points[6].x + points[5].x)/2 - 8, points[6].y + 36, '#ee8f33');
-  text(baseRight, (points[5].x + points[4].x)/2 + 12, points[5].y + 24, '#2f8c9a');
-  text(doorWidth, (xDoor1 + xDoor2)/2 - 16, points[6].y - 12, '#555', 34);
+  // outage alters glass shape (cut-in for IN, bump-out for OUT)
+  const applyTopOutage = (x1, x2, side) => {
+    const frac = parseFractionToNumber(side.outageFraction);
+    if (!frac || side.outageDir === 'none') return;
+    const w = Math.max(24, (x2-x1) * 0.18);
+    const h = Math.min(28, 8 + frac * 36);
+    const mx = (x1+x2)/2;
+    if (side.outageDir === 'in') {
+      ctx.fillStyle = '#f2f2f2';
+      ctx.fillRect(mx - w/2, topY, w, h);
+      ctx.strokeStyle = '#57b8bb'; ctx.strokeRect(mx - w/2, topY, w, h);
+    } else {
+      ctx.fillStyle = 'rgba(175,208,219,0.55)';
+      ctx.strokeStyle = '#57b8bb';
+      ctx.fillRect(mx - w/2, topY - h, w, h);
+      ctx.strokeRect(mx - w/2, topY - h, w, h);
+    }
+  };
+  const applyVerticalOutage = (x, side, onRight=true) => {
+    const frac = parseFractionToNumber(side.outageFraction);
+    if (!frac || side.outageDir === 'none') return;
+    const h = Math.max(28, (bottomY-topY) * 0.18);
+    const w = Math.min(24, 8 + frac * 34);
+    const my = (topY+bottomY)/2;
+    const dir = side.outageDir === 'in' ? -1 : 1;
+    const sign = onRight ? 1 : -1;
+    const shift = sign * dir * w;
+    if ((onRight && side.outageDir==='in') || (!onRight && side.outageDir==='in')) {
+      ctx.fillStyle = '#f2f2f2';
+      const sx = onRight ? x - w : x;
+      ctx.fillRect(sx, my-h/2, w, h);
+      ctx.strokeStyle = '#57b8bb'; ctx.strokeRect(sx, my-h/2, w, h);
+    } else {
+      ctx.fillStyle = 'rgba(175,208,219,0.55)';
+      ctx.strokeStyle = '#57b8bb';
+      const sx = onRight ? x : x - w;
+      ctx.fillRect(sx + shift, my-h/2, w, h);
+      ctx.strokeRect(sx + shift, my-h/2, w, h);
+    }
+  };
+
+  applyVerticalOutage(leftX, sideMeasures.A, false);
+  applyTopOutage(leftX, splitX, sideMeasures.D);
+  applyVerticalOutage(rightX, sideMeasures.C, true);
+  applyTopOutage(leftX, rightX, sideMeasures.B);
+
+  // annotate outages
+  sideLines.forEach(line => drawOutageOnSide(ctx, line, sideMeasures[line.key] || {outageFraction:'',outageDir:'none'}));
 
   const stats = document.getElementById('showerStats');
   if (stats) {
-    const perimeter = topLeft + topRight + rightHeight + kneeHeight + baseCenter + baseLeft + leftHeight;
-    stats.innerHTML = `
-      <strong>Configured Layout</strong><br>
-      Style: ${layout.toUpperCase()} &nbsp;•&nbsp; Glass: ${glass}<br>
-      Door: ${doorWidth.toFixed(1)} in (${swing.toUpperCase()} hinge)<br>
-      Approximate perimeter reference: ${perimeter.toFixed(1)} in
-    `;
+    stats.innerHTML = `<strong>Request Summary</strong><br>Layout: ${st.layoutName} • Door Side: ${st.doorSide.toUpperCase()}<br>A/B/C/D: ${st.sides.A.size.toFixed(1)} / ${st.sides.B.size.toFixed(1)} / ${st.sides.C.size.toFixed(1)} / ${st.sides.D.size.toFixed(1)}<br>Hinge: ${st.hingeType} (${st.hingeMount}) • Panel Mount: ${st.panelMount}${st.panelMount==='clips' ? ` (${st.clipPositions})` : ''}<br>Layout Notes: ${st.layoutOptionsNote || '—'} • Measurement Notes: ${st.layoutMeasureNote || '—'}<br>Layout Hardware Specifics: ${st.layoutHardwareSpec || '—'}`;
   }
+
+  renderShowerPmQueue();
+}
+
+function distToSegment(px, py, x1, y1, x2, y2) {
+  const dx=x2-x1, dy=y2-y1;
+  if (!dx && !dy) return Math.hypot(px-x1, py-y1);
+  const t=Math.max(0, Math.min(1, ((px-x1)*dx + (py-y1)*dy)/(dx*dx+dy*dy)));
+  const qx=x1+t*dx, qy=y1+t*dy;
+  return Math.hypot(px-qx, py-qy);
+}
+
+function openSideEditor(key, x, y) {
+  activeSideKey = key;
+  const editor = document.getElementById('sideEditor');
+  if (!editor) return;
+  const side = sideMeasures[key] || {size:0,outageFraction:'',outageDir:'none'};
+  document.getElementById('sideEditorTitle').textContent = `Side ${key}`;
+  const sizeInput = document.getElementById('sideSizeInput');
+  const fracInput = document.getElementById('sideOutageFrac');
+  const dirInput = document.getElementById('sideOutageDir');
+  if (sizeInput) sizeInput.value = String(side.size);
+  if (fracInput) fracInput.value = side.outageFraction || '';
+  if (dirInput) dirInput.value = side.outageDir || 'none';
+  editor.style.left = `${x + 14}px`;
+  editor.style.top = `${y + 8}px`;
+  editor.style.display = 'block';
+}
+
+function closeSideEditor() {
+  const editor = document.getElementById('sideEditor');
+  if (editor) editor.style.display = 'none';
+  activeSideKey = null;
+}
+
+function applySideEditor() {
+  if (!activeSideKey) return;
+  const size = Math.max(1, parseFloat(document.getElementById('sideSizeInput')?.value) || 1);
+  const outageFraction = (document.getElementById('sideOutageFrac')?.value || '').trim();
+  const outageDir = document.getElementById('sideOutageDir')?.value || 'none';
+  sideMeasures[activeSideKey] = { size, outageFraction, outageDir };
+  closeSideEditor();
+  renderShowerDesign();
+}
+
+function showerGoToStep(step) {
+  if (!SHOWER_STEPS.includes(step)) step = SHOWER_STEPS[0];
+  showerStep = step;
+  document.querySelectorAll('.shower-screen').forEach((el) => {
+    const s = Number(el.getAttribute('data-step') || '0');
+    el.classList.toggle('active', s === showerStep);
+  });
+  const holder = document.getElementById('showerStepper');
+  if (holder) {
+    holder.innerHTML = SHOWER_STEPS.map((s, idx) => `<button type="button" class="step-chip ${s===showerStep?'active':''}" onclick="showerGoToStep(${s})">Step ${s}</button>`).join('');
+  }
+}
+function showerNextStep() {
+  const idx = SHOWER_STEPS.indexOf(showerStep);
+  showerGoToStep(SHOWER_STEPS[Math.min(SHOWER_STEPS.length-1, idx+1)]);
+}
+function showerPrevStep() {
+  const idx = SHOWER_STEPS.indexOf(showerStep);
+  showerGoToStep(SHOWER_STEPS[Math.max(0, idx-1)]);
+}
+
+function showerAdvanceFrom(step) {
+  const idx = SHOWER_STEPS.indexOf(step);
+  if (idx < 0) return;
+  const next = SHOWER_STEPS[Math.min(SHOWER_STEPS.length - 1, idx + 1)];
+  if (next !== step) showerGoToStep(next);
+}
+
+function getShowerPhotoNames() {
+  const input = document.getElementById('showerPhotos');
+  if (!input || !input.files) return [];
+  return Array.from(input.files).map((f) => f.name);
+}
+
+function saveShowerQuoteRequest() {
+  const st = getShowerState();
+  const payload = {
+    id: `SQR-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    layout: st.layoutName,
+    doorSide: st.doorSide,
+    layoutKind: st.layoutKind,
+    layoutNotes: st.layoutOptionsNote,
+    measurementNotes: st.layoutMeasureNote,
+    measuredParts: st.layoutMeasuredParts,
+    layoutHardwareSpec: st.layoutHardwareSpec,
+    measurements: st.sides,
+    options: {
+      glass: document.getElementById('glassColor')?.value || 'Clear',
+      finish: document.getElementById('hardwareFinish')?.value || 'Chrome',
+      hinge: st.hingeType,
+      hingeMount: st.hingeMount,
+      panelMount: st.panelMount,
+      clipPositions: st.clipPositions,
+      handle: document.getElementById('handleType')?.value || 'None',
+      coating: document.getElementById('glassCoating')?.value || 'None'
+    },
+    photos: getShowerPhotoNames(),
+    status: 'Ready for PM Quote', quoteAmount: null
+  };
+  const key='kympg_shower_quote_requests';
+  const current=JSON.parse(localStorage.getItem(key)||'[]');
+  current.unshift(payload);
+  localStorage.setItem(key, JSON.stringify(current));
+  const body=encodeURIComponent(`A shower quote request ${payload.id} is ready for pricing.`);
+  window.open(`mailto:pm@kympg.com?subject=Shower Quote Request ${payload.id}&body=${body}`, '_blank');
+  alert(`Request ${payload.id} saved and PM notification prepared.`);
+  renderShowerPmQueue();
+}
+
+function renderShowerPmQueue() {
+  const root=document.getElementById('showerPmQueue');
+  if (!root) return;
+  const rows=JSON.parse(localStorage.getItem('kympg_shower_quote_requests')||'[]');
+  if (!rows.length) { root.innerHTML='<strong>PM Queue</strong><br>No shower quote requests yet.'; return; }
+  const canPrice=Array.isArray(authRoles) && authRoles.includes('admin');
+  root.innerHTML=`<strong>PM Queue</strong><br>${canPrice ? 'Admin can price + email professional quote.' : 'Sign in as admin/project manager to price + email quote.'}`;
+  rows.slice(0,8).forEach((row)=>{
+    const m=row.measurements||{};
+    const div=document.createElement('div'); div.className='pm-request';
+    div.innerHTML=`<div><strong>${row.id}</strong> — ${new Date(row.createdAt).toLocaleString()}</div><div>${row.layout || ''} • Door ${String(row.doorSide||'').toUpperCase()} • A/B/C/D ${m.A?.size||''}/${m.B?.size||''}/${m.C?.size||''}/${m.D?.size||''}</div><div>Status: ${row.status}${row.quoteAmount ? ` • Price $${Number(row.quoteAmount).toFixed(2)}` : ''}</div>${canPrice ? `<div style="margin-top:6px;"><input type="number" step="0.01" placeholder="Quote amount" id="quote-${row.id}" style="width:140px;"> <button type="button" onclick="sendProfessionalShowerQuote('${row.id}')">Email Professional Quote</button></div>` : ''}`;
+    root.appendChild(div);
+  });
+}
+
+function sendProfessionalShowerQuote(requestId) {
+  const key='kympg_shower_quote_requests';
+  const rows=JSON.parse(localStorage.getItem(key)||'[]');
+  const row=rows.find((r)=>r.id===requestId); if (!row) return;
+  const amount=Math.max(0, parseFloat(document.getElementById(`quote-${requestId}`)?.value) || 0);
+  row.quoteAmount=amount; row.status='Quoted'; localStorage.setItem(key, JSON.stringify(rows));
+  const subject=encodeURIComponent(`Professional Shower Quote ${requestId}`);
+  const body=encodeURIComponent(`Your professional shower quote is ready.
+
+Request: ${requestId}
+Price: $${amount.toFixed(2)}
+
+Thank you.`);
+  window.open(`mailto:customer@example.com?subject=${subject}&body=${body}`, '_blank');
+  renderShowerPmQueue();
 }
 
 function downloadShowerPreview() {
   renderShowerDesign();
-  const canvas = document.getElementById('showerPreview');
+  const canvas=document.getElementById('showerPreview');
   if (!canvas) return;
-  const link = document.createElement('a');
-  link.download = 'shower-door-preview.png';
-  link.href = canvas.toDataURL('image/png');
+  const link=document.createElement('a');
+  link.download='shower-door-preview.png';
+  link.href=canvas.toDataURL('image/png');
   link.click();
 }
 
-
 window.addEventListener('DOMContentLoaded', () => {
-  ['showerWidth','showerHeight','wallLeft','wallRight','doorWidth','kneeHeight','baseLeft','baseCenter','baseRight','glassTypeSelect','doorSwing','layoutType']
-    .forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', renderShowerDesign);
-      if (el) el.addEventListener('change', renderShowerDesign);
+  loadShowerLayouts();
+  setLayoutSaveButtonMode();
+  renderLayoutLibraryOptions();
+  renderLayoutOptions();
+
+  ['doorSwing','glassColor','hardwareFinish','hingeType','hingeMount','panelMount','clipPositions','handleType','glassCoating']
+    .forEach((id)=>{ const el=document.getElementById(id); if (el) { el.addEventListener('input', renderShowerDesign); el.addEventListener('change', renderShowerDesign); } });
+
+  const doorSwingEl = document.getElementById('doorSwing');
+  if (doorSwingEl) {
+    doorSwingEl.addEventListener('change', () => {
+      if (showerStep === 2) showerAdvanceFrom(2);
     });
+  }
+
+  const photoInput=document.getElementById('showerPhotos');
+  if (photoInput) {
+    photoInput.addEventListener('change', () => {
+      const list=document.getElementById('showerUploadList');
+      if (!list) return;
+      const names=getShowerPhotoNames();
+      list.innerHTML=names.length ? names.map((n)=>`<li>${n}</li>`).join('') : '<li>No pictures attached.</li>';
+    });
+  }
+
+  const canvas=document.getElementById('showerPreview');
+  if (canvas) {
+    canvas.addEventListener('click', (evt) => {
+      const rect=canvas.getBoundingClientRect();
+      const x=evt.clientX - rect.left;
+      const y=evt.clientY - rect.top;
+      for (const [key, pt] of Object.entries(lastSideLabels || {})) {
+        const dx = x - pt.x;
+        const dy = y - pt.y;
+        if ((dx * dx + dy * dy) <= 18 * 18) {
+          openSideEditor(key, x, y);
+          return;
+        }
+      }
+      closeSideEditor();
+    });
+  }
+
+  const applyBtn=document.getElementById('sideEditorApply');
+  if (applyBtn) applyBtn.addEventListener('click', applySideEditor);
+  const closeBtn=document.getElementById('sideEditorClose');
+  if (closeBtn) closeBtn.addEventListener('click', closeSideEditor);
+
+  showerGoToStep(1);
   renderShowerDesign();
 });
-
 
 function showCalculatorWorkspace(mode = 'order') {
   if (typeof kympgHideAllSections === 'function') {
@@ -5225,7 +5900,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   function kympgHideAllSections(){
     const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
                  'shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section',
-                 'residential-section','residentialdb-section','servicetechs-section'];
+                 'residential-section','residentialdb-section','showerlayout-section','servicetechs-section'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -5256,7 +5931,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     admin: ['*'],
     office: ['*'],
     shop: ['landing', 'po'],
-    field: ['residential', 'shower', 'residentialdb'],
+    field: ['residential', 'shower', 'residentialdb', 'showerlayout'],
   };
   let authUser = null;
   let authToken = '';
@@ -6074,6 +6749,13 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       kympgSetHeader('New Residential Request', 'Create and assign residential service request.', 'Residential', 'New Request');
       return;
     }
+    if (which === 'showerlayout'){
+      const sl = document.getElementById('showerlayout-section');
+      if (sl){ sl.style.display = 'block'; }
+      kympgSetHeader('New Shower Layout', 'Create and manage shower layout library entries.', 'Residential', 'Shower Layout Library');
+      try { if (typeof renderLayoutLibraryOptions === 'function') renderLayoutLibraryOptions(); } catch(e) {}
+      return;
+    }
     if (which === 'shower'){
       const sh = document.getElementById('shower-section');
       if (sh){ sh.style.display = 'block'; }
@@ -6117,7 +6799,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','vendor-section','orders-section','shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','servicetechs-section']
+      ['calculator-section','customer-section','vendor-section','orders-section','shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','showerlayout-section','servicetechs-section']
         .forEach(id => {
           const el = document.getElementById(id);
           if (el && el.parentElement !== content) content.appendChild(el);
