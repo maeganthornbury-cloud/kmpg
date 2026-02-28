@@ -555,6 +555,14 @@
       width: 100%; background: #8f969f; color: #fff; font-weight: 700; border: none;
       border-radius: 8px; padding: 11px; margin-top: 8px; cursor: pointer;
     }
+    .shower-db-note { margin: 0 0 10px; color: #4f5d73; font-size: 13px; }
+    .shower-db-list { margin-top: 12px; display: grid; gap: 10px; max-height: 300px; overflow-y: auto; }
+    .shower-db-item { background: #fff; border: 1px solid #cfd5df; border-radius: 8px; padding: 8px; }
+    .shower-db-item h4 { margin: 0 0 6px; font-size: 14px; color: #1f2d43; }
+    .shower-db-meta { font-size: 11px; color: #5a6880; margin-bottom: 6px; }
+    .shower-db-item img { width: 100%; max-height: 130px; object-fit: contain; border: 1px solid #dbe2ea; border-radius: 6px; background: #fff; }
+    .shower-db-actions { display: flex; gap: 6px; margin-top: 8px; }
+    .shower-db-actions button { flex: 1; border: 1px solid #c6ceda; border-radius: 6px; padding: 6px; font-size: 11px; font-weight: 700; cursor: pointer; background: #f5f8fd; }
     @media (max-width: 900px) {
       .shower-layout { grid-template-columns: 1fr; }
       .shower-card { border-right: none; border-bottom: 1px solid #d8dde5; min-height: 0; }
@@ -1651,6 +1659,7 @@ body.auth-locked .auth-gate{ display:flex; }
       <button class="shower-tab" data-pane="design" onclick="switchShowerPane('design')">Design</button>
       <button class="shower-tab" data-pane="hardware" onclick="switchShowerPane('hardware')">Hardware</button>
       <button class="shower-tab" data-pane="summary" onclick="switchShowerPane('summary')">Summary</button>
+      <button class="shower-tab" data-pane="database" onclick="switchShowerPane('database')">Database</button>
     </div>
     <div class="shower-layout">
       <div class="shower-card">
@@ -1728,6 +1737,27 @@ body.auth-locked .auth-gate{ display:flex; }
         <section id="shower-pane-summary" class="shower-pane">
           <h3>Summary</h3>
           <p style="margin:0; color:#435066; font-size:14px; line-height:1.45;">3D preview updates live as you type. Use this view with the customer to confirm template, layout, design sizes, outage placement, and hardware finish.</p>
+        </section>
+        <section id="shower-pane-database" class="shower-pane">
+          <h3>Database</h3>
+          <p class="shower-db-note">Save reusable shower types/options with rendering pictures and flyer files. Entries are editable and stored locally in this app.</p>
+          <div class="shower-grid">
+            <div class="full"><label for="dbShowerName">Shower Type Name</label><input id="dbShowerName" type="text" placeholder="Ex: Frameless D+P with Return"></div>
+            <div><label for="dbTemplate">Template</label><select id="dbTemplate"><option value="frameless">Frameless</option><option value="framed">Framed</option><option value="slider">Slider</option></select></div>
+            <div><label for="dbLayout">Layout</label><select id="dbLayout"><option value="dp">Door • Panel</option><option value="dpdpr">Door • Panel • Door • Panel • Return</option><option value="dpdr">Door • Panel • Door • Return</option><option value="pdr">Panel • Door • Return</option></select></div>
+            <div><label for="dbHardwareType">Hardware Type</label><select id="dbHardwareType"><option value="clips">Wall Clips</option><option value="hinges">Hinges</option><option value="slider-kit">Slider Kit</option><option value="ladder">Ladder Pull + Hinge</option></select></div>
+            <div><label for="dbHardwareColor">Hardware Color</label><select id="dbHardwareColor"><option value="chrome">Chrome</option><option value="matte black">Matte Black</option><option value="brushed nickel">Brushed Nickel</option><option value="brass">Brass</option><option value="oil rubbed bronze">Oil Rubbed Bronze</option></select></div>
+            <div class="full"><label for="dbNotes">Options / Notes</label><textarea id="dbNotes" rows="2" style="width:100%; border:1px solid #cfd5df; border-radius:8px; padding:8px;"></textarea></div>
+            <div class="full"><label for="dbRenderImage">Rendering Picture</label><input id="dbRenderImage" type="file" accept="image/*"></div>
+            <div class="full"><label for="dbFlyerFile">Flyer File (PDF/Image)</label><input id="dbFlyerFile" type="file" accept=".pdf,image/*"></div>
+          </div>
+          <div class="shower-db-actions" style="margin-top:10px;">
+            <button type="button" onclick="captureCurrentShowerRendering()">Use Current Rendering</button>
+            <button type="button" onclick="saveShowerDatabaseEntry()">Save Type</button>
+            <button type="button" onclick="resetShowerDatabaseForm()">Clear Form</button>
+          </div>
+          <div id="showerDbStatus" class="shower-stats" style="margin-top:8px;"></div>
+          <div id="showerDbList" class="shower-db-list"></div>
         </section>
         <div class="buttons" style="margin-top:12px;">
           <button type="button" class="shower-primary-btn" onclick="renderShowerDesign()">Update Preview</button>
@@ -2580,6 +2610,203 @@ function switchShowerPane(pane) {
   document.querySelectorAll('.shower-pane').forEach(section => section.classList.toggle('active', section.id === `shower-pane-${pane}`));
 }
 
+const SHOWER_DB_KEY = 'kmpg_shower_type_db_v1';
+let showerDbState = { editId: null, renderImageData: '', flyerData: '', flyerName: '' };
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result || '');
+    reader.onerror = () => reject(new Error('file-read-failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function getShowerDatabase() {
+  try {
+    const raw = localStorage.getItem(SHOWER_DB_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function setShowerDatabase(items) {
+  localStorage.setItem(SHOWER_DB_KEY, JSON.stringify(items));
+}
+
+function getShowerDbStatusEl() {
+  return document.getElementById('showerDbStatus');
+}
+
+function setShowerDbStatus(message, error = false) {
+  const el = getShowerDbStatusEl();
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = error ? '#b42318' : '#344154';
+}
+
+function resetShowerDatabaseForm() {
+  showerDbState = { editId: null, renderImageData: '', flyerData: '', flyerName: '' };
+  ['dbShowerName','dbNotes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const defaults = {
+    dbTemplate: 'frameless',
+    dbLayout: 'dp',
+    dbHardwareType: 'clips',
+    dbHardwareColor: 'chrome'
+  };
+  Object.entries(defaults).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  });
+  const renderInput = document.getElementById('dbRenderImage');
+  if (renderInput) renderInput.value = '';
+  const flyerInput = document.getElementById('dbFlyerFile');
+  if (flyerInput) flyerInput.value = '';
+}
+
+async function captureCurrentShowerRendering() {
+  const canvas = document.getElementById('showerPreview');
+  if (!canvas) return;
+  showerDbState.renderImageData = canvas.toDataURL('image/png');
+  setShowerDbStatus('Captured current rendering image.');
+}
+
+async function saveShowerDatabaseEntry() {
+  const name = (document.getElementById('dbShowerName')?.value || '').trim();
+  if (!name) {
+    setShowerDbStatus('Please enter a Shower Type Name.', true);
+    return;
+  }
+
+  const renderInput = document.getElementById('dbRenderImage');
+  const flyerInput = document.getElementById('dbFlyerFile');
+
+  try {
+    if (renderInput?.files?.[0]) {
+      showerDbState.renderImageData = await readFileAsDataUrl(renderInput.files[0]);
+    }
+    if (flyerInput?.files?.[0]) {
+      showerDbState.flyerData = await readFileAsDataUrl(flyerInput.files[0]);
+      showerDbState.flyerName = flyerInput.files[0].name || 'flyer';
+    }
+  } catch (_) {
+    setShowerDbStatus('Could not read selected files.', true);
+    return;
+  }
+
+  const entry = {
+    id: showerDbState.editId || `sh_${Date.now()}`,
+    name,
+    template: document.getElementById('dbTemplate')?.value || 'frameless',
+    layout: document.getElementById('dbLayout')?.value || 'dp',
+    hardwareType: document.getElementById('dbHardwareType')?.value || 'clips',
+    hardwareColor: document.getElementById('dbHardwareColor')?.value || 'chrome',
+    notes: (document.getElementById('dbNotes')?.value || '').trim(),
+    renderImageData: showerDbState.renderImageData || '',
+    flyerData: showerDbState.flyerData || '',
+    flyerName: showerDbState.flyerName || '',
+    updatedAt: new Date().toISOString()
+  };
+
+  const items = getShowerDatabase();
+  const idx = items.findIndex(x => x.id === entry.id);
+  if (idx >= 0) items[idx] = entry;
+  else items.unshift(entry);
+  setShowerDatabase(items);
+  renderShowerDatabaseList();
+  setShowerDbStatus(idx >= 0 ? 'Shower type updated.' : 'Shower type saved.');
+  resetShowerDatabaseForm();
+}
+
+function loadShowerDatabaseEntry(id) {
+  const items = getShowerDatabase();
+  const entry = items.find(x => x.id === id);
+  if (!entry) return;
+
+  showerDbState = {
+    editId: entry.id,
+    renderImageData: entry.renderImageData || '',
+    flyerData: entry.flyerData || '',
+    flyerName: entry.flyerName || ''
+  };
+
+  const map = {
+    dbShowerName: entry.name || '',
+    dbTemplate: entry.template || 'frameless',
+    dbLayout: entry.layout || 'dp',
+    dbHardwareType: entry.hardwareType || 'clips',
+    dbHardwareColor: entry.hardwareColor || 'chrome',
+    dbNotes: entry.notes || ''
+  };
+  Object.entries(map).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = value;
+  });
+  setShowerDbStatus(`Editing: ${entry.name}`);
+}
+
+function deleteShowerDatabaseEntry(id) {
+  const items = getShowerDatabase().filter(x => x.id !== id);
+  setShowerDatabase(items);
+  renderShowerDatabaseList();
+  setShowerDbStatus('Shower type deleted.');
+  if (showerDbState.editId === id) resetShowerDatabaseForm();
+}
+
+function applyShowerDatabaseEntry(id) {
+  const entry = getShowerDatabase().find(x => x.id === id);
+  if (!entry) return;
+  const map = {
+    templateType: entry.template,
+    layoutType: entry.layout,
+    hardwareType: entry.hardwareType,
+    hardwareColor: entry.hardwareColor
+  };
+  Object.entries(map).forEach(([id, value]) => {
+    const el = document.getElementById(id);
+    if (el && value) el.value = value;
+  });
+  switchShowerPane('summary');
+  renderShowerDesign();
+  setShowerDbStatus(`Applied: ${entry.name}`);
+}
+
+function renderShowerDatabaseList() {
+  const host = document.getElementById('showerDbList');
+  if (!host) return;
+  const items = getShowerDatabase();
+  if (!items.length) {
+    host.innerHTML = '<div class="shower-db-item"><div class="shower-db-meta">No saved shower types yet.</div></div>';
+    return;
+  }
+  host.innerHTML = items.map(item => {
+    const flyerLink = item.flyerData
+      ? `<a href="${item.flyerData}" download="${item.flyerName || 'shower-flyer'}" style="font-size:11px;">Download Flyer</a>`
+      : '<span style="font-size:11px;color:#75849b;">No flyer</span>';
+    const image = item.renderImageData
+      ? `<img src="${item.renderImageData}" alt="${escapeHtml(item.name || '')} rendering">`
+      : '<div class="shower-db-meta">No rendering image saved.</div>';
+    return `
+      <div class="shower-db-item">
+        <h4>${escapeHtml(item.name || '')}</h4>
+        <div class="shower-db-meta">${escapeHtml((item.template || '').toUpperCase())} • ${escapeHtml((item.layout || '').toUpperCase())} • ${escapeHtml((item.hardwareType || '').toUpperCase())} / ${escapeHtml((item.hardwareColor || '').toUpperCase())}</div>
+        ${image}
+        <div class="shower-db-meta" style="margin-top:6px;">${escapeHtml(item.notes || '')}</div>
+        <div style="margin-top:6px;">${flyerLink}</div>
+        <div class="shower-db-actions">
+          <button type="button" onclick="applyShowerDatabaseEntry('${item.id}')">Apply</button>
+          <button type="button" onclick="loadShowerDatabaseEntry('${item.id}')">Edit</button>
+          <button type="button" onclick="deleteShowerDatabaseEntry('${item.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 function renderShowerDesign() {
   const template = document.getElementById('templateType')?.value || 'frameless';
   const layout = document.getElementById('layoutType')?.value || 'dpdpr';
@@ -2811,6 +3038,14 @@ window.addEventListener('DOMContentLoaded', () => {
       if (el) el.addEventListener('input', renderShowerDesign);
       if (el) el.addEventListener('change', renderShowerDesign);
     });
+
+  const dbRenderImage = document.getElementById('dbRenderImage');
+  if (dbRenderImage) dbRenderImage.addEventListener('change', () => setShowerDbStatus('Rendering image selected. Click Save Type to store.'));
+  const dbFlyerFile = document.getElementById('dbFlyerFile');
+  if (dbFlyerFile) dbFlyerFile.addEventListener('change', () => setShowerDbStatus('Flyer file selected. Click Save Type to store.'));
+
+  resetShowerDatabaseForm();
+  renderShowerDatabaseList();
   renderShowerDesign();
 });
 
