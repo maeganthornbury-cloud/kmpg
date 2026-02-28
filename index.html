@@ -1676,6 +1676,13 @@ body.auth-locked .auth-gate{ display:flex; }
           <input id="kneeHeight" type="number" min="8" step="0.1" value="20.7">
         </div>
         <div>
+          <label for="includeReturn">Return Panel</label>
+          <select id="includeReturn">
+            <option value="yes" selected>Include Return</option>
+            <option value="no">No Return</option>
+          </select>
+        </div>
+        <div>
           <label for="baseLeft">Base Left (inches)</label>
           <input id="baseLeft" type="number" min="8" step="0.1" value="47.2">
         </div>
@@ -2565,6 +2572,8 @@ function renderShowerDesign() {
   const baseLeft = Math.max(8, parseFloat(document.getElementById('baseLeft')?.value) || 47.2);
   const baseCenter = Math.max(8, parseFloat(document.getElementById('baseCenter')?.value) || 19.7);
   const baseRight = Math.max(8, parseFloat(document.getElementById('baseRight')?.value) || 17.5);
+  const hasReturn = (document.getElementById('includeReturn')?.value || 'yes') === 'yes';
+  syncReturnPanelOptions();
   const layout = document.getElementById('layoutType')?.value || 'raked';
   const swing = document.getElementById('doorSwing')?.value || 'left';
   const glass = document.getElementById('glassTypeSelect')?.value || '3/8" clear';
@@ -2578,14 +2587,18 @@ function renderShowerDesign() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+  const returnKneeHeight = hasReturn ? kneeHeight : 0;
+  const returnBaseCenter = hasReturn ? baseCenter : 0;
+  const returnBaseRight = hasReturn ? baseRight : 0;
+
   const poly = [
     { x: 0, y: 0 },
     { x: topLeft, y: -240 },
     { x: topLeft + topRight, y: 0 },
     { x: topLeft + topRight, y: rightHeight },
-    { x: topLeft + topRight - baseRight, y: rightHeight },
-    { x: topLeft + topRight - baseRight, y: rightHeight + kneeHeight },
-    { x: topLeft, y: rightHeight + kneeHeight + 130 },
+    { x: topLeft + topRight - returnBaseRight, y: rightHeight },
+    { x: topLeft + topRight - returnBaseRight, y: rightHeight + returnKneeHeight },
+    { x: topLeft, y: rightHeight + returnKneeHeight + 130 },
     { x: 0, y: leftHeight }
   ];
 
@@ -2648,22 +2661,35 @@ function renderShowerDesign() {
   text(topRight, (points[1].x + points[2].x)/2 - 20, points[1].y - 10, '#51a351');
   text(leftHeight, points[7].x - 48, (points[7].y + points[0].y)/2, '#4c63db');
   text(rightHeight, points[3].x + 16, (points[3].y + points[4].y)/2, '#8d4952');
-  text(kneeHeight, points[4].x + 16, (points[4].y + points[5].y)/2, '#b565d9');
+  if (hasReturn) {
+    text(kneeHeight, points[4].x + 16, (points[4].y + points[5].y)/2, '#b565d9');
+  }
   text(baseLeft, (points[7].x + points[6].x)/2 - 15, points[7].y + 36, '#44aa4b');
-  text(baseCenter, (points[6].x + points[5].x)/2 - 8, points[6].y + 36, '#ee8f33');
-  text(baseRight, (points[5].x + points[4].x)/2 + 12, points[5].y + 24, '#2f8c9a');
+  if (hasReturn) {
+    text(baseCenter, (points[6].x + points[5].x)/2 - 8, points[6].y + 36, '#ee8f33');
+    text(baseRight, (points[5].x + points[4].x)/2 + 12, points[5].y + 24, '#2f8c9a');
+  }
   text(doorWidth, (xDoor1 + xDoor2)/2 - 16, points[6].y - 12, '#555', 34);
 
   const stats = document.getElementById('showerStats');
   if (stats) {
-    const perimeter = topLeft + topRight + rightHeight + kneeHeight + baseCenter + baseLeft + leftHeight;
+    const perimeter = topLeft + topRight + rightHeight + returnKneeHeight + returnBaseCenter + baseLeft + leftHeight;
     stats.innerHTML = `
       <strong>Configured Layout</strong><br>
       Style: ${layout.toUpperCase()} &nbsp;•&nbsp; Glass: ${glass}<br>
+      Return Panel: ${hasReturn ? 'Included' : 'Not Included'}<br>
       Door: ${doorWidth.toFixed(1)} in (${swing.toUpperCase()} hinge)<br>
       Approximate perimeter reference: ${perimeter.toFixed(1)} in
     `;
   }
+}
+
+function syncReturnPanelOptions() {
+  const hasReturn = (document.getElementById('includeReturn')?.value || 'yes') === 'yes';
+  ['kneeHeight', 'baseCenter', 'baseRight'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = !hasReturn;
+  });
 }
 
 function downloadShowerPreview() {
@@ -2678,12 +2704,13 @@ function downloadShowerPreview() {
 
 
 window.addEventListener('DOMContentLoaded', () => {
-  ['showerWidth','showerHeight','wallLeft','wallRight','doorWidth','kneeHeight','baseLeft','baseCenter','baseRight','glassTypeSelect','doorSwing','layoutType']
+  ['showerWidth','showerHeight','wallLeft','wallRight','doorWidth','kneeHeight','baseLeft','baseCenter','baseRight','glassTypeSelect','doorSwing','layoutType','includeReturn']
     .forEach(id => {
       const el = document.getElementById(id);
       if (el) el.addEventListener('input', renderShowerDesign);
       if (el) el.addEventListener('change', renderShowerDesign);
     });
+  syncReturnPanelOptions();
   renderShowerDesign();
 });
 
