@@ -1687,6 +1687,7 @@ body.auth-locked .auth-gate{ display:flex; }
             <div class="full">
               <label for="layoutType">Layout Pattern</label>
               <select id="layoutType">
+                <option value="dp">Door • Panel</option>
                 <option value="dpdpr">Door • Panel • Door • Panel • Return</option>
                 <option value="dpdr">Door • Panel • Door • Return</option>
                 <option value="pdr">Panel • Door • Return</option>
@@ -1720,7 +1721,7 @@ body.auth-locked .auth-gate{ display:flex; }
         <section id="shower-pane-hardware" class="shower-pane">
           <h3>Hardware</h3>
           <div class="shower-grid">
-            <div><label for="hardwareType">Hardware Type</label><select id="hardwareType"><option value="square">Square Clamp Set</option><option value="beveled">Beveled Hinge Set</option><option value="slider-kit">Slider Kit</option><option value="ladder">Ladder Pull + Hinge</option></select></div>
+            <div><label for="hardwareType">Hardware Type</label><select id="hardwareType"><option value="clips">Wall Clips</option><option value="hinges">Hinges</option><option value="slider-kit">Slider Kit</option><option value="ladder">Ladder Pull + Hinge</option></select></div>
             <div><label for="hardwareColor">Hardware Color</label><select id="hardwareColor"><option value="chrome">Chrome</option><option value="matte black">Matte Black</option><option value="brushed nickel">Brushed Nickel</option><option value="brass">Brass</option><option value="oil rubbed bronze">Oil Rubbed Bronze</option></select></div>
           </div>
         </section>
@@ -2593,7 +2594,7 @@ function renderShowerDesign() {
   const outageSide = document.getElementById('outageSide')?.value || 'none';
   const outageWidth = Math.max(0, parseFloat(document.getElementById('outageWidth')?.value) || 0);
   const outageHeight = Math.max(0, parseFloat(document.getElementById('outageHeight')?.value) || 0);
-  const hardwareType = document.getElementById('hardwareType')?.value || 'square';
+  const hardwareType = document.getElementById('hardwareType')?.value || 'clips';
   const hardwareColor = document.getElementById('hardwareColor')?.value || 'chrome';
   const swing = document.getElementById('doorSwing')?.value || 'left';
   const glass = document.getElementById('glassTypeSelect')?.value || '3/8" clear';
@@ -2613,8 +2614,8 @@ function renderShowerDesign() {
   const depth = 38;
   const heightScale = 3.6;
   const frontPx = frontWidth * scaleX;
-  const maxDoor = Math.max(doorWidth, 0.1);
 
+  const finish = hardwareColor.includes('black') ? '#2d3137' : hardwareColor.includes('brass') ? '#8e6b2e' : hardwareColor.includes('bronze') ? '#6e4d38' : '#aab3bc';
   const project = (x, y, z) => ({ x: originX + x + z * 0.7, y: originY - y - z * 0.4 });
   const drawFace = (points, fill, stroke='#89a7bd', width=1.4) => {
     ctx.beginPath();
@@ -2658,33 +2659,107 @@ function renderShowerDesign() {
     ], 'rgba(164, 210, 226, 0.48)', panelStroke);
   }
 
-  const parts = layout === 'dpdpr'
-    ? [panelLeft, maxDoor, panelRight, maxDoor, Math.max(rightReturn, 6)]
-    : layout === 'dpdr'
-      ? [panelLeft, maxDoor, maxDoor, Math.max(rightReturn, 6)]
-      : [panelLeft, maxDoor, Math.max(rightReturn, 6)];
-  const sumParts = parts.reduce((a, b) => a + b, 0);
+  const layoutParts = {
+    dp: [
+      { kind: 'door', width: doorWidth },
+      { kind: 'panel', width: panelLeft }
+    ],
+    dpdpr: [
+      { kind: 'door', width: doorWidth },
+      { kind: 'panel', width: panelLeft },
+      { kind: 'door', width: doorWidth },
+      { kind: 'panel', width: panelRight },
+      { kind: 'return', width: Math.max(rightReturn, 6) }
+    ],
+    dpdr: [
+      { kind: 'door', width: doorWidth },
+      { kind: 'panel', width: panelLeft },
+      { kind: 'door', width: doorWidth },
+      { kind: 'return', width: Math.max(rightReturn, 6) }
+    ],
+    pdr: [
+      { kind: 'panel', width: panelLeft },
+      { kind: 'door', width: doorWidth },
+      { kind: 'return', width: Math.max(rightReturn, 6) }
+    ]
+  };
+  const parts = layoutParts[layout] || layoutParts.dpdpr;
+  const sumParts = parts.reduce((a, p) => a + p.width, 0);
+
+  const boundaries = [];
   let cursor = 0;
-  parts.forEach((segment, idx) => {
-    cursor += (segment / sumParts) * frontPx;
+  parts.forEach((part) => {
+    const start = cursor;
+    cursor += (part.width / sumParts) * frontPx;
+    const end = cursor;
+    boundaries.push({ ...part, start, end, center: (start + end) / 2 });
+
     ctx.beginPath();
-    ctx.moveTo(project(cursor, 0, 0).x, project(cursor, 0, 0).y);
-    ctx.lineTo(project(cursor, glassHeight * heightScale, 0).x, project(cursor, glassHeight * heightScale, 0).y);
-    ctx.strokeStyle = idx === 1 || idx === 3 ? '#5c6a79' : frameColor;
-    ctx.lineWidth = idx === 1 || idx === 3 ? 3 : 2;
+    ctx.moveTo(project(end, 0, 0).x, project(end, 0, 0).y);
+    ctx.lineTo(project(end, glassHeight * heightScale, 0).x, project(end, glassHeight * heightScale, 0).y);
+    ctx.strokeStyle = part.kind === 'door' ? '#5c6a79' : frameColor;
+    ctx.lineWidth = part.kind === 'door' ? 3 : 2;
     ctx.stroke();
   });
 
-  const handleX = swing === 'left' ? originX + frontPx * 0.55 : originX + frontPx * 0.45;
-  const handleY = originY - glassHeight * heightScale * 0.5;
-  ctx.strokeStyle = hardwareColor.includes('black') ? '#2d3137' : hardwareColor.includes('brass') ? '#8e6b2e' : '#aab3bc';
-  ctx.lineWidth = 6;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(handleX, handleY - 16);
-  ctx.lineTo(handleX, handleY + 16);
-  ctx.stroke();
-  ctx.lineCap = 'butt';
+  const doorSegments = boundaries.filter(p => p.kind === 'door');
+  if (doorSegments.length) {
+    const activeDoor = doorSegments[0];
+    const handleX = swing === 'left' ? originX + activeDoor.end - 12 : originX + activeDoor.start + 12;
+    const handleY = originY - glassHeight * heightScale * 0.5;
+    ctx.strokeStyle = finish;
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(handleX, handleY - 16);
+    ctx.lineTo(handleX, handleY + 16);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+  }
+
+  const drawClip = (x, y) => {
+    ctx.fillStyle = finish;
+    ctx.fillRect(x - 4, y - 4, 8, 8);
+  };
+
+  if (template === 'slider' || hardwareType === 'slider-kit') {
+    const topY = originY - glassHeight * heightScale - 8;
+    ctx.strokeStyle = finish;
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(originX + 8, topY);
+    ctx.lineTo(originX + frontPx - 8, topY);
+    ctx.stroke();
+
+    const wheelDoor = boundaries.find(p => p.kind === 'door') || boundaries[0];
+    if (wheelDoor) {
+      [wheelDoor.start + 14, wheelDoor.end - 14].forEach(x => {
+        ctx.beginPath();
+        ctx.arc(originX + x, topY, 5, 0, Math.PI * 2);
+        ctx.fillStyle = finish;
+        ctx.fill();
+      });
+    }
+  } else {
+    if (hardwareType === 'hinges' || hardwareType === 'ladder') {
+      doorSegments.forEach((door) => {
+        const hingeX = swing === 'left' ? originX + door.start + 4 : originX + door.end - 4;
+        [0.2, 0.45, 0.7].forEach(ratio => {
+          const y = originY - glassHeight * heightScale * ratio;
+          ctx.fillStyle = finish;
+          ctx.fillRect(hingeX - 4, y - 7, 8, 14);
+        });
+      });
+    }
+
+    if (hardwareType === 'clips' || template === 'framed') {
+      boundaries.filter(p => p.kind === 'panel' || p.kind === 'return').forEach((panel) => {
+        const clipX = originX + panel.center;
+        drawClip(clipX, originY - 10);
+        drawClip(clipX, originY - glassHeight * heightScale + 10);
+      });
+    }
+  }
 
   if (outageSide !== 'none' && outageWidth > 0 && outageHeight > 0) {
     const slotY1 = originY - outageHeight * heightScale - 16;
