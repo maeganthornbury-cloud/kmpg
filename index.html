@@ -1652,46 +1652,46 @@ body.auth-locked .auth-gate{ display:flex; }
       <div class="shower-subtabs"><span class="active">Details</span><span>Measurement Grid</span></div>
       <div class="shower-grid">
         <div>
-          <label for="showerWidth">Top Left (mm)</label>
-          <input id="showerWidth" type="number" min="300" step="1" value="1200">
+          <label for="showerWidth">Top Left (inches)</label>
+          <input id="showerWidth" type="number" min="12" step="0.1" value="47.2">
         </div>
         <div>
-          <label for="showerHeight">Top Right (mm)</label>
-          <input id="showerHeight" type="number" min="300" step="1" value="795">
+          <label for="showerHeight">Top Right (inches)</label>
+          <input id="showerHeight" type="number" min="12" step="0.1" value="31.3">
         </div>
         <div>
-          <label for="wallLeft">Left Side Height (mm)</label>
-          <input id="wallLeft" type="number" min="600" step="1" value="1800">
+          <label for="wallLeft">Left Side Height (inches)</label>
+          <input id="wallLeft" type="number" min="24" step="0.1" value="70.9">
         </div>
         <div>
-          <label for="wallRight">Right Side Height (mm)</label>
-          <input id="wallRight" type="number" min="600" step="1" value="1131">
+          <label for="wallRight">Right Side Height (inches)</label>
+          <input id="wallRight" type="number" min="24" step="0.1" value="44.5">
         </div>
         <div>
-          <label for="doorWidth">Door Width (mm)</label>
-          <input id="doorWidth" type="number" min="350" step="1" value="700">
+          <label for="doorWidth">Door Width (inches)</label>
+          <input id="doorWidth" type="number" min="14" step="0.1" value="27.6">
         </div>
         <div>
-          <label for="kneeHeight">Knee Return (mm)</label>
-          <input id="kneeHeight" type="number" min="200" step="1" value="525">
+          <label for="kneeHeight">Knee Return (inches)</label>
+          <input id="kneeHeight" type="number" min="8" step="0.1" value="20.7">
         </div>
         <div>
-          <label for="baseLeft">Base Left (mm)</label>
-          <input id="baseLeft" type="number" min="200" step="1" value="1200">
+          <label for="baseLeft">Base Left (inches)</label>
+          <input id="baseLeft" type="number" min="8" step="0.1" value="47.2">
         </div>
         <div>
-          <label for="baseCenter">Base Center (mm)</label>
-          <input id="baseCenter" type="number" min="200" step="1" value="500">
+          <label for="baseCenter">Base Center (inches)</label>
+          <input id="baseCenter" type="number" min="8" step="0.1" value="19.7">
         </div>
         <div>
-          <label for="baseRight">Base Right (mm)</label>
-          <input id="baseRight" type="number" min="200" step="1" value="445">
+          <label for="baseRight">Base Right (inches)</label>
+          <input id="baseRight" type="number" min="8" step="0.1" value="17.5">
         </div>
         <div>
           <label for="glassTypeSelect">Glass Thickness</label>
           <select id="glassTypeSelect">
-            <option value='10mm clear'>10mm Clear</option>
-            <option value='12mm clear'>12mm Clear</option>
+            <option value='3/8" clear'>3/8" Clear</option>
+            <option value='1/2" clear'>1/2" Clear</option>
           </select>
         </div>
         <div>
@@ -2556,18 +2556,18 @@ function switchTab(tab) {
 
 
 function renderShowerDesign() {
-  const topLeft = Math.max(300, parseFloat(document.getElementById('showerWidth')?.value) || 1200);
-  const topRight = Math.max(300, parseFloat(document.getElementById('showerHeight')?.value) || 795);
-  const leftHeight = Math.max(600, parseFloat(document.getElementById('wallLeft')?.value) || 1800);
-  const rightHeight = Math.max(600, parseFloat(document.getElementById('wallRight')?.value) || 1131);
-  const doorWidth = Math.max(350, parseFloat(document.getElementById('doorWidth')?.value) || 700);
-  const kneeHeight = Math.max(200, parseFloat(document.getElementById('kneeHeight')?.value) || 525);
-  const baseLeft = Math.max(200, parseFloat(document.getElementById('baseLeft')?.value) || 1200);
-  const baseCenter = Math.max(200, parseFloat(document.getElementById('baseCenter')?.value) || 500);
-  const baseRight = Math.max(200, parseFloat(document.getElementById('baseRight')?.value) || 445);
+  const topLeft = Math.max(12, parseFloat(document.getElementById('showerWidth')?.value) || 47.2);
+  const topRight = Math.max(12, parseFloat(document.getElementById('showerHeight')?.value) || 31.3);
+  const leftHeight = Math.max(24, parseFloat(document.getElementById('wallLeft')?.value) || 70.9);
+  const rightHeight = Math.max(24, parseFloat(document.getElementById('wallRight')?.value) || 44.5);
+  const doorWidth = Math.max(14, parseFloat(document.getElementById('doorWidth')?.value) || 27.6);
+  const kneeHeight = Math.max(8, parseFloat(document.getElementById('kneeHeight')?.value) || 20.7);
+  const baseLeft = Math.max(8, parseFloat(document.getElementById('baseLeft')?.value) || 47.2);
+  const baseCenter = Math.max(8, parseFloat(document.getElementById('baseCenter')?.value) || 19.7);
+  const baseRight = Math.max(8, parseFloat(document.getElementById('baseRight')?.value) || 17.5);
   const layout = document.getElementById('layoutType')?.value || 'raked';
   const swing = document.getElementById('doorSwing')?.value || 'left';
-  const glass = document.getElementById('glassTypeSelect')?.value || '10mm clear';
+  const glass = document.getElementById('glassTypeSelect')?.value || '3/8" clear';
 
   const canvas = document.getElementById('showerPreview');
   if (!canvas) return;
@@ -2660,8 +2660,8 @@ function renderShowerDesign() {
     stats.innerHTML = `
       <strong>Configured Layout</strong><br>
       Style: ${layout.toUpperCase()} &nbsp;•&nbsp; Glass: ${glass}<br>
-      Door: ${doorWidth.toFixed(0)} mm (${swing.toUpperCase()} hinge)<br>
-      Approximate perimeter reference: ${perimeter.toFixed(0)} mm
+      Door: ${doorWidth.toFixed(1)} in (${swing.toUpperCase()} hinge)<br>
+      Approximate perimeter reference: ${perimeter.toFixed(1)} in
     `;
   }
 }
