@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Closet Shelving Measure</title>
+<style>
+  :root{--line:#d1d5db;--accent:#2563eb;--muted:#6b7280;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  *{box-sizing:border-box} body{margin:0;background:#fff;color:#111827}
+  .wrap{padding:12px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media (max-width:860px){.row,.row3{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+  label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
+  input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px}
+  .actions{display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:#fff;padding-top:8px}
+  button{padding:10px 12px;border-radius:8px;border:1px solid var(--line);font-weight:700;cursor:pointer}
+  .primary{background:var(--accent);border-color:var(--accent);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <strong>Closet Shelving Measure</strong>
+    <div style="font-size:12px;color:#64748b;margin-top:4px;">Enter shelving measurements, then click Save Shelving to return.</div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div><label>Room Name</label><input id="roomName" placeholder="Master Closet"></div>
+      <div><label>Shelf Type</label>
+        <select id="shelfType">
+          <option value="">Select one...</option>
+          <option value="DH">Double Hung</option>
+          <option value="SS">Super Slide</option>
+          <option value="linen">Linen</option>
+          <option value="close mesh">Close Mesh</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <div><label>Wall 1 Length</label><input id="wall1" placeholder="e.g., 79 1/2"></div>
+      <div><label>Wall 2 Length</label><input id="wall2" placeholder="e.g., 75"></div>
+    </div>
+    <div class="row" style="margin-top:10px;">
+      <div><label>Wall 3 Length</label><input id="wall3" placeholder="e.g., 42"></div>
+      <div><label>Wall 4 Length</label><input id="wall4" placeholder="e.g., 90"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <label>Extra Shelves / Notes</label>
+    <textarea id="extras" rows="4" placeholder="Qty + sizes"></textarea>
+  </div>
+
+  <div class="actions">
+    <button type="button" id="saveBtn" class="primary">Save Shelving</button>
+  </div>
+</div>
+
+<script>
+  function byId(id){ return document.getElementById(id); }
+  function collect(){
+    return {
+      roomName: (byId('roomName').value || '').trim(),
+      shelfType: (byId('shelfType').value || '').trim(),
+      wall1: (byId('wall1').value || '').trim(),
+      wall2: (byId('wall2').value || '').trim(),
+      wall3: (byId('wall3').value || '').trim(),
+      wall4: (byId('wall4').value || '').trim(),
+      extras: (byId('extras').value || '').trim(),
+    };
+  }
+  function apply(data){
+    if (!data || typeof data !== 'object') return;
+    byId('roomName').value = data.roomName || '';
+    byId('shelfType').value = data.shelfType || '';
+    byId('wall1').value = data.wall1 || '';
+    byId('wall2').value = data.wall2 || '';
+    byId('wall3').value = data.wall3 || '';
+    byId('wall4').value = data.wall4 || '';
+    byId('extras').value = data.extras || '';
+  }
+  window.addEventListener('message', (e) => {
+    const msg = e.data || {};
+    if (msg.type === 'kympg_shelving_prefill') apply(msg.payload || {});
+  });
+  byId('saveBtn').addEventListener('click', () => {
+    window.parent.postMessage({ type: 'kympg_shelving_saved', payload: collect() }, '*');
+  });
+</script>
+</body>
+</html>
