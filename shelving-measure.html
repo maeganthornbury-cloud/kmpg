@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Closet Shelving Measure (Clear Diagram)</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --card:#ffffff;
+    --text:#111827;
+    --muted:#6b7280;
+    --line:#d1d5db;
+    --accent:#2563eb;
+    --accentSoft:#e8efff;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text)}
+  header{max-width:1500px;margin:0 auto;padding:18px 16px 8px}
+  h1{margin:0;font-size:18px}
+  .sub{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.35}
+  .wrap{max-width:1500px;margin:0 auto;padding:12px 16px 24px}
+  .grid{display:grid;grid-template-columns:1fr; gap:14px; align-items:start}
+
+  .card{border:1px solid var(--line);background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 10px 25px rgba(0,0,0,.06)}
+  .hd{padding:14px 14px 10px;border-bottom:1px solid var(--line);background:#f9fafb;display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+  .bd{padding:14px}
+  .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--accentSoft);color:#1f3a8a;font-size:12px}
+  .chip{display:inline-flex;gap:8px;align-items:center;font-size:12px;color:#111827;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:#fff}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  button{border:1px solid var(--line);background:#fff;color:var(--text);padding:12px 14px;border-radius:12px;font-weight:800;cursor:pointer;transition:.15s transform,.15s background}
+  button:hover{transform:translateY(-1px);background:#f9fafb}
+  .primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .primary:hover{background:#1d4ed8}
+  .danger{background:#fff;border-color:#ef4444;color:#b91c1c}
+  .small{padding:10px 12px;border-radius:10px;font-size:13px}
+
+  label{display:block;font-size:12px;color:var(--muted);margin:2px 0 6px}
+  input,select{width:100%;padding:12px 12px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);outline:none;font-size:14px}
+  input:focus,select:focus{border-color:rgba(37,99,235,.55);box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+  .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.35}
+  .sep{height:1px;background:var(--line);margin:12px 0}
+
+  .item{border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px}
+  .itemTop{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .meta{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.35}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media (max-width:560px){ .row2,.row3{grid-template-columns:1fr} }
+  .extra-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+
+  .canvasWrap{padding:12px}
+  .canvasCard{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+  .canvasHd{padding:12px;border-bottom:1px solid var(--line);background:#f9fafb}
+  canvas{display:block;width:100%;height:auto}
+
+  /* Print section */
+  #printArea{display:none}
+  #printArea .box{border:1px solid #000;padding:10px}
+  #printArea h1{font-size:18px;margin:0 0 6px}
+  #printArea .small{font-size:12px;margin:0 0 10px}
+  #printDiagramWrap{border:2px solid #000;padding:10px;margin:10px 0 14px}
+  #printDiagramWrap img{width:100%;height:auto;display:block}
+
+  @media print{
+    @page { margin: 0.5in; }
+    header,.wrap{display:none !important;}
+    #printArea{display:block !important;}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <h1>Closet Shelving Measure</h1>
+    <span class="pill">Clear diagram • Prints on same page</span>
+  </div>
+  <div class="sub">
+    Diagram labels are larger with white backgrounds. Print includes diagram only if at least one wall has a size.
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- RIGHT -->
+    <div class="card">
+      <div class="hd">
+        <div>
+          <div style="font-weight:900">Diagram</div>
+          <div class="hint" style="margin:6px 0 0">Tap a wall to select it.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="small" id="fit">Fit</button>
+          <button class="small" id="gridBtn">Grid</button>
+        </div>
+      </div>
+
+      <div class="canvasWrap">
+        <div class="canvasCard">
+          <div class="canvasHd">
+            <div style="font-weight:900" id="title">—</div>
+            <div class="meta" id="subtitle">—</div>
+          </div>
+          <canvas id="c" width="2200" height="1400"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEFT -->
+    <div class="card">
+      <div class="hd">
+        <div>
+          <div style="font-weight:900">Inputs</div>
+          <div class="hint" style="margin:6px 0 0">Tap a wall. Enter wall length + shelf type (auto-saves).</div>
+        </div>
+        <div class="chip" id="selChip">Wall: —</div>
+      </div>
+
+      <div class="bd">
+        <label>Room Name</label>
+        <input id="job" placeholder="e.g., Master" />
+
+        <div class="sep"></div>
+
+        <div class="item">
+          <div class="itemTop">
+            <div>
+              <div style="font-weight:900">Selected Wall</div>
+              <div class="meta" id="wallMeta">Tap a wall in the diagram.</div>
+            </div>
+            <span class="chip" id="lenChip">Len: —</span>
+          </div>
+
+          <div class="sep"></div>
+
+          <div class="row2">
+            <div>
+              <label>Wall Length</label>
+              <input id="wallLen" inputmode="decimal" placeholder="e.g., 75" />
+              <div class="hint">Auto-saves. Supports: <span class="mono">79 1/2</span></div>
+            </div>
+            <div>
+              <label>Shelf Type</label>
+              <select id="wallType">
+                <option value="">(select)</option>
+                <option value="DH">Double Hung</option>
+                <option value="SS">Super Slide</option>
+                <option value="linen">Linen</option>
+                <option value="close mesh">Close Mesh</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="small danger" id="clearWall">Clear wall</button>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="item">
+          <div class="itemTop">
+            <div>
+              <div style="font-weight:900">Extra Shelves</div>
+              <div class="meta">Only prints lines with a size.</div>
+            </div>
+            <span class="chip">auto-save</span>
+            <button type="button" class="small" id="addExtraShelfLineTop">+ Add Line</button>
+          </div>
+
+          <div class="sep"></div>
+          <div id="extraShelves"></div>
+          <div class="extra-actions">
+            <button type="button" class="small" id="addExtraShelfLine">Add Shelf Line</button>
+            <button type="button" class="small danger" id="removeExtraShelfLine">Remove Last Line</button>
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="printBtn">Print</button>
+          <button class="small" id="copy">Copy Summary</button>
+          <button class="small" id="download">Download JSON</button>
+          <button class="danger" id="reset">Reset All</button>
+          <button class="primary" id="saveToRequestBtn" type="button">Save Shelving To Request</button>
+        </div>
+      </div>
+    </div>
+
+
+
+  </div>
+</div>
+
+<!-- PRINT AREA -->
+<div id="printArea">
+  <h1 id="printTitle">Room</h1>
+  <div class="small">Closet Shelving Measure</div>
+
+  <div id="printDiagramWrap" style="display:none">
+    <img id="printDiagram" alt="Diagram">
+  </div>
+
+  <div style="margin-top:14px">
+    <h2 style="font-size:14px;margin:0 0 6px">Walls (only with sizes)</h2>
+    <div class="box" id="printWalls"></div>
+  </div>
+
+  <div style="margin-top:14px">
+    <h2 style="font-size:14px;margin:0 0 6px">Extra Shelves (only with sizes)</h2>
+    <div class="box" id="printExtras"></div>
+  </div>
+</div>
+
+<script>
+const $ = (id)=>document.getElementById(id);
+const canvas = $("c");
+const ctx = canvas.getContext("2d");
+
+function uid(){ return Math.random().toString(16).slice(2)+Date.now().toString(16); }
+function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+function esc(s){ return String(s ?? "").replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+
+function toNum(v, fallback=null){
+  const s = String(v ?? "").trim();
+  if(!s) return fallback;
+  const rep = {"½":"1/2","¼":"1/4","¾":"3/4"};
+  const t = s.replace(/[½¼¾]/g, m=>rep[m]);
+  const mixed = t.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if(mixed){
+    const whole=+mixed[1], a=+mixed[2], b=+mixed[3];
+    if(b===0) return fallback;
+    return whole + a/b;
+  }
+  const frac = t.match(/^(\d+)\/(\d+)$/);
+  if(frac){
+    const a=+frac[1], b=+frac[2];
+    if(b===0) return fallback;
+    return a/b;
+  }
+  const n = Number(t);
+  return Number.isFinite(n) ? n : fallback;
+}
+function fmtIn(n){
+  if(n===null || n===undefined || !Number.isFinite(n)) return "—";
+  const whole = Math.floor(n + 1e-9);
+  const frac = n - whole;
+  const snaps = [{v:0,t:""},{v:0.25,t:" 1/4"},{v:0.5,t:" 1/2"},{v:0.75,t:" 3/4"}];
+  let best=snaps[0], bestd=999;
+  for(const s of snaps){ const d=Math.abs(frac-s.v); if(d<bestd){best=s;bestd=d;} }
+  if(bestd>0.06) return n.toFixed(2).replace(/\.00$/,"") + '"';
+  if(whole===0 && best.t) return best.t.trim() + '"';
+  return (whole + best.t) + '"';
+}
+function shelfTypeLabel(t){
+  if(t==="DH") return "Double Hung";
+  if(t==="SS") return "Super Slide";
+  if(String(t).toLowerCase()==="linen") return "Linen";
+  if(String(t).toLowerCase()==="close mesh") return "Close Mesh";
+  return t || "";
+}
+function titleCase(x){ return String(x||"").replace(/\b\w/g, c=>c.toUpperCase()); }
+
+/* state */
+const state = {
+  job:"Room",
+  showGrid:true,
+  points:[],
+  walls:[],
+  selectedWall:0,
+  extras:Array.from({length:3}, ()=>({room:"", qty:"", size:"", type:""})),
+};
+
+/* init */
+function initDefault(){
+  state.job="Room";
+  $("job").value=state.job;
+  state.points=[
+    {x: 560, y: 340},
+    {x: 1640, y: 340},
+    {x: 1640, y: 1080},
+    {x: 560, y: 1080},
+  ];
+  state.walls=[];
+  for(let i=0;i<4;i++) state.walls.push({id:uid(), i0:i, i1:(i+1)%4, length:null, type:""});
+  state.selectedWall=0;
+  state.extras=Array.from({length:3}, ()=>({room:"", qty:"", size:"", type:""}));
+  renderExtras();
+  fit();
+  refresh();
+}
+
+/* view fit */
+let view={scale:1, ox:0, oy:0};
+let world={minX:0, minY:0, maxX:canvas.width, maxY:canvas.height};
+
+function computeWorld(){
+  let minX=1e9,minY=1e9,maxX=-1e9,maxY=-1e9;
+  for(const p of state.points){ minX=Math.min(minX,p.x); minY=Math.min(minY,p.y); maxX=Math.max(maxX,p.x); maxY=Math.max(maxY,p.y); }
+  const pad=220;
+  world={minX:minX-pad, minY:minY-pad, maxX:maxX+pad, maxY:maxY+pad};
+}
+function fit(){
+  computeWorld();
+  const W=canvas.width,H=canvas.height;
+  const bw=Math.max(1,world.maxX-world.minX), bh=Math.max(1,world.maxY-world.minY);
+  const s=Math.min((W*0.92)/bw,(H*0.92)/bh);
+  view.scale=clamp(s,0.35,4.0);
+  view.ox=(W-bw*view.scale)/2;
+  view.oy=(H-bh*view.scale)/2;
+  drawScreen();
+}
+function toScreen(p){ return {x:(p.x-world.minX)*view.scale+view.ox, y:(p.y-world.minY)*view.scale+view.oy}; }
+function toWorld(sx,sy){ return {x:(sx-view.ox)/view.scale+world.minX, y:(sy-view.oy)/view.scale+world.minY}; }
+
+/* hit test */
+function hitWall(worldPt){
+  let bestWi=-1, bestD=1e9;
+  for(let wi=0; wi<state.walls.length; wi++){
+    const w=state.walls[wi];
+    const a=state.points[w.i0], b=state.points[w.i1];
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const len2=dx*dx+dy*dy;
+    if(len2<1) continue;
+    let t=((worldPt.x-a.x)*dx+(worldPt.y-a.y)*dy)/len2;
+    t=clamp(t,0,1);
+    const px=a.x+t*dx, py=a.y+t*dy;
+    const d=Math.hypot(worldPt.x-px, worldPt.y-py);
+    if(d<bestD){ bestD=d; bestWi=wi; }
+  }
+  const thresh=30/view.scale;
+  return bestD<=thresh ? bestWi : -1;
+}
+
+/* draw helpers */
+function drawLabelBox(c, x, y, lines, opts={}){
+  const padX = opts.padX ?? 10;
+  const padY = opts.padY ?? 8;
+  const lineH = opts.lineH ?? 20;
+  const r = opts.r ?? 10;
+  const font1 = opts.font1 ?? "900 24px system-ui";
+  const font2 = opts.font2 ?? "900 16px system-ui";
+  const text1 = opts.text1 ?? "#000";
+  const text2 = opts.text2 ?? "#000";
+  const stroke = opts.stroke ?? "#000";
+  const fill = opts.fill ?? "#fff";
+
+  c.save();
+  c.font = font1;
+  const w1 = c.measureText(lines[0] || "").width;
+  c.font = font2;
+  const w2 = c.measureText(lines[1] || "").width;
+  const W = Math.max(w1,w2) + padX*2;
+  const H = (lines[1] ? lineH*2 : lineH) + padY*2;
+
+  c.beginPath();
+  const x0=x, y0=y;
+  const x1=x0+W, y1=y0+H;
+  c.moveTo(x0+r,y0);
+  c.arcTo(x1,y0,x1,y1,r);
+  c.arcTo(x1,y1,x0,y1,r);
+  c.arcTo(x0,y1,x0,y0,r);
+  c.arcTo(x0,y0,x1,y0,r);
+  c.closePath();
+  c.fillStyle=fill;
+  c.strokeStyle=stroke;
+  c.lineWidth=2;
+  c.fill();
+  c.stroke();
+
+  let ty = y0 + padY + lineH - 4;
+  c.fillStyle=text1;
+  c.font=font1;
+  c.fillText(lines[0], x0+padX, ty);
+  if(lines[1]){
+    ty += lineH;
+    c.fillStyle=text2;
+    c.font=font2;
+    c.fillText(lines[1], x0+padX, ty);
+  }
+  c.restore();
+}
+
+function drawScreen(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  if(state.showGrid){
+    ctx.save();
+    ctx.strokeStyle="#ececec";
+    ctx.lineWidth=1;
+    const step=60;
+    for(let x=0;x<=canvas.width;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+    for(let y=0;y<=canvas.height;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+    ctx.restore();
+  }
+
+  ctx.save();
+  ctx.fillStyle="#000";
+  ctx.font="900 26px system-ui";
+  ctx.fillText(state.job || "Room", 24, 44);
+  ctx.restore();
+
+  ctx.save();
+  ctx.lineWidth=10;
+  ctx.strokeStyle="#000";
+  ctx.fillStyle="rgba(0,0,0,.02)";
+  ctx.beginPath();
+  const p0=toScreen(state.points[0]);
+  ctx.moveTo(p0.x,p0.y);
+  for(let i=1;i<state.points.length;i++){
+    const pi=toScreen(state.points[i]);
+    ctx.lineTo(pi.x,pi.y);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+
+  for(let wi=0; wi<state.walls.length; wi++){
+    const w=state.walls[wi];
+    const a=state.points[w.i0], b=state.points[w.i1];
+    const as=toScreen(a), bs=toScreen(b);
+    const mx=(as.x+bs.x)/2, my=(as.y+bs.y)/2;
+
+    if(wi===state.selectedWall){
+      ctx.save();
+      ctx.strokeStyle="#2563eb";
+      ctx.lineWidth=16;
+      ctx.beginPath(); ctx.moveTo(as.x,as.y); ctx.lineTo(bs.x,bs.y); ctx.stroke();
+      ctx.restore();
+    }
+
+    drawLabelBox(ctx, mx-46, my-64, [`W${wi+1}`], {
+      font1:"900 18px system-ui", lineH:18, padX:10, padY:8,
+      fill:"#fff", stroke:"#000", text1:"#000"
+    });
+
+    const lenTxt = w.length ? fmtIn(w.length).replace(/"/g,"") : "—";
+    const typeTxt = w.type ? shelfTypeLabel(w.type).toUpperCase() : "";
+    const lines = typeTxt ? [`${lenTxt}"`, typeTxt] : [`${lenTxt}"`];
+
+    drawLabelBox(ctx, mx+18, my-28, lines, {
+      font1:"900 28px system-ui",
+      font2:"900 16px system-ui",
+      lineH:24,
+      padX:12,
+      padY:10,
+      fill:"#fff",
+      stroke:"#000",
+      text1:"#000",
+      text2:"#000"
+    });
+  }
+}
+
+function exportDiagramBW(){
+  const off=document.createElement("canvas");
+  off.width=canvas.width;
+  off.height=canvas.height;
+  const c=off.getContext("2d");
+  c.fillStyle="#fff"; c.fillRect(0,0,off.width,off.height);
+
+  c.strokeStyle="#eee"; c.lineWidth=1;
+  const step=60;
+  for(let x=0;x<=off.width;x+=step){ c.beginPath(); c.moveTo(x,0); c.lineTo(x,off.height); c.stroke(); }
+  for(let y=0;y<=off.height;y+=step){ c.beginPath(); c.moveTo(0,y); c.lineTo(off.width,y); c.stroke(); }
+
+  c.fillStyle="#000"; c.font="900 26px system-ui";
+  c.fillText(state.job || "Room", 24, 44);
+
+  c.lineWidth=10; c.strokeStyle="#000"; c.fillStyle="rgba(0,0,0,.02)";
+  c.beginPath();
+  const p0=toScreen(state.points[0]);
+  c.moveTo(p0.x,p0.y);
+  for(let i=1;i<state.points.length;i++){
+    const pi=toScreen(state.points[i]);
+    c.lineTo(pi.x,pi.y);
+  }
+  c.closePath(); c.fill(); c.stroke();
+
+  for(let wi=0; wi<state.walls.length; wi++){
+    const w=state.walls[wi];
+    const a=state.points[w.i0], b=state.points[w.i1];
+    const as=toScreen(a), bs=toScreen(b);
+    const mx=(as.x+bs.x)/2, my=(as.y+bs.y)/2;
+
+    drawLabelBox(c, mx-46, my-64, [`W${wi+1}`], {
+      font1:"900 18px system-ui", lineH:18, padX:10, padY:8,
+      fill:"#fff", stroke:"#000", text1:"#000"
+    });
+
+    const lenTxt = w.length ? fmtIn(w.length).replace(/"/g,"") : "—";
+    const typeTxt = w.type ? shelfTypeLabel(w.type).toUpperCase() : "";
+    const lines = typeTxt ? [`${lenTxt}"`, typeTxt] : [`${lenTxt}"`];
+
+    drawLabelBox(c, mx+18, my-28, lines, {
+      font1:"900 28px system-ui",
+      font2:"900 16px system-ui",
+      lineH:24,
+      padX:12,
+      padY:10,
+      fill:"#fff",
+      stroke:"#000",
+      text1:"#000",
+      text2:"#000"
+    });
+  }
+
+  return off.toDataURL("image/png");
+}
+
+function getWallsWithSizes(){
+  return state.walls.map((w,i)=>({i, len:w.length, type:w.type}))
+    .filter(x=>Number.isFinite(x.len) && x.len>0);
+}
+function getExtrasWithSizes(){
+  return state.extras.map(x=>({room:(x.room||"").trim(), qty:(x.qty||"").trim(), size:(x.size||"").trim(), type:(x.type||"").trim()}))
+    .filter(x=>x.size);
+}
+function hasAnyWallSizes(){ return getWallsWithSizes().length>0; }
+
+function buildShelvingSummary(){
+  const walls=getWallsWithSizes();
+  const extras=getExtrasWithSizes();
+  const wallLines = walls.length ? walls.map(w=>{
+    const len=fmtIn(w.len).replace(/"/g,"");
+    const typ=w.type ? ` (${shelfTypeLabel(w.type)})` : "";
+    return `W${w.i+1}: ${len}${typ}`;
+  }).join("
+") : "None";
+  const extraLines = extras.length ? extras.map(r=>{
+    const qty=r.qty||"1"; const room=r.room||"Room"; const t=r.type?` (${r.type})`:"";
+    return `- ${room} qty ${qty} ${r.size}${t}`;
+  }).join("
+") : "None";
+  return `${state.job || "Room"}
+
+WALLS (only with sizes):
+${wallLines}
+
+EXTRA SHELVES (only with sizes):
+${extraLines}`.trim();
+}
+
+function buildShelvingAttachment(){
+  const safe=(state.job||"room").replace(/[^\w\-]+/g,"_");
+  return {
+    filename: `${safe}_shelving_diagram.png`,
+    mimeType: 'image/png',
+    dataUrl: hasAnyWallSizes() ? exportDiagramBW() : '',
+    summaryText: buildShelvingSummary(),
+    createdAt: new Date().toISOString(),
+    source: 'shelving-measure-app'
+  };
+}
+
+function renderExtras(){
+  const box=$("extraShelves");
+  box.innerHTML="";
+  for(let i=0;i<state.extras.length;i++){
+    const ex=state.extras[i];
+    const row=document.createElement("div");
+    row.className="row3";
+    row.style.marginBottom="10px";
+    row.innerHTML=`
+      <div><label>Room</label><input data-ex="room" data-i="${i}" placeholder="e.g., pantry" value="${esc(ex.room)}"></div>
+      <div><label>Qty</label><input data-ex="qty" data-i="${i}" inputmode="numeric" placeholder="e.g., 4" value="${esc(ex.qty)}"></div>
+      <div><label>Size</label><input data-ex="size" data-i="${i}" placeholder="e.g., 40 x 16 cm" value="${esc(ex.size)}"></div>
+      <div style="grid-column:1/-1">
+        <label>Type</label>
+        <select data-ex="type" data-i="${i}">
+          ${["","close mesh","linen","mesh","other"].map(v=>{
+            const sel=(String(ex.type||"").toLowerCase()===v)?"selected":"";
+            const label=v?titleCase(v):"(select)";
+            return `<option value="${esc(v)}" ${sel}>${esc(label)}</option>`;
+          }).join("")}
+        </select>
+      </div>
+    `;
+    box.appendChild(row);
+  }
+
+  box.querySelectorAll("input,select").forEach(el=>{
+    const save=()=>{
+      const i=+el.dataset.i;
+      const k=el.dataset.ex;
+      state.extras[i][k]=el.value;
+    };
+    el.addEventListener("input", save);
+    el.addEventListener("change", save);
+  });
+}
+
+function syncUI(){
+  $("title").textContent = state.job || "Room";
+  $("subtitle").textContent = `Walls: 4 • Extra shelf lines: ${state.extras.length}`;
+
+  const wi=state.selectedWall;
+  const w=state.walls[wi];
+
+  $("selChip").textContent=`Wall: W${wi+1}`;
+  $("wallMeta").textContent=`W${wi+1} (corner ${w.i0+1} → ${w.i1+1})`;
+  $("lenChip").textContent=`Len: ${w.length ? fmtIn(w.length) : "—"}${w.type ? " • " + shelfTypeLabel(w.type) : ""}`;
+
+  $("wallLen").value=(w.length ?? "");
+  $("wallType").value=(w.type ?? "");
+}
+function refresh(){
+  state.job = $("job").value.trim() || "Room";
+  syncUI();
+  drawScreen();
+}
+
+async function doPrint(){
+  refresh();
+
+  $("printTitle").textContent = state.job || "Room";
+
+  const walls=getWallsWithSizes();
+  const extras=getExtrasWithSizes();
+
+  $("printWalls").innerHTML = walls.length
+    ? walls.map(w=>{
+        const len=esc(fmtIn(w.len).replace(/"/g,""));
+        const typ=w.type ? ` (${esc(shelfTypeLabel(w.type))})` : "";
+        return `<div style="padding:6px 0;border-bottom:1px solid #ddd"><b>W${w.i+1}</b> — ${len}${typ}</div>`;
+      }).join("")
+    : `<div>None</div>`;
+
+  $("printExtras").innerHTML = extras.length
+    ? extras.map(r=>{
+        const qty=r.qty || "1";
+        const room=r.room || "Room";
+        const t=r.type ? ` (${esc(r.type)})` : "";
+        return `<div style="padding:6px 0;border-bottom:1px solid #ddd">- ${esc(room)} qty ${esc(qty)} ${esc(r.size)}${t}</div>`;
+      }).join("")
+    : `<div>None</div>`;
+
+  const wrap=$("printDiagramWrap");
+  const img=$("printDiagram");
+
+  if(!hasAnyWallSizes()){
+    wrap.style.display="none";
+    img.removeAttribute("src");
+    window.print();
+    return;
+  }
+
+  wrap.style.display="block";
+  img.src = exportDiagramBW();
+
+  try{
+    if(img.decode) await img.decode();
+    else await new Promise((res,rej)=>{ img.onload=res; img.onerror=rej; });
+  }catch(_){ }
+
+  setTimeout(()=>window.print(), 120);
+}
+
+$("copy").onclick = async ()=>{
+  refresh();
+  const walls=getWallsWithSizes();
+  const extras=getExtrasWithSizes();
+
+  const wallLines = walls.length ? walls.map(w=>{
+    const len=fmtIn(w.len).replace(/"/g,"");
+    const typ=w.type ? ` (${shelfTypeLabel(w.type)})` : "";
+    return `W${w.i+1}: ${len}${typ}`;
+  }).join("\n") : "None";
+
+  const extraLines = extras.length ? extras.map(r=>{
+    const qty=r.qty||"1"; const room=r.room||"Room"; const t=r.type?` (${r.type})`:"";
+    return `- ${room} qty ${qty} ${r.size}${t}`;
+  }).join("\n") : "None";
+
+  const out = `${state.job || "Room"}\n\nWALLS (only with sizes):\n${wallLines}\n\nEXTRA SHELVES (only with sizes):\n${extraLines}`.trim();
+
+  try{ await navigator.clipboard.writeText(out); alert("Copied."); }
+  catch(e){ prompt("Copy:", out); }
+};
+
+$("download").onclick = ()=>{
+  refresh();
+  const data={ exportedAt:new Date().toISOString(), room:state.job, points:state.points, walls:state.walls, extras:state.extras };
+  const blob=new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=(state.job?state.job.replace(/[^\w\-]+/g,"_"):"room")+"_shelving.json";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 400);
+};
+
+// bridge helpers for parent Measure modal
+function prefillFromParent(payload){
+  if (!payload || typeof payload !== 'object') return;
+  if (payload.shelvingAppData && typeof payload.shelvingAppData === 'object') {
+    const d = payload.shelvingAppData;
+    if (Array.isArray(d.points) && d.points.length >= 4) state.points = d.points;
+    if (Array.isArray(d.walls) && d.walls.length) state.walls = d.walls;
+    if (Array.isArray(d.extras)) state.extras = d.extras.length ? d.extras : Array.from({length:3}, ()=>({room:"", qty:"", size:"", type:""}));
+    state.job = d.room || payload.roomName || state.job;
+    $("job").value = state.job;
+    renderExtras();
+    refresh();
+    return;
+  }
+
+  if (payload.roomName) { state.job = String(payload.roomName); $("job").value = state.job; }
+  const wallVals = [payload.wall1, payload.wall2, payload.wall3, payload.wall4];
+  for (let i=0;i<4;i++) {
+    const n = toNum(wallVals[i], null);
+    if (Number.isFinite(n) && n > 0) state.walls[i].length = n;
+    if (payload.shelfType) state.walls[i].type = String(payload.shelfType);
+  }
+  if (payload.extras) {
+    state.extras[0].size = String(payload.extras);
+    state.extras[0].room = state.job || 'Room';
+  }
+  renderExtras();
+  refresh();
+}
+
+function toParentShelvingPayload(){
+  const firstType = (state.walls.find(w => w.type)?.type || '').trim();
+  const wallText = (idx) => {
+    const len = state.walls[idx]?.length;
+    return Number.isFinite(len) ? fmtIn(len).replace(/"/g, '') : '';
+  };
+  const extrasText = getExtrasWithSizes().map((r) => {
+    const qty=r.qty||'1'; const room=r.room||'Room'; const t=r.type?` (${r.type})`:'';
+    return `- ${room} qty ${qty} ${r.size}${t}`;
+  }).join('\n');
+  return {
+    roomName: state.job || '',
+    wall1: wallText(0),
+    wall2: wallText(1),
+    wall3: wallText(2),
+    wall4: wallText(3),
+    shelfType: firstType,
+    extras: extrasText,
+    shelvingSummary: buildShelvingSummary(),
+    shelvingAttachment: buildShelvingAttachment(),
+    shelvingAppData: {
+      room: state.job,
+      points: state.points,
+      walls: state.walls,
+      extras: state.extras,
+    }
+  };
+
+
+window.addEventListener('message', (e) => {
+  const msg = e.data || {};
+  if (msg.type === 'kympg_shelving_prefill') prefillFromParent(msg.payload || {});
+});
+$("saveToRequestBtn").addEventListener('click', () => {
+  window.parent.postMessage({ type: 'kympg_shelving_saved', payload: toParentShelvingPayload() }, '*');
+});
+
+/* events */
+$("job").addEventListener("input", refresh);
+$("fit").onclick=()=>{ fit(); refresh(); };
+$("gridBtn").onclick=()=>{ state.showGrid=!state.showGrid; drawScreen(); };
+
+$("wallLen").addEventListener("input", ()=>{
+  const wi=state.selectedWall;
+  const len=toNum($("wallLen").value, null);
+  state.walls[wi].length = (len && len>0) ? len : null;
+  refresh();
+});
+$("wallType").addEventListener("change", ()=>{
+  const wi=state.selectedWall;
+  state.walls[wi].type = $("wallType").value;
+  refresh();
+});
+$("clearWall").onclick=()=>{
+  const wi=state.selectedWall;
+  state.walls[wi].length=null; state.walls[wi].type="";
+  $("wallLen").value=""; $("wallType").value="";
+  refresh();
+};
+$("reset").onclick=()=>{ if(confirm("Reset everything?")) initDefault(); };
+$("printBtn").onclick=()=>doPrint();
+
+const addExtraLine = ()=>{ state.extras.push({room:"", qty:"", size:"", type:""}); renderExtras(); refresh(); };
+$("addExtraShelfLine").onclick = addExtraLine;
+if ($("addExtraShelfLineTop")) $("addExtraShelfLineTop").onclick = addExtraLine;
+$("removeExtraShelfLine").onclick = ()=>{ if (state.extras.length>1) { state.extras.pop(); renderExtras(); refresh(); } };
+
+canvas.addEventListener("click", (e)=>{
+  const r=canvas.getBoundingClientRect();
+  const sx=(e.clientX-r.left)*(canvas.width/r.width);
+  const sy=(e.clientY-r.top )*(canvas.height/r.height);
+  const wp=toWorld(sx,sy);
+  const wi=hitWall(wp);
+  if(wi>=0){ state.selectedWall=wi; refresh(); }
+});
+
+/* start */
+initDefault();
+</script>
+</body>
+</html>
