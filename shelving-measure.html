@@ -169,12 +169,13 @@
               <div class="meta">Only prints lines with a size.</div>
             </div>
             <span class="chip">auto-save</span>
+            <button type="button" class="small" id="addExtraShelfLineTop">+ Add Line</button>
           </div>
 
           <div class="sep"></div>
           <div id="extraShelves"></div>
           <div class="extra-actions">
-            <button type="button" class="small" id="addExtraShelfLine">Add Extra Shelf Line</button>
+            <button type="button" class="small" id="addExtraShelfLine">Add Shelf Line</button>
             <button type="button" class="small danger" id="removeExtraShelfLine">Remove Last Line</button>
           </div>
         </div>
@@ -784,7 +785,9 @@ $("clearWall").onclick=()=>{
 $("reset").onclick=()=>{ if(confirm("Reset everything?")) initDefault(); };
 $("printBtn").onclick=()=>doPrint();
 
-$("addExtraShelfLine").onclick = ()=>{ state.extras.push({room:"", qty:"", size:"", type:""}); renderExtras(); refresh(); };
+const addExtraLine = ()=>{ state.extras.push({room:"", qty:"", size:"", type:""}); renderExtras(); refresh(); };
+$("addExtraShelfLine").onclick = addExtraLine;
+if ($("addExtraShelfLineTop")) $("addExtraShelfLineTop").onclick = addExtraLine;
 $("removeExtraShelfLine").onclick = ()=>{ if (state.extras.length>1) { state.extras.pop(); renderExtras(); refresh(); } };
 
 canvas.addEventListener("click", (e)=>{
