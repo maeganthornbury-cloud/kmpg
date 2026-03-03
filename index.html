@@ -993,7 +993,8 @@ body.auth-locked .auth-gate{ display:flex; }
     <p>Sign in with Netlify Identity to access the app.</p>
     <div class="row">
       <button type="button" class="kympg-authBtn primary" onclick="openLogin()">Use Netlify Login</button>
-      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineLogin()">Continue Offline</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineLogin()">Continue Offline (Admin)</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineTechLogin()">Testing Login (Tech)</button>
     </div>
   </div>
 </div>
@@ -1135,9 +1136,9 @@ body.auth-locked .auth-gate{ display:flex; }
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M6 7v13"/><path d="M18 7v13"/><path d="M6 20h12"/><path d="M9 10h6"/></svg></span>
         <span class="kympg-labelWrap"><span class="kympg-label">Shower Designer</span><span class="kympg-hint">Measure and preview shower doors</span></span>
       </button>
-      <button class="kympg-navBtn" data-tip="Open Requests" type="button" onclick="kympgOpen('residentialdb', this)">
+      <button class="kympg-navBtn" data-tip="Measure" type="button" onclick="kympgOpen('residentialdb', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span>
-        <span class="kympg-labelWrap"><span class="kympg-label">Open Requests</span><span class="kympg-hint">Edit assigned requests</span></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">Measure</span><span class="kympg-hint">Open assigned requests</span></span>
       </button>
       <button class="kympg-navBtn" data-tip="Service Techs" type="button" onclick="kympgOpen('servicetechs', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 14-4 16 0"/></svg></span>
@@ -5306,6 +5307,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     syncAuthState(offlineUser);
   }
 
+  function continueOfflineTechLogin() {
+    const techUser = {
+      email: 'tech.test@local',
+      user_metadata: { full_name: 'Test Tech' },
+      app_metadata: { roles: ['field'] },
+      token: { access_token: '' },
+    };
+    isOfflineAuth = true;
+    syncAuthState(techUser);
+  }
+
   async function logoutUser() {
     if (isOfflineAuth) {
       isOfflineAuth = false;
@@ -5843,7 +5855,7 @@ document.addEventListener("DOMContentLoaded", async function () {
       if (text.includes('shower')) return 'Shower';
       if (text.includes('mirror')) return 'Mirror';
       if (text.includes('shel')) return 'Shelving';
-      return r.measureCategory || r.description || '';
+      return 'Shower / Mirror / Shelving';
     };
 
     tbody.innerHTML = rows.map((r) => `
@@ -5870,7 +5882,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById('measureCustomerPhone').value = r.customer?.phone || '';
     document.getElementById('measureCustomerAddress').value = r.customer?.address || '';
     document.getElementById('measureDescription').value = r.description || '';
-    document.getElementById('measureCategory').value = r.measureCategory || '';
+    const existingCategory = String(r.measureCategory || '').toLowerCase();
+    const normalizedCategory = existingCategory === 'shower door' ? 'shower' : existingCategory;
+    document.getElementById('measureCategory').value = normalizedCategory;
     document.getElementById('measureNotes').value = r.measureNotes || '';
     document.getElementById('measureStatus').textContent = '';
     const modal = document.getElementById('measureModal');
@@ -5888,7 +5902,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const measureNotes = (document.getElementById('measureNotes')?.value || '').trim();
     const statusEl = document.getElementById('measureStatus');
     if (!measureCategory) {
-      if (statusEl) statusEl.textContent = 'Please pick shower door, mirror, or shelving.';
+      if (statusEl) statusEl.textContent = 'Please pick shower, mirror, or shelving.';
       return;
     }
 
@@ -6084,7 +6098,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     if (which === 'residentialdb'){
       const r = document.getElementById('residentialdb-section');
       if (r){ r.style.display = 'block'; }
-      kympgSetHeader('Open Residential Requests', 'Search and edit saved requests.', 'Residential', 'Open Requests');
+      kympgSetHeader('Measure Requests', 'Open requests ready to measure (Shower, Mirror, or Shelving).', 'Residential', 'Measure');
       try { if (typeof loadResidentialRequests === 'function') loadResidentialRequests(); } catch(e) {}
       return;
     }
@@ -6206,7 +6220,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       <div class="full"><label>Pick Type</label>
         <select id="measureCategory">
           <option value="">Select one...</option>
-          <option value="shower door">Shower Door</option>
+          <option value="shower">Shower</option>
           <option value="mirror">Mirror</option>
           <option value="shelving">Shelving</option>
         </select>
