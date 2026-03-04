@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mirror Measure</title>
+<style>
+  :root{--line:#d1d5db;--muted:#6b7280;--accent:#2563eb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  *{box-sizing:border-box}
+  body{margin:0;padding:12px;background:#fff;color:#111827}
+  .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:12px}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:12px;background:#fff}
+  .hd{padding:10px 12px;border-bottom:1px solid var(--line);font-weight:800;background:#f8fafc}
+  .bd{padding:12px}
+  .meta{font-size:12px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #e5e7eb;padding:8px;font-size:12px;text-align:left}
+  input,select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px}
+  button{padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:700;cursor:pointer}
+  .primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  canvas{display:block;width:100%;height:auto;border:1px solid #e5e7eb;border-radius:10px;background:#fff}
+</style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231f2937%27/%3E%3Ctext x=%2750%25%27 y=%2756%25%27 dominant-baseline=%27middle%27 text-anchor=%27middle%27 font-family=%27Arial%27 font-size=%2716%27 fill=%27white%27%3EK%3C/text%3E%3C/svg%3E"/>
+</head>
+<body>
+<div class="grid">
+  <div class="card">
+    <div class="hd">Mirror Diagram</div>
+    <div class="bd">
+      <canvas id="cv" width="980" height="930"></canvas>
+      <div class="meta" style="margin-top:8px;">Wall mode supports multiple mirrors. Click a mirror to select; press Delete to remove selected mirror.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd">Mirror Sizes + Options</div>
+    <div class="bd">
+      <table>
+        <thead><tr><th>Mirror</th><th>Width</th><th>Height</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="row" style="margin-top:10px;">
+        <button type="button" id="addRow">Add Mirror Row</button>
+        <button type="button" id="removeRow">Remove Last Row</button>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#0f172a;">
+          <input id="mirroredWall" type="checkbox" style="width:auto;"> Mirrored Wall (multiple mirrors, draggable)
+        </label>
+      </div>
+
+      <div class="row" id="wallModeActions" style="margin-top:12px;display:none;">
+        <button type="button" id="addWallMirror">Add Mirror to Wall</button>
+        <button type="button" id="removeSelectedMirror">Remove Selected Mirror</button>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#0f172a;">
+          <input id="outOfSquare" type="checkbox" style="width:auto;"> Out of Square
+        </label>
+      </div>
+      <div id="outageInputs" style="margin-top:8px;display:none;">
+        <div class="row">
+          <div style="flex:1;min-width:120px;"><div class="meta">Outage Corner</div>
+            <select id="outageCorner">
+              <option value="tl">Top Left</option>
+              <option value="tr">Top Right</option>
+              <option value="bl">Bottom Left</option>
+              <option value="br">Bottom Right</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:120px;"><div class="meta">Facing</div>
+            <select id="outageDirection">
+              <option value="in">In</option>
+              <option value="out">Out</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:120px;"><div class="meta">Outage Size (")</div><input id="outageSize" type="number" min="0" step="0.1" value="2"></div>
+        </div>
+        <div class="row" style="margin-top:8px;"><button type="button" id="applyOutage">Apply Outage</button></div>
+      </div>
+
+      <div style="margin-top:12px;" class="row">
+        <button type="button" id="addCutout">Add Cutout</button>
+        <button type="button" id="removeSelectedCutout">Remove Selected Cutout</button>
+      </div>
+
+      <div id="cutoutInputs" style="margin-top:12px;">
+        <div class="row">
+          <div style="flex:1;min-width:100px;"><div class="meta">Cutout Width (")</div><input id="cutW" type="number" min="1" value="8"></div>
+          <div style="flex:1;min-width:100px;"><div class="meta">Cutout Height (")</div><input id="cutH" type="number" min="1" value="8"></div>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <div style="flex:1;min-width:120px;"><div class="meta">Over from mirror left (")</div><input id="cutOver" type="number" min="0" value="5"></div>
+          <div style="flex:1;min-width:120px;"><div class="meta">Up from mirror bottom (")</div><input id="cutUp" type="number" min="0" value="30"></div>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <button type="button" id="applyCut">Apply Selected Cutout</button>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;" class="row">
+        <button type="button" class="primary" id="saveMirror">Save Mirror To Request</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=(id)=>document.getElementById(id);
+const cv=$('cv');
+const cx=cv.getContext('2d');
+
+const state={
+  mirroredWall:false,
+  rows:[{width:'36',height:'48'}],
+  wallMirrors:[],
+  singleCutouts:[],
+  singleOutage:{enabled:false,corner:'tr',direction:'in',size:2},
+  selectedMirror:0,
+  selectedCutout:0,
+  dragging:{type:null,index:-1,cutoutIndex:-1,offX:0,offY:0},
+};
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+function toNum(v,f=0){ const n=Number(v); return Number.isFinite(n)?n:f; }
+function clamp(n,a,b){ return Math.max(a,Math.min(b,n)); }
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+function defaultOutage(){ return {enabled:false,corner:'tr',direction:'in',size:2}; }
+function defaultCutout(){ return {id:uid(),w:8,h:8,offsetLeft:2,offsetBottom:2}; }
+
+function getPrimaryDims(){
+  const r=state.rows[0]||{};
+  return {w:Math.max(1,toNum(r.width,36)), h:Math.max(1,toNum(r.height,48))};
+}
+
+function rowToMirrorBox(row, i=0){
+  const width=Math.max(1,toNum(row?.width,36));
+  const height=Math.max(1,toNum(row?.height,48));
+  return {
+    id:uid(), x:80+(i*40), y:120+(i*30),
+    width, height, w:Math.max(12,width*4), h:Math.max(12,height*4),
+    cutouts:[],
+    outage:defaultOutage()
+  };
+}
+
+function ensureWallMirrors(){
+  if (!state.wallMirrors.length) state.wallMirrors = state.rows.map((r,i)=>rowToMirrorBox(r,i));
+  if (state.selectedMirror >= state.wallMirrors.length) state.selectedMirror = Math.max(0,state.wallMirrors.length-1);
+}
+
+function currentMirror(){
+  if (state.mirroredWall) {
+    ensureWallMirrors();
+    return state.wallMirrors[state.selectedMirror] || state.wallMirrors[0] || null;
+  }
+  const dims=getPrimaryDims();
+  return { id:'single', x:100, y:100, w:760, h:760, width:dims.w, height:dims.h, cutouts:state.singleCutouts, outage:state.singleOutage };
+}
+
+function getScale(m){ return { sx:(m.w||760)/Math.max(1,m.width||36), sy:(m.h||760)/Math.max(1,m.height||48) }; }
+
+function pxFromCutout(m,c){
+  const {sx,sy}=getScale(m);
+  const w=Math.max(8,(c.w||8)*sx), h=Math.max(8,(c.h||8)*sy);
+  const x=m.x+(c.offsetLeft||0)*sx;
+  const y=m.y+m.h-h-(c.offsetBottom||0)*sy;
+  return {x:clamp(x,m.x,m.x+m.w-w), y:clamp(y,m.y,m.y+m.h-h), w,h};
+}
+
+function syncCutoutFromPx(m,c,px){
+  const {sx,sy}=getScale(m);
+  c.offsetLeft=Math.max(0,(px.x-m.x)/sx);
+  c.offsetBottom=Math.max(0,(m.y+m.h-(px.y+px.h))/sy);
+}
+
+function mirrorPolygon(m){
+  const o = m.outage || defaultOutage();
+  const n = Math.max(0,(o.size||0)*((m.w||760)/Math.max(1,m.width||36)));
+  const x=m.x,y=m.y,w=m.w,h=m.h;
+  const corner=o.corner||'tr', dir=o.direction||'in';
+  if(!o.enabled || n<=0.1){
+    return [[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
+  }
+  if(corner==='tl' && dir==='in') return [[x+n,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y+n]];
+  if(corner==='tl' && dir==='out') return [[x-n,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y-n]];
+  if(corner==='tr' && dir==='in') return [[x,y],[x+w-n,y],[x+w,y+n],[x+w,y+h],[x,y+h]];
+  if(corner==='tr' && dir==='out') return [[x,y],[x+w+n,y],[x+w,y-n],[x+w,y+h],[x,y+h]];
+  if(corner==='bl' && dir==='in') return [[x,y],[x+w,y],[x+w,y+h],[x+n,y+h],[x,y+h-n]];
+  if(corner==='bl' && dir==='out') return [[x,y],[x+w,y],[x+w,y+h],[x-n,y+h],[x,y+h+n]];
+  if(corner==='br' && dir==='in') return [[x,y],[x+w,y],[x+w,y+h-n],[x+w-n,y+h],[x,y+h]];
+  return [[x,y],[x+w,y],[x+w,y+h+n],[x+w+n,y+h],[x,y+h]]; // br out
+}
+
+function drawPolygon(points, fill, stroke, width=2){
+  if(!points.length) return;
+  cx.beginPath();
+  cx.moveTo(points[0][0],points[0][1]);
+  for(let i=1;i<points.length;i++) cx.lineTo(points[i][0],points[i][1]);
+  cx.closePath();
+  cx.fillStyle=fill; cx.fill();
+  cx.strokeStyle=stroke; cx.lineWidth=width; cx.stroke();
+}
+
+function syncCutoutInputs(){
+  const m=currentMirror();
+  if(!m) return;
+  const c=(m.cutouts||[])[state.selectedCutout];
+  $('cutW').value = c ? Math.round(c.w*10)/10 : '';
+  $('cutH').value = c ? Math.round(c.h*10)/10 : '';
+  $('cutOver').value = c ? Math.round((c.offsetLeft||0)*10)/10 : '';
+  $('cutUp').value = c ? Math.round((c.offsetBottom||0)*10)/10 : '';
+
+  const o=m.outage||defaultOutage();
+  $('outOfSquare').checked=!!o.enabled;
+  $('outageCorner').value=o.corner||'tr';
+  $('outageDirection').value=o.direction||'in';
+  $('outageSize').value=Math.round((o.size||0)*10)/10;
+  $('outageInputs').style.display=o.enabled?'block':'none';
+}
+
+function draw(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  cx.fillStyle='#0f172a'; cx.font='bold 18px system-ui';
+  cx.fillText(state.mirroredWall ? 'Mirrored Wall Layout' : 'Single Mirror', 20, 30);
+
+  const mirrors = state.mirroredWall ? (ensureWallMirrors(), state.wallMirrors) : [currentMirror()].filter(Boolean);
+
+  mirrors.forEach((m,idx)=>{
+    drawPolygon(mirrorPolygon(m), '#e8efff', idx===state.selectedMirror ? '#2563eb' : '#64748b', idx===state.selectedMirror?4:2);
+
+    cx.fillStyle='#111827'; cx.font='bold 14px system-ui';
+    cx.fillText(`Mirror ${idx+1}: ${Math.round((m.width||0)*10)/10}" x ${Math.round((m.height||0)*10)/10}"`, m.x+8, m.y+18);
+
+    // width/height dimension lines
+    cx.strokeStyle='#334155'; cx.lineWidth=1.5;
+    cx.beginPath(); cx.moveTo(m.x, m.y + m.h + 16); cx.lineTo(m.x + m.w, m.y + m.h + 16); cx.stroke();
+    cx.fillStyle='#0f172a'; cx.font='bold 12px system-ui';
+    cx.fillText(`${Math.round((m.width||0)*10)/10}" W`, m.x + m.w/2 - 24, m.y + m.h + 12);
+
+    cx.beginPath(); cx.moveTo(m.x - 16, m.y); cx.lineTo(m.x - 16, m.y + m.h); cx.stroke();
+    cx.save();
+    cx.translate(m.x - 22, m.y + m.h/2);
+    cx.rotate(-Math.PI/2);
+    cx.fillText(`${Math.round((m.height||0)*10)/10}" H`, -20, -2);
+    cx.restore();
+
+    const o=m.outage||defaultOutage();
+    if(o.enabled && o.size>0){
+      cx.fillStyle='#7c3aed';
+      cx.font='bold 11px system-ui';
+      cx.fillText(`Outage ${Math.round(o.size*10)/10}" ${o.corner.toUpperCase()} ${o.direction.toUpperCase()}`, m.x+8, m.y+34);
+    }
+
+    const cuts=m.cutouts||[];
+    cuts.forEach((c,ci)=>{
+      const px=pxFromCutout(m,c);
+      cx.fillStyle='rgba(239,68,68,.25)'; cx.fillRect(px.x,px.y,px.w,px.h);
+      cx.strokeStyle=(idx===state.selectedMirror && ci===state.selectedCutout)?'#b91c1c':'#ef4444';
+      cx.lineWidth=2; cx.strokeRect(px.x,px.y,px.w,px.h);
+      cx.fillStyle='#7f1d1d'; cx.font='bold 12px system-ui';
+      cx.fillText(`Cutout ${ci+1}: ${Math.round(c.w*10)/10}" x ${Math.round(c.h*10)/10}"`, px.x+4, px.y+14);
+      cx.fillStyle='#111827'; cx.font='bold 11px system-ui';
+      cx.fillText(`${Math.round((c.offsetLeft||0)*10)/10}" over • ${Math.round((c.offsetBottom||0)*10)/10}" up`, px.x+4, px.y+30);
+    });
+  });
+
+  syncCutoutInputs();
+}
+
+function renderRows(){
+  const tbody=$('rows');
+  tbody.innerHTML=state.rows.map((m,i)=>`<tr><td>#${i+1}</td><td><input data-i="${i}" data-k="width" value="${esc(m.width)}"></td><td><input data-i="${i}" data-k="height" value="${esc(m.height)}"></td></tr>`).join('');
+  tbody.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{
+    const i=Number(inp.dataset.i), k=inp.dataset.k;
+    state.rows[i][k]=inp.value;
+    if(state.mirroredWall && state.wallMirrors[i]){
+      const m=state.wallMirrors[i];
+      m.width=Math.max(1,toNum(state.rows[i].width,m.width));
+      m.height=Math.max(1,toNum(state.rows[i].height,m.height));
+      m.w=Math.max(12,m.width*4); m.h=Math.max(12,m.height*4);
+    }
+    draw();
+  }));
+}
+
+function addCutout(){ const m=currentMirror(); if(!m) return; m.cutouts.push(defaultCutout()); state.selectedCutout=m.cutouts.length-1; draw(); }
+function removeSelectedCutout(){ const m=currentMirror(); if(!m||!m.cutouts.length) return; m.cutouts.splice(state.selectedCutout,1); state.selectedCutout=Math.max(0,state.selectedCutout-1); draw(); }
+function applyCut(){ const m=currentMirror(); if(!m) return; const c=m.cutouts[state.selectedCutout]; if(!c) return; c.w=Math.max(1,toNum($('cutW').value,c.w)); c.h=Math.max(1,toNum($('cutH').value,c.h)); c.offsetLeft=Math.max(0,toNum($('cutOver').value,c.offsetLeft)); c.offsetBottom=Math.max(0,toNum($('cutUp').value,c.offsetBottom)); draw(); }
+function applyOutage(){ const m=currentMirror(); if(!m) return; m.outage.enabled=$('outOfSquare').checked; m.outage.corner=$('outageCorner').value; m.outage.direction=$('outageDirection').value; m.outage.size=Math.max(0,toNum($('outageSize').value,m.outage.size||0)); $('outageInputs').style.display=m.outage.enabled?'block':'none'; draw(); }
+function removeSelectedMirror(){ if(!state.mirroredWall) return; if(state.wallMirrors.length<=1) return; state.wallMirrors.splice(state.selectedMirror,1); state.selectedMirror=Math.max(0,state.selectedMirror-1); draw(); }
+
+function pointerPos(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*(cv.width/r.width),y:(e.clientY-r.top)*(cv.height/r.height)}}
+cv.addEventListener('mousedown',e=>{
+  const p=pointerPos(e);
+  const mirrors = state.mirroredWall ? state.wallMirrors : [currentMirror()].filter(Boolean);
+  for(let mi=mirrors.length-1; mi>=0; mi--){
+    const m=mirrors[mi];
+    for(let ci=(m.cutouts||[]).length-1; ci>=0; ci--){
+      const c=m.cutouts[ci], px=pxFromCutout(m,c);
+      if(p.x>=px.x&&p.x<=px.x+px.w&&p.y>=px.y&&p.y<=px.y+px.h){
+        state.selectedMirror=mi; state.selectedCutout=ci;
+        state.dragging={type:'cutout',index:mi,cutoutIndex:ci,offX:p.x-px.x,offY:p.y-px.y};
+        draw(); return;
+      }
+    }
+    if(state.mirroredWall && p.x>=m.x&&p.x<=m.x+m.w&&p.y>=m.y&&p.y<=m.y+m.h){
+      state.selectedMirror=mi;
+      state.dragging={type:'mirror',index:mi,cutoutIndex:-1,offX:p.x-m.x,offY:p.y-m.y};
+      draw(); return;
+    }
+  }
+});
+window.addEventListener('mouseup',()=>state.dragging={type:null,index:-1,cutoutIndex:-1,offX:0,offY:0});
+cv.addEventListener('mousemove',e=>{
+  if(!state.dragging.type) return;
+  const p=pointerPos(e);
+  if(state.dragging.type==='mirror' && state.mirroredWall){
+    const m=state.wallMirrors[state.dragging.index]; if(!m) return;
+    m.x=clamp(p.x-state.dragging.offX,30,cv.width-30-m.w);
+    m.y=clamp(p.y-state.dragging.offY,80,cv.height-30-m.h);
+    draw(); return;
+  }
+  if(state.dragging.type==='cutout'){
+    const m=(state.mirroredWall?state.wallMirrors:[currentMirror()])[state.dragging.index] || currentMirror();
+    if(!m) return;
+    const c=(m.cutouts||[])[state.dragging.cutoutIndex]; if(!c) return;
+    const px=pxFromCutout(m,c);
+    px.x=clamp(p.x-state.dragging.offX,m.x,m.x+m.w-px.w);
+    px.y=clamp(p.y-state.dragging.offY,m.y,m.y+m.h-px.h);
+    syncCutoutFromPx(m,c,px);
+    draw();
+  }
+});
+
+$('mirroredWall').addEventListener('change',()=>{ state.mirroredWall=$('mirroredWall').checked; $('wallModeActions').style.display=state.mirroredWall?'flex':'none'; if(state.mirroredWall) ensureWallMirrors(); draw(); });
+$('addRow').addEventListener('click',()=>{ state.rows.push({width:'',height:''}); renderRows(); if(state.mirroredWall) state.wallMirrors.push(rowToMirrorBox(state.rows[state.rows.length-1],state.rows.length-1)); draw(); });
+$('removeRow').addEventListener('click',()=>{ if(state.rows.length>1){ state.rows.pop(); if(state.wallMirrors.length>state.rows.length) state.wallMirrors.pop(); renderRows(); draw(); }});
+$('addWallMirror').addEventListener('click',()=>{ ensureWallMirrors(); state.wallMirrors.push(rowToMirrorBox(state.rows[0], state.wallMirrors.length)); state.selectedMirror=state.wallMirrors.length-1; draw(); });
+$('removeSelectedMirror').addEventListener('click',removeSelectedMirror);
+$('addCutout').addEventListener('click',addCutout);
+$('removeSelectedCutout').addEventListener('click',removeSelectedCutout);
+$('applyCut').addEventListener('click',applyCut);
+$('outOfSquare').addEventListener('change',applyOutage);
+$('applyOutage').addEventListener('click',applyOutage);
+
+document.addEventListener('keydown',(e)=>{
+  const tag=(document.activeElement?.tagName||'').toLowerCase();
+  if(['input','textarea','select'].includes(tag)) return;
+  if(e.key==='Delete'){
+    if(state.mirroredWall) removeSelectedMirror();
+  }
+});
+
+function buildPayload(){
+  const mirrorRows=state.rows.map((m,i)=>({index:i+1,width:String(m.width||'').trim(),height:String(m.height||'').trim()})).filter(r=>r.width||r.height);
+  const wallMirrors = state.mirroredWall ? state.wallMirrors.map((m,idx)=>({
+    index:idx+1,width:m.width,height:m.height,x:m.x,y:m.y,
+    outage:{...(m.outage||defaultOutage())},
+    cutouts:(m.cutouts||[]).map((c,i)=>({index:i+1,w:c.w,h:c.h,offsetLeft:c.offsetLeft||0,offsetBottom:c.offsetBottom||0}))
+  })) : [];
+  const singleCuts = !state.mirroredWall ? (state.singleCutouts||[]).map((c,i)=>({index:i+1,w:c.w,h:c.h,offsetLeft:c.offsetLeft||0,offsetBottom:c.offsetBottom||0})) : [];
+  const singleOutage = {...(state.singleOutage||defaultOutage())};
+
+  const summaryBase = mirrorRows.length ? mirrorRows.map(r=>`Mirror ${r.index}: ${r.width||'-'} x ${r.height||'-'}`).join('\n') : 'No mirror sizes entered.';
+  const summary = state.mirroredWall
+    ? `${summaryBase}\nMirrored wall: ${wallMirrors.length} mirrors\n${wallMirrors.map(m=>`Wall Mirror ${m.index}: ${m.width} x ${m.height} • ${m.outage?.enabled ? `Outage ${m.outage.size}\" ${m.outage.corner} ${m.outage.direction}` : 'No outage'} • Cutouts ${m.cutouts.length}`).join('\n')}`
+    : `${summaryBase}\n${singleOutage.enabled ? `Outage ${singleOutage.size}\" ${singleOutage.corner} ${singleOutage.direction}` : 'Outage: none'}\nCutouts: ${singleCuts.length}`;
+
+  return {
+    rows: mirrorRows,
+    mirroredWall: state.mirroredWall,
+    wallMirrors,
+    cutouts: singleCuts,
+    outage: singleOutage,
+    summary,
+    mirrorAttachment: {
+      filename: 'mirror_measure_diagram.png',
+      mimeType: 'image/png',
+      dataUrl: cv.toDataURL('image/png'),
+      summaryText: summary,
+      createdAt: new Date().toISOString(),
+      source: 'mirror-measure-app'
+    }
+  };
+}
+
+$('saveMirror').addEventListener('click',()=>window.parent.postMessage({type:'kympg_mirror_saved', payload: buildPayload()},'*'));
+
+window.addEventListener('message',(e)=>{
+  const msg=e.data||{};
+  if(msg.type!=='kympg_mirror_prefill') return;
+  const p=msg.payload||{};
+  if(Array.isArray(p.rows)&&p.rows.length) state.rows=p.rows.map(r=>({width:String(r.width||''),height:String(r.height||'')}));
+  state.mirroredWall=!!p.mirroredWall;
+  $('mirroredWall').checked=state.mirroredWall;
+  $('wallModeActions').style.display=state.mirroredWall?'flex':'none';
+
+  if(Array.isArray(p.wallMirrors)&&p.wallMirrors.length){
+    state.wallMirrors=p.wallMirrors.map((m,i)=>({
+      id:uid(),x:toNum(m.x,80+i*30),y:toNum(m.y,120+i*30),
+      width:Math.max(1,toNum(m.width,36)),height:Math.max(1,toNum(m.height,48)),
+      w:Math.max(12,toNum(m.width,36)*4),h:Math.max(12,toNum(m.height,48)*4),
+      outage:{...defaultOutage(),...(m.outage||{})},
+      cutouts:Array.isArray(m.cutouts)?m.cutouts.map(c=>({id:uid(),w:toNum(c.w,8),h:toNum(c.h,8),offsetLeft:toNum(c.offsetLeft,2),offsetBottom:toNum(c.offsetBottom,2)})):[]
+    }));
+  }
+
+  if(Array.isArray(p.cutouts)) state.singleCutouts=p.cutouts.map(c=>({id:uid(),w:toNum(c.w,8),h:toNum(c.h,8),offsetLeft:toNum(c.offsetLeft,2),offsetBottom:toNum(c.offsetBottom,2)}));
+  state.singleOutage={...defaultOutage(),...(p.outage||{})};
+
+  state.selectedMirror=0; state.selectedCutout=0;
+  renderRows(); draw();
+});
+
+renderRows();
+draw();
+</script>
+</body>
+</html>
