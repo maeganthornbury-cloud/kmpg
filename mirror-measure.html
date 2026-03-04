@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mirror Measure</title>
+<style>
+  :root{--line:#d1d5db;--muted:#6b7280;--accent:#2563eb;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  *{box-sizing:border-box}
+  body{margin:0;padding:12px;background:#fff;color:#111827}
+  .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:12px}
+  @media (max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:12px;background:#fff}
+  .hd{padding:10px 12px;border-bottom:1px solid var(--line);font-weight:800;background:#f8fafc}
+  .bd{padding:12px}
+  .meta{font-size:12px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #e5e7eb;padding:8px;font-size:12px;text-align:left}
+  input{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px}
+  button{padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:700;cursor:pointer}
+  .primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  canvas{display:block;width:100%;height:auto;border:1px solid #e5e7eb;border-radius:10px;background:#fff}
+</style>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231f2937%27/%3E%3Ctext x=%2750%25%27 y=%2756%25%27 dominant-baseline=%27middle%27 text-anchor=%27middle%27 font-family=%27Arial%27 font-size=%2716%27 fill=%27white%27%3EK%3C/text%3E%3C/svg%3E"/>
+</head>
+<body>
+<div class="grid">
+  <div class="card">
+    <div class="hd">Mirror Diagram (drag cutout)</div>
+    <div class="bd">
+      <canvas id="cv" width="900" height="900"></canvas>
+      <div class="meta" style="margin-top:8px;">Blue square = mirror. Red box = cutout (drag to position).</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd">Mirror Sizes Table</div>
+    <div class="bd">
+      <table>
+        <thead><tr><th>Mirror</th><th>Width</th><th>Height</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="row" style="margin-top:10px;">
+        <button type="button" id="addRow">Add Mirror Row</button>
+        <button type="button" id="removeRow">Remove Last Row</button>
+      </div>
+
+      <div style="margin-top:12px;" class="row">
+        <div style="flex:1;min-width:100px;"><div class="meta">Cutout Width</div><input id="cutW" type="number" min="1" value="90"></div>
+        <div style="flex:1;min-width:100px;"><div class="meta">Cutout Height</div><input id="cutH" type="number" min="1" value="70"></div>
+      </div>
+
+      <div style="margin-top:12px;" class="row">
+        <div style="flex:1;min-width:120px;"><div class="meta">Over from left edge (")</div><input id="cutOver" type="number" min="0" value="5"></div>
+        <div style="flex:1;min-width:120px;"><div class="meta">Up from bottom edge (")</div><input id="cutUp" type="number" min="0" value="30"></div>
+      </div>
+
+      <div style="margin-top:12px;" class="row">
+        <button type="button" id="applyCut">Apply Cutout Size / Position</button>
+        <button type="button" class="primary" id="saveMirror">Save Mirror To Request</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=(id)=>document.getElementById(id);
+const cv=$('cv');
+const cx=cv.getContext('2d');
+const state={
+  mirrors:[{width:'36',height:'48'}],
+  cutout:{x:390,y:390,w:90,h:70,offsetLeft:5,offsetBottom:30},
+  dragging:false,offX:0,offY:0,
+};
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+
+function toNum(v, fallback=0){ const n = Number(v); return Number.isFinite(n) ? n : fallback; }
+
+function getMirrorDimensions(){
+  const first = state.mirrors[0] || {};
+  const w = Math.max(1, toNum(first.width, 100));
+  const h = Math.max(1, toNum(first.height, 100));
+  return { w, h };
+}
+
+function pxScale(){
+  const dims = getMirrorDimensions();
+  return {
+    x: 740 / dims.w,
+    y: 740 / dims.h,
+  };
+}
+
+function applyPlacementFromInputs(){
+  const c=state.cutout;
+  c.w = Math.max(10, toNum($('cutW').value, c.w));
+  c.h = Math.max(10, toNum($('cutH').value, c.h));
+  c.offsetLeft = Math.max(0, toNum($('cutOver').value, c.offsetLeft || 0));
+  c.offsetBottom = Math.max(0, toNum($('cutUp').value, c.offsetBottom || 0));
+
+  const scale = pxScale();
+  const x = 80 + c.offsetLeft * scale.x;
+  const yFromTop = 740 - c.h - (c.offsetBottom * scale.y);
+  c.x = Math.max(80, Math.min(820 - c.w, x));
+  c.y = Math.max(80, Math.min(820 - c.h, 80 + yFromTop));
+}
+
+function updateOffsetsFromCutoutPosition(){
+  const c=state.cutout;
+  const scale = pxScale();
+  c.offsetLeft = Math.max(0, (c.x - 80) / scale.x);
+  c.offsetBottom = Math.max(0, (820 - (c.y + c.h)) / scale.y);
+  $('cutOver').value = Math.round(c.offsetLeft * 10) / 10;
+  $('cutUp').value = Math.round(c.offsetBottom * 10) / 10;
+}
+
+function renderRows(){
+  const tbody=$('rows');
+  tbody.innerHTML=state.mirrors.map((m,i)=>`<tr><td>#${i+1}</td><td><input data-i="${i}" data-k="width" value="${esc(m.width)}"></td><td><input data-i="${i}" data-k="height" value="${esc(m.height)}"></td></tr>`).join('');
+  tbody.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{ const i=Number(inp.dataset.i),k=inp.dataset.k; state.mirrors[i][k]=inp.value; draw(); }));
+}
+
+function draw(){
+  cx.clearRect(0,0,cv.width,cv.height);
+  cx.fillStyle='#e8efff';
+  cx.fillRect(80,80,740,740);
+  cx.strokeStyle='#2563eb'; cx.lineWidth=4; cx.strokeRect(80,80,740,740);
+  cx.fillStyle='#111827'; cx.font='bold 20px system-ui'; cx.fillText('Mirror', 90, 110);
+
+  const c=state.cutout;
+  cx.fillStyle='rgba(239,68,68,.25)';
+  cx.fillRect(c.x,c.y,c.w,c.h);
+  cx.strokeStyle='#dc2626'; cx.lineWidth=3; cx.strokeRect(c.x,c.y,c.w,c.h);
+  cx.fillStyle='#991b1b'; cx.font='bold 14px system-ui'; cx.fillText('Cutout', c.x+8, c.y+18);
+
+  // placement dimensions
+  const over = Math.round((c.offsetLeft || 0) * 10) / 10;
+  const up = Math.round((c.offsetBottom || 0) * 10) / 10;
+  cx.strokeStyle='#1f2937'; cx.lineWidth=2;
+  cx.beginPath(); cx.moveTo(80, c.y + c.h + 18); cx.lineTo(c.x, c.y + c.h + 18); cx.stroke();
+  cx.fillStyle='#111827'; cx.font='bold 13px system-ui'; cx.fillText(`${over}" over`, 84, c.y + c.h + 14);
+  cx.beginPath(); cx.moveTo(c.x - 18, 820); cx.lineTo(c.x - 18, c.y + c.h); cx.stroke();
+  cx.fillText(`${up}" up`, Math.max(84, c.x - 78), 812);
+}
+
+
+function pointerPos(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*(cv.width/r.width),y:(e.clientY-r.top)*(cv.height/r.height)}}
+cv.addEventListener('mousedown',e=>{const p=pointerPos(e),c=state.cutout; if(p.x>=c.x&&p.x<=c.x+c.w&&p.y>=c.y&&p.y<=c.y+c.h){state.dragging=true;state.offX=p.x-c.x;state.offY=p.y-c.y;}});
+window.addEventListener('mouseup',()=>state.dragging=false);
+cv.addEventListener('mousemove',e=>{if(!state.dragging) return; const p=pointerPos(e),c=state.cutout; c.x=Math.max(80,Math.min(820-c.w,p.x-state.offX)); c.y=Math.max(80,Math.min(820-c.h,p.y-state.offY)); updateOffsetsFromCutoutPosition(); draw();});
+
+$('applyCut').addEventListener('click',()=>{ applyPlacementFromInputs(); draw(); });
+$('addRow').addEventListener('click',()=>{state.mirrors.push({width:'',height:''}); renderRows();});
+$('removeRow').addEventListener('click',()=>{if(state.mirrors.length>1) state.mirrors.pop(); renderRows();});
+
+function buildPayload(){
+  const mirrorRows=state.mirrors.map((m,i)=>({index:i+1,width:String(m.width||'').trim(),height:String(m.height||'').trim()})).filter(r=>r.width||r.height);
+  const summary=mirrorRows.length?mirrorRows.map(r=>`Mirror ${r.index}: ${r.width||'-'} x ${r.height||'-'}`).join('\n'):'No mirror sizes entered.';
+  const png=cv.toDataURL('image/png');
+  return {
+    rows: mirrorRows,
+    cutout: { ...state.cutout },
+    placement: { overFromLeft: state.cutout.offsetLeft || 0, upFromBottom: state.cutout.offsetBottom || 0 },
+    summary,
+    mirrorAttachment: {
+      filename: 'mirror_measure_diagram.png',
+      mimeType: 'image/png',
+      dataUrl: png,
+      summaryText: summary + `\nCutout: ${state.cutout.w} x ${state.cutout.h} • ${Math.round((state.cutout.offsetBottom||0)*10)/10}" up • ${Math.round((state.cutout.offsetLeft||0)*10)/10}" over`,
+      createdAt: new Date().toISOString(),
+      source: 'mirror-measure-app'
+    }
+  };
+}
+
+$('saveMirror').addEventListener('click',()=>window.parent.postMessage({type:'kympg_mirror_saved', payload: buildPayload()},'*'));
+
+window.addEventListener('message',(e)=>{
+  const msg=e.data||{};
+  if(msg.type!=='kympg_mirror_prefill') return;
+  const p=msg.payload||{};
+  if(Array.isArray(p.rows)&&p.rows.length) state.mirrors=p.rows.map(r=>({width:String(r.width||''),height:String(r.height||'')}));
+  if(p.cutout&&typeof p.cutout==='object') state.cutout={...state.cutout,...p.cutout};
+  if(p.placement&&typeof p.placement==='object'){
+    state.cutout.offsetLeft = toNum(p.placement.overFromLeft, state.cutout.offsetLeft||0);
+    state.cutout.offsetBottom = toNum(p.placement.upFromBottom, state.cutout.offsetBottom||0);
+  }
+  $('cutW').value = state.cutout.w || 90;
+  $('cutH').value = state.cutout.h || 70;
+  $('cutOver').value = Math.round((state.cutout.offsetLeft||0)*10)/10;
+  $('cutUp').value = Math.round((state.cutout.offsetBottom||0)*10)/10;
+  applyPlacementFromInputs();
+  renderRows();
+  draw();
+});
+
+$('cutW').value = state.cutout.w;
+$('cutH').value = state.cutout.h;
+$('cutOver').value = state.cutout.offsetLeft;
+$('cutUp').value = state.cutout.offsetBottom;
+applyPlacementFromInputs();
+renderRows();
+draw();
+</script>
+</body>
+</html>
