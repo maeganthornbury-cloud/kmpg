@@ -966,13 +966,25 @@ body.auth-locked .auth-gate{ display:flex; }
 .tech-home-wrap table{ width:100%; border-collapse:collapse; }
 .tech-home-wrap th,.tech-home-wrap td{ border:1px solid #d8dee8; padding:8px; font-size:12px; text-align:left; }
 .tech-home-wrap th{ background:#f1f5f9; }
-.measure-modal{ position:fixed; inset:0; background:rgba(2,6,23,.55); display:none; align-items:center; justify-content:center; z-index:20000; }
-.measure-card{ width:min(620px, 95vw); background:#fff; border-radius:12px; padding:16px; }
+.measure-modal{ position:fixed; inset:0; background:rgba(2,6,23,.55); display:none; align-items:flex-start; justify-content:center; z-index:20000; padding:14px 10px; overflow:auto; }
+.measure-card{ width:min(900px, 96vw); max-height:95vh; overflow:auto; background:#fff; border-radius:12px; padding:16px; }
 .measure-card h3{ margin:0 0 8px 0; }
 .measure-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-bottom:12px; }
 .measure-grid .full{ grid-column:1 / -1; }
 .measure-card label{ display:block; font-size:12px; font-weight:700; margin-bottom:4px; }
 .measure-card input,.measure-card select,.measure-card textarea{ width:100%; text-transform:none; }
+.measure-type-buttons{ display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
+.measure-type-buttons button{ border:1px solid #cfd8e3; background:#f8fafc; color:#0f172a; border-radius:10px; padding:10px 12px; font-weight:800; cursor:pointer; }
+.measure-type-buttons button.done{ background:#e8f5e9; border-color:#34a853; color:#166534; }
+.measure-selected-list{ margin-top:8px; font-size:12px; color:#334155; }
+.measure-editor{ margin-top:10px; border:1px solid #d8dee8; border-radius:10px; padding:10px; background:#fff; }
+.measure-editor .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.measure-editor .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.measure-editor .row2,.measure-editor .row3{ margin-bottom:8px; }
+.measure-editor .editor-actions{ display:flex; gap:8px; justify-content:flex-end; }
+.measure-shelving-frame{ width:100%; min-height:760px; height:78vh; border:1px solid #d1d5db; border-radius:10px; resize:vertical; }
+.measure-mirror-frame{ width:100%; min-height:620px; height:70vh; border:1px solid #d1d5db; border-radius:10px; resize:vertical; }
+@media (max-width:720px){ .measure-editor .row2,.measure-editor .row3{ grid-template-columns:1fr; } }
 .measure-actions{ display:flex; gap:8px; justify-content:flex-end; }
 
 .kympg-iframeWrap{ border:1px solid var(--line); border-radius: var(--radius2); overflow:hidden; height:min(72vh, 860px); background:#fff; }
@@ -993,7 +1005,8 @@ body.auth-locked .auth-gate{ display:flex; }
     <p>Sign in with Netlify Identity to access the app.</p>
     <div class="row">
       <button type="button" class="kympg-authBtn primary" onclick="openLogin()">Use Netlify Login</button>
-      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineLogin()">Continue Offline</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineLogin()">Continue Offline (Admin)</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineTechLogin()">Testing Login (Tech)</button>
     </div>
   </div>
 </div>
@@ -1135,9 +1148,13 @@ body.auth-locked .auth-gate{ display:flex; }
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M6 7v13"/><path d="M18 7v13"/><path d="M6 20h12"/><path d="M9 10h6"/></svg></span>
         <span class="kympg-labelWrap"><span class="kympg-label">Shower Designer</span><span class="kympg-hint">Measure and preview shower doors</span></span>
       </button>
-      <button class="kympg-navBtn" data-tip="Open Requests" type="button" onclick="kympgOpen('residentialdb', this)">
+      <button class="kympg-navBtn" data-tip="Measure" type="button" onclick="kympgOpen('residentialdb', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span>
-        <span class="kympg-labelWrap"><span class="kympg-label">Open Requests</span><span class="kympg-hint">Edit assigned requests</span></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">Measure</span><span class="kympg-hint">Open assigned requests</span></span>
+      </button>
+      <button class="kympg-navBtn" data-tip="Ready to Be Quoted" type="button" onclick="kympgOpen('readytoquote', this)">
+        <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h10"/><path d="M16 17l2 2 4-4"/></svg></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">Ready to Be Quoted</span><span class="kympg-hint">Measured and submitted requests</span></span>
       </button>
       <button class="kympg-navBtn" data-tip="Service Techs" type="button" onclick="kympgOpen('servicetechs', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 14-4 16 0"/></svg></span>
@@ -1317,6 +1334,14 @@ body.auth-locked .auth-gate{ display:flex; }
             <table style="width:100%;border-collapse:collapse;">
               <thead><tr><th>Request #</th><th>Customer</th><th>Phone</th><th>Assigned Tech</th><th>Date</th><th>Actions</th></tr></thead>
               <tbody id="residentialTableBody"><tr><td colspan="6" style="text-align:center;">Loading requests...</td></tr></tbody>
+            </table>
+          </div>
+
+          <div id="readytoquote-section" style="display:none;">
+            <h2 style="margin-top:0;">Ready to Be Quoted</h2>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr><th>Request #</th><th>Customer</th><th>Phone</th><th>Assigned Tech</th><th>Submitted</th><th>Actions</th></tr></thead>
+              <tbody id="readyToQuoteTableBody"><tr><td colspan="6" style="text-align:center;">Loading requests...</td></tr></tbody>
             </table>
           </div>
 
@@ -1733,7 +1758,7 @@ body.auth-locked .auth-gate{ display:flex; }
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','readytoquote-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1741,7 +1766,7 @@ body.auth-locked .auth-gate{ display:flex; }
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['landing-section','calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','readytoquote-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
@@ -1758,6 +1783,7 @@ body.auth-locked .auth-gate{ display:flex; }
       po: 'po-section',
       residential: 'residential-section',
       residentialdb: 'residentialdb-section',
+      readytoquote: 'readytoquote-section',
       servicetechs: 'servicetechs-section',
     };
 
@@ -5225,7 +5251,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   function kympgHideAllSections(){
     const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
                  'shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section',
-                 'residential-section','residentialdb-section','servicetechs-section'];
+                 'residential-section','residentialdb-section','readytoquote-section','servicetechs-section'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -5256,7 +5282,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     admin: ['*'],
     office: ['*'],
     shop: ['landing', 'po'],
-    field: ['residential', 'shower', 'residentialdb'],
+    field: ['residential', 'shower', 'residentialdb', 'readytoquote'],
   };
   let authUser = null;
   let authToken = '';
@@ -5278,8 +5304,240 @@ document.addEventListener("DOMContentLoaded", async function () {
   function canDeleteOrders() { return authRoles.includes('admin'); }
   function canDeleteCustomers() { return authRoles.includes('admin'); }
   function isFieldTechUser() { return authRoles.includes('field'); }
+  function shouldBypassTechAssignmentFilter() { return isOfflineAuth && isFieldTechUser(); }
 
   let currentMeasureRequest = null;
+
+  function normalizeMeasureCategories(record) {
+    const fromArray = Array.isArray(record?.measureCategories) ? record.measureCategories : [];
+    const fallback = record?.measureCategory ? [record.measureCategory] : [];
+    const normalized = [...fromArray, ...fallback]
+      .flatMap((v) => String(v || '').split(','))
+      .map((v) => String(v || '').trim().toLowerCase())
+      .map((v) => v === 'shower door' ? 'shower' : v)
+      .filter((v) => ['shower', 'mirror', 'shelving'].includes(v));
+    return Array.from(new Set(normalized));
+  }
+
+  function getMeasureCategoryText(record) {
+    const categories = normalizeMeasureCategories(record);
+    if (categories.length) return categories.map((v) => v.charAt(0).toUpperCase() + v.slice(1)).join(', ');
+    return '';
+  }
+
+
+  let currentMeasureSelections = new Set();
+  let currentMeasureDetails = {};
+  let currentMeasureAttachments = [];
+  let currentMeasureViewOnly = false;
+
+  function renderMeasureAttachments() {
+    const box = document.getElementById('measureAttachmentsList');
+    if (!box) return;
+    const attachments = Array.isArray(currentMeasureAttachments) ? currentMeasureAttachments : [];
+    if (!attachments.length) {
+      box.innerHTML = '<div style="font-size:12px;color:#64748b;">No attachments yet.</div>';
+      return;
+    }
+    box.innerHTML = attachments.map((att, idx) => {
+      const name = escapeHtml(att?.filename || `attachment-${idx + 1}`);
+      const source = escapeHtml(att?.source || 'measure-app');
+      const hasData = !!att?.dataUrl;
+      const viewBtn = hasData ? `<a href="${escapeHtml(att.dataUrl)}" target="_blank" rel="noopener">View attachment</a>` : '<span style="color:#94a3b8;">No file</span>';
+      return `<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #e2e8f0;"><div><div style="font-weight:700;font-size:12px;">${name}</div><div style="font-size:11px;color:#64748b;">${source}</div></div><div style="font-size:12px;">${viewBtn}</div></div>`;
+    }).join('');
+  }
+
+  function setMeasureModalMode(viewOnly) {
+    currentMeasureViewOnly = !!viewOnly;
+    const typeButtons = document.querySelectorAll('[data-measure-type]');
+    typeButtons.forEach((btn) => {
+      btn.disabled = currentMeasureViewOnly;
+      btn.style.opacity = currentMeasureViewOnly ? '0.6' : '1';
+      btn.style.cursor = currentMeasureViewOnly ? 'not-allowed' : 'pointer';
+    });
+    const notes = document.getElementById('measureNotes');
+    if (notes) notes.readOnly = currentMeasureViewOnly;
+    const showerInputs = ['measureShowerWidth','measureShowerHeight','measureShowerNotes'];
+    showerInputs.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.disabled = currentMeasureViewOnly;
+      el.readOnly = currentMeasureViewOnly;
+    });
+    const saveActions = document.getElementById('measureActionsEdit');
+    const viewActions = document.getElementById('measureActionsView');
+    if (saveActions) saveActions.style.display = currentMeasureViewOnly ? 'none' : 'flex';
+    if (viewActions) viewActions.style.display = currentMeasureViewOnly ? 'flex' : 'none';
+  }
+
+  function buildMeasurementPrintHtml() {
+    const req = currentMeasureRequest || {};
+    const c = req.customer || {};
+    const cats = Array.from(currentMeasureSelections || []).join(', ') || 'N/A';
+    const notes = escapeHtml(document.getElementById('measureNotes')?.value || req.measureNotes || '');
+    const details = escapeHtml(JSON.stringify(currentMeasureDetails || {}, null, 2));
+    const attachmentBlocks = (Array.isArray(currentMeasureAttachments) ? currentMeasureAttachments : []).map((att, idx) => {
+      const title = escapeHtml(att?.filename || `attachment-${idx + 1}`);
+      const canImage = String(att?.mimeType || '').startsWith('image/') && att?.dataUrl;
+      const preview = canImage ? `<img src="${escapeHtml(att.dataUrl)}" style="max-width:100%;border:1px solid #ccc;"/>` : `<div style="font-size:12px;color:#475569;">Attachment source: ${escapeHtml(att?.source || '')}</div>`;
+      return `<div style="break-inside:avoid;margin-top:12px;"><h3 style="margin:0 0 6px 0;">${title}</h3>${preview}</div>`;
+    }).join('');
+
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Measurement Packet</title></head><body style="font-family:Arial,sans-serif;padding:20px;">
+      <h1 style="margin:0 0 8px 0;">Measurement Packet</h1>
+      <div>Request #: ${escapeHtml(req.requestNumber || '')}</div>
+      <div>Customer: ${escapeHtml(c.name || '')}</div>
+      <div>Phone: ${escapeHtml(c.phone || '')}</div>
+      <div>Address: ${escapeHtml(c.address || '')}</div>
+      <div>Measured By: ${escapeHtml(req.measuredBy || getAuthDisplayName())}</div>
+      <div>Measure Types: ${escapeHtml(cats)}</div>
+      <h2 style="margin-top:14px;">Notes</h2><div style="white-space:pre-wrap;">${notes || '(none)'}</div>
+      <h2 style="margin-top:14px;">Details</h2><pre style="background:#f8fafc;border:1px solid #cbd5e1;padding:8px;white-space:pre-wrap;">${details}</pre>
+      <h2 style="margin-top:14px;">Attachments</h2>${attachmentBlocks || '<div>None</div>'}
+    </body></html>`;
+  }
+
+  function createMeasurementPacketAttachment() {
+    const html = buildMeasurementPrintHtml();
+    const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+    return {
+      filename: `measurement_packet_${String(currentMeasureRequest?.requestNumber || 'request').replace(/[^\w-]+/g, '_')}.pdf`,
+      mimeType: 'application/pdf',
+      dataUrl,
+      summaryText: 'Measurement packet for print/view from Ready to Be Quoted.',
+      createdAt: new Date().toISOString(),
+      source: 'measure-submit-packet'
+    };
+  }
+
+  function printMeasurements() {
+    const html = buildMeasurementPrintHtml();
+    const win = window.open('', '_blank', 'noopener,noreferrer,width=980,height=900');
+    if (!win) {
+      alert('Popup blocked. Please allow popups to print measurements.');
+      return;
+    }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { try { win.print(); } catch (e) {} }, 250);
+  }
+
+  function quoteFromMeasurementView() {
+    closeMeasureModal();
+    kympgOpen('quote');
+  }
+
+  function renderMeasureTypeButtons() {
+    document.querySelectorAll('[data-measure-type]').forEach((btn) => {
+      const key = String(btn.getAttribute('data-measure-type') || '').toLowerCase();
+      btn.classList.toggle('done', currentMeasureSelections.has(key));
+    });
+    const summary = document.getElementById('measureSelectedSummary');
+    if (summary) {
+      const list = Array.from(currentMeasureSelections).map((v) => v.charAt(0).toUpperCase() + v.slice(1));
+      summary.textContent = list.length ? `Selected: ${list.join(', ')}` : 'Selected: none yet';
+    }
+  }
+
+  function showMeasureEditor(type) {
+    const editor = document.getElementById('measureOptionEditor');
+    if (!editor) return;
+    document.querySelectorAll('.measure-option-panel').forEach((el) => { el.style.display = 'none'; });
+    const panel = document.getElementById(`measure-panel-${type}`);
+    const title = document.getElementById('measureEditorTitle');
+    if (title) title.textContent = `Enter ${type.charAt(0).toUpperCase() + type.slice(1)} details`;
+    if (panel) panel.style.display = 'block';
+    editor.style.display = 'block';
+  }
+
+  function closeMeasureEditor() {
+    const editor = document.getElementById('measureOptionEditor');
+    if (editor) editor.style.display = 'none';
+  }
+
+  function openMeasureType(type) {
+    if (currentMeasureViewOnly) return;
+    showMeasureEditor(type);
+    const t = String(type).toLowerCase();
+    if (t === 'shelving') {
+      const frame = document.getElementById('measureShelvingAppFrame');
+      const sendPrefill = () => {
+        try { frame?.contentWindow?.postMessage({ type: 'kympg_shelving_prefill', payload: currentMeasureDetails?.shelving || {} }, '*'); } catch (e) {}
+      };
+      if (frame) {
+        sendPrefill();
+        frame.onload = sendPrefill;
+      }
+    }
+    if (t === 'mirror') {
+      const frame = document.getElementById('measureMirrorAppFrame');
+      const sendPrefill = () => {
+        try { frame?.contentWindow?.postMessage({ type: 'kympg_mirror_prefill', payload: currentMeasureDetails?.mirror || {} }, '*'); } catch (e) {}
+      };
+      if (frame) {
+        sendPrefill();
+        frame.onload = sendPrefill;
+      }
+    }
+  }
+
+  function saveMeasureType(type) {
+    if (!currentMeasureRequest?.id) return;
+    const t = String(type || '').toLowerCase();
+    if (!['shower','mirror','shelving'].includes(t)) return;
+    if (!currentMeasureDetails) currentMeasureDetails = {};
+    if (t === 'shower') {
+      currentMeasureDetails.shower = {
+        openingWidth: (document.getElementById('measureShowerWidth')?.value || '').trim(),
+        openingHeight: (document.getElementById('measureShowerHeight')?.value || '').trim(),
+        notes: (document.getElementById('measureShowerNotes')?.value || '').trim(),
+      };
+    }
+    currentMeasureSelections.add(t);
+    renderMeasureTypeButtons();
+    renderMeasureAttachments();
+    closeMeasureEditor();
+  }
+
+  window.addEventListener('message', (event) => {
+    const msg = event?.data || {};
+
+    if (msg.type === 'kympg_shelving_saved') {
+      if (!currentMeasureDetails || typeof currentMeasureDetails !== 'object') currentMeasureDetails = {};
+      currentMeasureDetails.shelving = msg.payload || {};
+      if (msg.payload?.shelvingAttachment) {
+        const keep = (currentMeasureAttachments || []).filter((a) => !String(a?.source || "").startsWith("shelving-measure-app"));
+        const many = Array.isArray(msg.payload?.shelvingAttachments) ? msg.payload.shelvingAttachments : [];
+        currentMeasureAttachments = many.length ? [...keep, ...many] : [...keep, msg.payload.shelvingAttachment];
+      }
+      currentMeasureSelections.add('shelving');
+      renderMeasureTypeButtons();
+      renderMeasureAttachments();
+      closeMeasureEditor();
+      const statusEl = document.getElementById('measureStatus');
+      if (statusEl) statusEl.textContent = 'Shelving saved. Select next type or Save request.';
+      return;
+    }
+
+    if (msg.type === 'kympg_mirror_saved') {
+      if (!currentMeasureDetails || typeof currentMeasureDetails !== 'object') currentMeasureDetails = {};
+      currentMeasureDetails.mirror = msg.payload || {};
+      if (msg.payload?.mirrorAttachment) {
+        const keep = (currentMeasureAttachments || []).filter((a) => !String(a?.source || "").startsWith("mirror-measure-app"));
+        currentMeasureAttachments = [...keep, msg.payload.mirrorAttachment];
+      }
+      currentMeasureSelections.add('mirror');
+      renderMeasureTypeButtons();
+      renderMeasureAttachments();
+      closeMeasureEditor();
+      const statusEl = document.getElementById('measureStatus');
+      if (statusEl) statusEl.textContent = 'Mirror saved. Select next type or Save request.';
+      return;
+    }
+  });
 
   function setAuthGateVisible(visible) {
     document.body.classList.toggle('auth-locked', !!visible);
@@ -5304,6 +5562,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     };
     isOfflineAuth = true;
     syncAuthState(offlineUser);
+  }
+
+  function continueOfflineTechLogin() {
+    const techUser = {
+      email: 'tech.test@local',
+      user_metadata: { full_name: 'Test Tech' },
+      app_metadata: { roles: ['field'] },
+      token: { access_token: '' },
+    };
+    isOfflineAuth = true;
+    syncAuthState(techUser);
   }
 
   async function logoutUser() {
@@ -5828,7 +6097,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     let rows = await res.json();
     rows = (rows || []).filter((r) => String(r.status || 'open').toLowerCase() === 'open');
 
-    if (isFieldTechUser()) {
+    if (isFieldTechUser() && !shouldBypassTechAssignmentFilter()) {
       const myEmail = String(authUser?.email || '').toLowerCase();
       const myName = String(getAuthDisplayName() || '').toLowerCase();
       rows = rows.filter((r) => {
@@ -5839,11 +6108,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     const detectWorkType = (r) => {
-      const text = String(r.measureCategory || r.description || '').toLowerCase();
+      const categoryText = getMeasureCategoryText(r);
+      if (categoryText) return categoryText;
+      const text = String(r.description || '').toLowerCase();
       if (text.includes('shower')) return 'Shower';
       if (text.includes('mirror')) return 'Mirror';
       if (text.includes('shel')) return 'Shelving';
-      return r.measureCategory || r.description || '';
+      return 'Shower / Mirror / Shelving';
     };
 
     tbody.innerHTML = rows.map((r) => `
@@ -5859,7 +6130,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     `).join('') || '<tr><td colspan="7" style="text-align:center;">No open requests found.</td></tr>';
   }
 
-  async function openMeasureModal(id) {
+  async function openMeasureModal(id, viewOnly = false) {
     const res = await fetchApi(`/api/residential-requests?id=${encodeURIComponent(id)}`);
     if (!res.ok) return alert('Could not load request details.');
     const r = await res.json();
@@ -5870,9 +6141,22 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById('measureCustomerPhone').value = r.customer?.phone || '';
     document.getElementById('measureCustomerAddress').value = r.customer?.address || '';
     document.getElementById('measureDescription').value = r.description || '';
-    document.getElementById('measureCategory').value = r.measureCategory || '';
+    const selectedCategories = normalizeMeasureCategories(r);
+    currentMeasureSelections = new Set(selectedCategories);
+    currentMeasureDetails = (r && typeof r.measureOptionDetails === 'object' && r.measureOptionDetails) ? JSON.parse(JSON.stringify(r.measureOptionDetails)) : {};
+    currentMeasureAttachments = Array.isArray(r?.measureAttachments) ? JSON.parse(JSON.stringify(r.measureAttachments)) : [];
+    renderMeasureTypeButtons();
+    renderMeasureAttachments();
+    closeMeasureEditor();
+
+    const shower = currentMeasureDetails.shower || {};
+    document.getElementById('measureShowerWidth').value = shower.openingWidth || '';
+    document.getElementById('measureShowerHeight').value = shower.openingHeight || '';
+    document.getElementById('measureShowerNotes').value = shower.notes || '';
+
     document.getElementById('measureNotes').value = r.measureNotes || '';
     document.getElementById('measureStatus').textContent = '';
+    setMeasureModalMode(viewOnly || String(r.status || '').toLowerCase() === 'ready to be quoted');
     const modal = document.getElementById('measureModal');
     if (modal) modal.style.display = 'flex';
   }
@@ -5882,28 +6166,55 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (modal) modal.style.display = 'none';
   }
 
-  async function saveMeasureSelection() {
-    if (!currentMeasureRequest?.id) return;
-    const measureCategory = (document.getElementById('measureCategory')?.value || '').trim();
+  async function saveMeasureSelection(options = {}) {
+    if (!currentMeasureRequest?.id) return false;
+    const submitForQuote = !!options.submitForQuote;
+    const measureCategories = Array.from(currentMeasureSelections);
+    const measureCategory = measureCategories.join(', ');
     const measureNotes = (document.getElementById('measureNotes')?.value || '').trim();
     const statusEl = document.getElementById('measureStatus');
-    if (!measureCategory) {
-      if (statusEl) statusEl.textContent = 'Please pick shower door, mirror, or shelving.';
-      return;
+    if (!measureCategories.length) {
+      if (statusEl) statusEl.textContent = 'Please pick at least one: shower, mirror, or shelving.';
+      return false;
     }
 
-    const payload = { ...currentMeasureRequest, measureCategory, measureNotes, measuredAt: new Date().toISOString(), measuredBy: getAuthDisplayName() };
+    if (submitForQuote) {
+      const packet = createMeasurementPacketAttachment();
+      const keep = (currentMeasureAttachments || []).filter((a) => !String(a?.source || '').startsWith('measure-submit-packet'));
+      currentMeasureAttachments = [...keep, packet];
+      renderMeasureAttachments();
+    }
+
+    const payload = {
+      ...currentMeasureRequest,
+      measureCategory,
+      measureCategories,
+      measureOptionDetails: currentMeasureDetails,
+      measureAttachments: currentMeasureAttachments,
+      measureNotes,
+      measuredAt: new Date().toISOString(),
+      measuredBy: getAuthDisplayName(),
+      submitForQuote,
+    };
     const res = await fetchApi(`/api/residential-requests?id=${encodeURIComponent(currentMeasureRequest.id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
-      if (statusEl) statusEl.textContent = 'Failed to save measure details.';
-      return;
+      if (statusEl) statusEl.textContent = submitForQuote ? 'Failed to save and submit.' : 'Failed to save measure details.';
+      return false;
     }
-    if (statusEl) statusEl.textContent = 'Saved.';
+    if (statusEl) statusEl.textContent = submitForQuote ? 'Saved + submitted to ready-to-be-quoted.' : 'Saved.';
     await loadTechHomeRequests();
+    await loadResidentialRequests();
+    await loadReadyToBeQuotedRequests();
+    if (submitForQuote) closeMeasureModal();
+    return true;
+  }
+
+  async function saveAndSubmitMeasureSelection() {
+    await saveMeasureSelection({ submitForQuote: true });
   }
 
   async function saveResidentialRequest() {
@@ -5957,7 +6268,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     const res = await fetchApi('/api/residential-requests');
     if (!res.ok) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Failed to load requests.</td></tr>'; return; }
     let rows = await res.json();
-    if (authRoles.includes('field')) {
+    rows = (rows || []).filter((r) => String(r.status || 'open').toLowerCase() === 'open');
+    if (authRoles.includes('field') && !shouldBypassTechAssignmentFilter()) {
       const myEmail = String(authUser?.email || '').toLowerCase();
       const myName = String(getAuthDisplayName() || '').toLowerCase();
       rows = (rows || []).filter((r) => {
@@ -5966,7 +6278,26 @@ document.addEventListener("DOMContentLoaded", async function () {
         return !assignedEmail || assignedEmail === myEmail || (assignedName && assignedName === myName);
       });
     }
-    tbody.innerHTML = (rows || []).map(r => `<tr><td>${escapeHtml(r.requestNumber || '')}</td><td>${escapeHtml(r.customer?.name || '')}</td><td>${escapeHtml(r.customer?.phone || '')}</td><td>${escapeHtml(r.assignedTech || '')}</td><td>${escapeHtml((r.createdAt || '').slice(0,10))}</td><td><button type="button" onclick="editResidentialRequest('${r.id}')">Edit</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No requests found.</td></tr>';
+    tbody.innerHTML = (rows || []).map(r => `<tr><td>${escapeHtml(r.requestNumber || '')}</td><td>${escapeHtml(r.customer?.name || '')}</td><td>${escapeHtml(r.customer?.phone || '')}</td><td>${escapeHtml(r.assignedTech || '')}</td><td>${escapeHtml((r.createdAt || '').slice(0,10))}</td><td><button type="button" onclick="editResidentialRequest('${r.id}')">Edit</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No open requests found.</td></tr>';
+  }
+
+  async function loadReadyToBeQuotedRequests() {
+    const tbody = document.getElementById('readyToQuoteTableBody');
+    if (!tbody) return;
+    const res = await fetchApi('/api/residential-requests');
+    if (!res.ok) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Failed to load requests.</td></tr>'; return; }
+    let rows = await res.json();
+    rows = (rows || []).filter((r) => String(r.status || '').toLowerCase() === 'ready to be quoted');
+    if (authRoles.includes('field') && !shouldBypassTechAssignmentFilter()) {
+      const myEmail = String(authUser?.email || '').toLowerCase();
+      const myName = String(getAuthDisplayName() || '').toLowerCase();
+      rows = (rows || []).filter((r) => {
+        const assignedEmail = String(r.assignedTechEmail || '').toLowerCase();
+        const assignedName = String(r.assignedTech || '').toLowerCase();
+        return !assignedEmail || assignedEmail === myEmail || (assignedName && assignedName === myName);
+      });
+    }
+    tbody.innerHTML = (rows || []).map(r => `<tr><td>${escapeHtml(r.requestNumber || '')}</td><td>${escapeHtml(r.customer?.name || '')}</td><td>${escapeHtml(r.customer?.phone || '')}</td><td>${escapeHtml(r.assignedTech || '')}</td><td>${escapeHtml((r.updatedAt || r.createdAt || '').slice(0,10))}</td><td><button type="button" onclick="openMeasureModal('${r.id}', true)">View Measurements</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No submitted requests found.</td></tr>';
   }
 
   async function editResidentialRequest(id) {
@@ -6084,8 +6415,15 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     if (which === 'residentialdb'){
       const r = document.getElementById('residentialdb-section');
       if (r){ r.style.display = 'block'; }
-      kympgSetHeader('Open Residential Requests', 'Search and edit saved requests.', 'Residential', 'Open Requests');
+      kympgSetHeader('Measure Requests', 'Open requests ready to measure (Shower, Mirror, or Shelving).', 'Residential', 'Measure');
       try { if (typeof loadResidentialRequests === 'function') loadResidentialRequests(); } catch(e) {}
+      return;
+    }
+    if (which === 'readytoquote'){
+      const q = document.getElementById('readytoquote-section');
+      if (q){ q.style.display = 'block'; }
+      kympgSetHeader('Ready to Be Quoted', 'Measured requests submitted for quote prep.', 'Residential', 'Ready to Be Quoted');
+      try { if (typeof loadReadyToBeQuotedRequests === 'function') loadReadyToBeQuotedRequests(); } catch(e) {}
       return;
     }
     if (which === 'servicetechs'){
@@ -6117,7 +6455,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','vendor-section','orders-section','shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','servicetechs-section']
+      ['calculator-section','customer-section','vendor-section','orders-section','shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','readytoquote-section','servicetechs-section']
         .forEach(id => {
           const el = document.getElementById(id);
           if (el && el.parentElement !== content) content.appendChild(el);
@@ -6203,19 +6541,58 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       <div><label>Phone</label><input id="measureCustomerPhone" type="text" readonly></div>
       <div class="full"><label>Address</label><input id="measureCustomerAddress" type="text" readonly></div>
       <div class="full"><label>Description</label><textarea id="measureDescription" rows="3" readonly></textarea></div>
-      <div class="full"><label>Pick Type</label>
-        <select id="measureCategory">
-          <option value="">Select one...</option>
-          <option value="shower door">Shower Door</option>
-          <option value="mirror">Mirror</option>
-          <option value="shelving">Shelving</option>
-        </select>
+      <div class="full"><label>Pick Type (click one, save it, then pick the next)</label>
+        <div class="measure-type-buttons">
+          <button type="button" data-measure-type="shower" onclick="openMeasureType('shower')">Shower</button>
+          <button type="button" data-measure-type="mirror" onclick="openMeasureType('mirror')">Mirror</button>
+          <button type="button" data-measure-type="shelving" onclick="openMeasureType('shelving')">Shelving</button>
+        </div>
+        <div id="measureSelectedSummary" class="measure-selected-list">Selected: none yet</div>
+
+        <div id="measureOptionEditor" class="measure-editor" style="display:none;">
+          <div style="font-weight:800;margin-bottom:8px;" id="measureEditorTitle">Enter details</div>
+
+          <div id="measure-panel-shower" class="measure-option-panel" style="display:none;">
+            <div class="row2">
+              <div><label>Opening Width</label><input id="measureShowerWidth" type="text" placeholder="e.g., 48"></div>
+              <div><label>Opening Height</label><input id="measureShowerHeight" type="text" placeholder="e.g., 76"></div>
+            </div>
+            <div><label>Shower Notes</label><textarea id="measureShowerNotes" rows="3" placeholder="Handle, hinge, inline panel, etc."></textarea></div>
+            <div class="editor-actions">
+              <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureEditor()">Back</button>
+              <button type="button" class="kympg-authBtn primary" onclick="saveMeasureType('shower')">Save Shower</button>
+            </div>
+          </div>
+
+          <div id="measure-panel-mirror" class="measure-option-panel" style="display:none;">
+            <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Mirror app loaded below. Use its Save Mirror To Request button to return here.</div>
+            <iframe id="measureMirrorAppFrame" class="measure-mirror-frame" src="mirror-measure.html" title="Mirror Measure App"></iframe>
+            <div class="editor-actions" style="margin-top:8px;">
+              <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureEditor()">Back</button>
+            </div>
+          </div>
+
+          <div id="measure-panel-shelving" class="measure-option-panel" style="display:none;">
+            <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Shelving app loaded below. Use its Save Shelving button to return here.</div>
+            <iframe id="measureShelvingAppFrame" class="measure-shelving-frame" src="shelving-measure.html" title="Shelving Measure App"></iframe>
+            <div class="editor-actions" style="margin-top:8px;">
+              <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureEditor()">Back</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="full"><label>Measure Notes</label><textarea id="measureNotes" rows="3" placeholder="Optional notes..."></textarea></div>
+      <div class="full"><label>Attachments</label><div id="measureAttachmentsList" style="border:1px solid #dbe3ef;border-radius:8px;padding:8px;background:#fff;"></div></div>
     </div>
-    <div class="measure-actions">
+    <div class="measure-actions" id="measureActionsEdit">
       <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureModal()">Close</button>
       <button type="button" class="kympg-authBtn primary" onclick="saveMeasureSelection()">Save</button>
+      <button type="button" class="kympg-authBtn primary" onclick="saveAndSubmitMeasureSelection()">Save + Submit</button>
+    </div>
+    <div class="measure-actions" id="measureActionsView" style="display:none;">
+      <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureModal()">Close</button>
+      <button type="button" class="kympg-authBtn primary" onclick="quoteFromMeasurementView()">Quote</button>
+      <button type="button" class="kympg-authBtn primary" onclick="printMeasurements()">Print Measurements</button>
     </div>
     <div id="measureStatus" class="kympg-logPOStatus"></div>
   </div>
