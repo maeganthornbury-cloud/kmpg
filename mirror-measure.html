@@ -78,7 +78,7 @@
               <option value="out">Out</option>
             </select>
           </div>
-          <div style="flex:1;min-width:120px;"><div class="meta">Outage Size (")</div><input id="outageSize" type="number" min="0" step="0.1" value="2"></div>
+          <div style="flex:1;min-width:120px;"><div class="meta">Outage Size (")</div><input id="outageSize" type="number" min="0" step="0.01" value="2"></div>
         </div>
         <div class="row" style="margin-top:8px;"><button type="button" id="applyOutage">Apply Outage</button></div>
       </div>
@@ -127,6 +127,7 @@ const state={
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
 function toNum(v,f=0){ const n=Number(v); return Number.isFinite(n)?n:f; }
+function fmt(n){ const v=toNum(n,0); return Number.isFinite(v) ? String(v.toFixed(2)).replace(/\.00$/,'').replace(/(\.\d)0$/,'$1') : '-'; }
 function clamp(n,a,b){ return Math.max(a,Math.min(b,n)); }
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
@@ -181,20 +182,36 @@ function syncCutoutFromPx(m,c,px){
 
 function mirrorPolygon(m){
   const o = m.outage || defaultOutage();
-  const n = Math.max(0,(o.size||0)*((m.w||760)/Math.max(1,m.width||36)));
+  const { sx, sy } = getScale(m);
+  const nX = Math.max(0, (o.size || 0) * sx);
+  const nY = Math.max(0, (o.size || 0) * sy);
   const x=m.x,y=m.y,w=m.w,h=m.h;
-  const corner=o.corner||'tr', dir=o.direction||'in';
-  if(!o.enabled || n<=0.1){
-    return [[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
+
+  const pts = {
+    tl: [x, y],
+    tr: [x + w, y],
+    br: [x + w, y + h],
+    bl: [x, y + h],
+  };
+
+  if (!o.enabled || (nX <= 0.01 && nY <= 0.01)) {
+    return [pts.tl, pts.tr, pts.br, pts.bl];
   }
-  if(corner==='tl' && dir==='in') return [[x+n,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y+n]];
-  if(corner==='tl' && dir==='out') return [[x-n,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y-n]];
-  if(corner==='tr' && dir==='in') return [[x,y],[x+w-n,y],[x+w,y+n],[x+w,y+h],[x,y+h]];
-  if(corner==='tr' && dir==='out') return [[x,y],[x+w+n,y],[x+w,y-n],[x+w,y+h],[x,y+h]];
-  if(corner==='bl' && dir==='in') return [[x,y],[x+w,y],[x+w,y+h],[x+n,y+h],[x,y+h-n]];
-  if(corner==='bl' && dir==='out') return [[x,y],[x+w,y],[x+w,y+h],[x-n,y+h],[x,y+h+n]];
-  if(corner==='br' && dir==='in') return [[x,y],[x+w,y],[x+w,y+h-n],[x+w-n,y+h],[x,y+h]];
-  return [[x,y],[x+w,y],[x+w,y+h+n],[x+w+n,y+h],[x,y+h]]; // br out
+
+  const inward = (o.direction || 'in') === 'in';
+  const c = o.corner || 'tr';
+
+  if (c === 'tl') {
+    pts.tl = inward ? [x + nX, y + nY] : [x - nX, y - nY];
+  } else if (c === 'tr') {
+    pts.tr = inward ? [x + w - nX, y + nY] : [x + w + nX, y - nY];
+  } else if (c === 'br') {
+    pts.br = inward ? [x + w - nX, y + h - nY] : [x + w + nX, y + h + nY];
+  } else if (c === 'bl') {
+    pts.bl = inward ? [x + nX, y + h - nY] : [x - nX, y + h + nY];
+  }
+
+  return [pts.tl, pts.tr, pts.br, pts.bl];
 }
 
 function drawPolygon(points, fill, stroke, width=2){
@@ -211,16 +228,16 @@ function syncCutoutInputs(){
   const m=currentMirror();
   if(!m) return;
   const c=(m.cutouts||[])[state.selectedCutout];
-  $('cutW').value = c ? Math.round(c.w*10)/10 : '';
-  $('cutH').value = c ? Math.round(c.h*10)/10 : '';
-  $('cutOver').value = c ? Math.round((c.offsetLeft||0)*10)/10 : '';
-  $('cutUp').value = c ? Math.round((c.offsetBottom||0)*10)/10 : '';
+  $('cutW').value = c ? fmt(c.w) : '';
+  $('cutH').value = c ? fmt(c.h) : '';
+  $('cutOver').value = c ? fmt(c.offsetLeft||0) : '';
+  $('cutUp').value = c ? fmt(c.offsetBottom||0) : '';
 
   const o=m.outage||defaultOutage();
   $('outOfSquare').checked=!!o.enabled;
   $('outageCorner').value=o.corner||'tr';
   $('outageDirection').value=o.direction||'in';
-  $('outageSize').value=Math.round((o.size||0)*10)/10;
+  $('outageSize').value=fmt(o.size||0);
   $('outageInputs').style.display=o.enabled?'block':'none';
 }
 
@@ -235,26 +252,26 @@ function draw(){
     drawPolygon(mirrorPolygon(m), '#e8efff', idx===state.selectedMirror ? '#2563eb' : '#64748b', idx===state.selectedMirror?4:2);
 
     cx.fillStyle='#111827'; cx.font='bold 14px system-ui';
-    cx.fillText(`Mirror ${idx+1}: ${Math.round((m.width||0)*10)/10}" x ${Math.round((m.height||0)*10)/10}"`, m.x+8, m.y+18);
+    cx.fillText(`Mirror ${idx+1}: ${fmt(m.width||0)}" x ${fmt(m.height||0)}"`, m.x+8, m.y+18);
 
     // width/height dimension lines
     cx.strokeStyle='#334155'; cx.lineWidth=1.5;
     cx.beginPath(); cx.moveTo(m.x, m.y + m.h + 16); cx.lineTo(m.x + m.w, m.y + m.h + 16); cx.stroke();
     cx.fillStyle='#0f172a'; cx.font='bold 12px system-ui';
-    cx.fillText(`${Math.round((m.width||0)*10)/10}" W`, m.x + m.w/2 - 24, m.y + m.h + 12);
+    cx.fillText(`${fmt(m.width||0)}" W`, m.x + m.w/2 - 24, m.y + m.h + 12);
 
     cx.beginPath(); cx.moveTo(m.x - 16, m.y); cx.lineTo(m.x - 16, m.y + m.h); cx.stroke();
     cx.save();
     cx.translate(m.x - 22, m.y + m.h/2);
     cx.rotate(-Math.PI/2);
-    cx.fillText(`${Math.round((m.height||0)*10)/10}" H`, -20, -2);
+    cx.fillText(`${fmt(m.height||0)}" H`, -20, -2);
     cx.restore();
 
     const o=m.outage||defaultOutage();
     if(o.enabled && o.size>0){
       cx.fillStyle='#7c3aed';
       cx.font='bold 11px system-ui';
-      cx.fillText(`Outage ${Math.round(o.size*10)/10}" ${o.corner.toUpperCase()} ${o.direction.toUpperCase()}`, m.x+8, m.y+34);
+      cx.fillText(`Outage ${fmt(o.size)}" ${o.corner.toUpperCase()} ${o.direction.toUpperCase()}`, m.x+8, m.y+34);
     }
 
     const cuts=m.cutouts||[];
@@ -264,9 +281,9 @@ function draw(){
       cx.strokeStyle=(idx===state.selectedMirror && ci===state.selectedCutout)?'#b91c1c':'#ef4444';
       cx.lineWidth=2; cx.strokeRect(px.x,px.y,px.w,px.h);
       cx.fillStyle='#7f1d1d'; cx.font='bold 12px system-ui';
-      cx.fillText(`Cutout ${ci+1}: ${Math.round(c.w*10)/10}" x ${Math.round(c.h*10)/10}"`, px.x+4, px.y+14);
+      cx.fillText(`Cutout ${ci+1}: ${fmt(c.w)}" x ${fmt(c.h)}"`, px.x+4, px.y+14);
       cx.fillStyle='#111827'; cx.font='bold 11px system-ui';
-      cx.fillText(`${Math.round((c.offsetLeft||0)*10)/10}" over • ${Math.round((c.offsetBottom||0)*10)/10}" up`, px.x+4, px.y+30);
+      cx.fillText(`${fmt(c.offsetLeft||0)}" over • ${fmt(c.offsetBottom||0)}" up`, px.x+4, px.y+30);
     });
   });
 
@@ -275,7 +292,7 @@ function draw(){
 
 function renderRows(){
   const tbody=$('rows');
-  tbody.innerHTML=state.rows.map((m,i)=>`<tr><td>#${i+1}</td><td><input data-i="${i}" data-k="width" value="${esc(m.width)}"></td><td><input data-i="${i}" data-k="height" value="${esc(m.height)}"></td></tr>`).join('');
+  tbody.innerHTML=state.rows.map((m,i)=>`<tr><td>#${i+1}</td><td><input type="number" step="0.01" data-i="${i}" data-k="width" value="${esc(m.width)}"></td><td><input type="number" step="0.01" data-i="${i}" data-k="height" value="${esc(m.height)}"></td></tr>`).join('');
   tbody.querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{
     const i=Number(inp.dataset.i), k=inp.dataset.k;
     state.rows[i][k]=inp.value;
