@@ -78,6 +78,76 @@ async function notifyAssignedTech(requestRecord) {
   return { sent: true };
 }
 
+
+
+function stripDataUrlPrefix(dataUrl = "") {
+  const raw = String(dataUrl || "");
+  const idx = raw.indexOf(",");
+  return idx >= 0 ? raw.slice(idx + 1) : raw;
+}
+
+function buildMeasureEmailText(requestRecord = {}) {
+  const customer = requestRecord.customer || {};
+  const categories = Array.isArray(requestRecord.measureCategories) ? requestRecord.measureCategories.join(", ") : (requestRecord.measureCategory || "");
+  const lines = [
+    "A residential request was submitted from Measure and is ready to be quoted.",
+    `Request #: ${requestRecord.requestNumber || "N/A"}`,
+    `Customer: ${customer.name || "N/A"}`,
+    `Phone: ${customer.phone || "N/A"}`,
+    `Address: ${customer.address || "N/A"}`,
+    `Assigned Tech: ${requestRecord.assignedTech || "N/A"}`,
+    `Measured By: ${requestRecord.measuredBy || "N/A"}`,
+    `Measured At: ${requestRecord.measuredAt || "N/A"}`,
+    `Measure Types: ${categories || "N/A"}`,
+    "",
+    "Measure Notes:",
+    requestRecord.measureNotes || "(none)",
+  ];
+
+  const detailText = JSON.stringify(requestRecord.measureOptionDetails || {}, null, 2);
+  lines.push("", "Measure Details:", detailText);
+  return lines.join("\n");
+}
+
+async function notifyReadyToQuote(requestRecord) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESIDENTIAL_EMAIL_FROM;
+  const recipient = process.env.RESIDENTIAL_READY_TO_QUOTE_EMAIL || "maegan@kymirror.com";
+  if (!apiKey || !fromEmail) {
+    return { sent: false, reason: "Missing RESEND_API_KEY or RESIDENTIAL_EMAIL_FROM" };
+  }
+
+  const attachments = (Array.isArray(requestRecord?.measureAttachments) ? requestRecord.measureAttachments : [])
+    .filter((item) => item && item.dataUrl && item.filename)
+    .slice(0, 10)
+    .map((item) => ({
+      filename: item.filename,
+      content: stripDataUrlPrefix(item.dataUrl),
+    }));
+
+  const subject = `Ready To Quote: ${requestRecord.requestNumber || "Residential Request"}`;
+  const resp = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: [recipient],
+      subject,
+      text: buildMeasureEmailText(requestRecord),
+      attachments,
+    }),
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text();
+    return { sent: false, reason: `Resend error: ${resp.status} ${text}` };
+  }
+
+  return { sent: true, recipient, attachmentCount: attachments.length };
+}
 export default async (req) => {
   const store = getStore({ name: "residential-requests", consistency: "strong" });
   const url = new URL(req.url);
@@ -110,7 +180,7 @@ export default async (req) => {
     if (req.method === "POST") {
       const body = await req.json();
       if (!body.customer?.name) return new Response(JSON.stringify({ error: "Customer name is required" }), { status: 400, headers });
-      const techContact = await getAssignedTechContact(body);
+      const techContact = await getAssignedTechContact(sanitizedBody);
       const newId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const row = {
         requestNumber: await nextRequestNumber(),
@@ -134,20 +204,23 @@ export default async (req) => {
       const existing = await store.get(id, { type: "json" });
       if (!existing) return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers });
       const body = await req.json();
-      const techChanged = body.assignedTechId || body.assignedTech;
+      const submitForQuote = !!body.submitForQuote;
+      const sanitizedBody = { ...body };
+      delete sanitizedBody.submitForQuote;
+      const techChanged = sanitizedBody.assignedTechId || sanitizedBody.assignedTech;
       let techContact = {
         id: existing.assignedTechId || "",
         name: existing.assignedTech || "",
         email: existing.assignedTechEmail || "",
       };
       if (techChanged) {
-        techContact = await getAssignedTechContact(body);
+        techContact = await getAssignedTechContact(sanitizedBody);
       }
       const updated = {
         ...existing,
-        ...body,
-        assignedTech: techContact.name || body.assignedTech || existing.assignedTech || "",
-        assignedTechId: techContact.id || body.assignedTechId || existing.assignedTechId || "",
+        ...sanitizedBody,
+        assignedTech: techContact.name || sanitizedBody.assignedTech || existing.assignedTech || "",
+        assignedTechId: techContact.id || sanitizedBody.assignedTechId || existing.assignedTechId || "",
         assignedTechEmail: techContact.email || existing.assignedTechEmail || "",
         requestNumber: existing.requestNumber,
         updatedAt: new Date().toISOString(),
@@ -155,6 +228,12 @@ export default async (req) => {
       if (techChanged) {
         const emailNotification = await notifyAssignedTech(updated);
         updated.emailNotification = { ...emailNotification, notifiedAt: new Date().toISOString() };
+      }
+      if (submitForQuote) {
+        updated.status = "ready to be quoted";
+        updated.submittedForQuoteAt = new Date().toISOString();
+        const readyEmail = await notifyReadyToQuote(updated);
+        updated.readyToQuoteEmail = { ...readyEmail, notifiedAt: new Date().toISOString() };
       }
       await store.setJSON(id, updated);
       return new Response(JSON.stringify({ id, ...updated }), { headers });
