@@ -81,6 +81,31 @@ export default async (req) => {
       const body = await req.json();
       const action = String(body?.action || "").toLowerCase();
 
+      if (action === "sync-google-sheet") {
+        const webhookUrl = String(body?.webhookUrl || "").trim();
+        if (!webhookUrl) return Response.json({ error: "webhookUrl required" }, { status: 400 });
+
+        const upstreamRes = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: String(body?.action || "").toLowerCase() === "sync-google-sheet" ? "deduct_inventory" : body?.action,
+            orderId: String(body?.orderId || "").trim(),
+            items: Array.isArray(body?.items) ? body.items : [],
+            sentAt: body?.sentAt || new Date().toISOString(),
+          }),
+        });
+
+        const text = await upstreamRes.text();
+        if (!upstreamRes.ok) {
+          return Response.json({ error: `Google Sheet sync failed (${upstreamRes.status}): ${text.slice(0, 300)}` }, { status: 502 });
+        }
+
+        let parsed = null;
+        try { parsed = text ? JSON.parse(text) : null; } catch {}
+        return Response.json({ ok: true, upstream: parsed || text || null });
+      }
+
       if (action !== "apply-order") {
         return Response.json({ error: "unsupported action" }, { status: 400 });
       }

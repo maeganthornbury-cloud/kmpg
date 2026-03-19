@@ -1930,13 +1930,18 @@ async function applyInventoryForOrder(orderId, hardwareItems = []) {
     sentAt: new Date().toISOString()
   };
 
-  const res = await fetch(INVENTORY_SYNC_WEBHOOK_URL, {
+  const res = await fetchApi('/api/inventory', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      action: 'sync-google-sheet',
+      webhookUrl: INVENTORY_SYNC_WEBHOOK_URL,
+      ...payload
+    })
   });
   if (!res.ok) {
-    throw new Error(`Inventory sync webhook failed (${res.status}).`);
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Inventory sync webhook failed.');
   }
 }
 
