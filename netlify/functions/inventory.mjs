@@ -41,6 +41,69 @@ function getAllocationForOrder(orderAllocations, orderId) {
   return alloc && typeof alloc === "object" ? alloc : {};
 }
 
+
+async function syncGoogleSheet(webhookUrl, payload) {
+  const attempts = [
+    {
+      label: "json-post",
+      url: webhookUrl,
+      options: {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+    },
+    {
+      label: "form-post",
+      url: webhookUrl,
+      options: {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+        body: new URLSearchParams({
+          action: String(payload.action || ""),
+          orderId: String(payload.orderId || ""),
+          items: JSON.stringify(Array.isArray(payload.items) ? payload.items : []),
+          sentAt: String(payload.sentAt || ""),
+        }).toString(),
+      },
+    },
+    {
+      label: "get-query",
+      url: `${webhookUrl}${webhookUrl.includes("?") ? "&" : "?"}${new URLSearchParams({
+        action: String(payload.action || ""),
+        orderId: String(payload.orderId || ""),
+        items: JSON.stringify(Array.isArray(payload.items) ? payload.items : []),
+        sentAt: String(payload.sentAt || ""),
+      }).toString()}`,
+      options: {
+        method: "GET",
+      },
+    },
+  ];
+
+  let lastError = "Inventory sync webhook failed.";
+  for (const attempt of attempts) {
+    try {
+      const response = await fetch(attempt.url, attempt.options);
+      const text = await response.text();
+      if (!response.ok) {
+        lastError = `Google Sheet sync failed via ${attempt.label} (${response.status}): ${text.slice(0, 300)}`;
+        continue;
+      }
+      let parsed = null;
+      try { parsed = text ? JSON.parse(text) : null; } catch {}
+      if (parsed && parsed.ok === false) {
+        lastError = `Google Sheet sync failed via ${attempt.label}: ${parsed.error || text || 'Unknown Apps Script error.'}`;
+        continue;
+      }
+      return { ok: true, method: attempt.label, upstream: parsed || text || null };
+    } catch (err) {
+      lastError = `Google Sheet sync failed via ${attempt.label}: ${err?.message || err}`;
+    }
+  }
+  return { ok: false, error: lastError };
+}
+
 function normalizeDesiredParts(parts = []) {
   const totals = {};
   for (const p of Array.isArray(parts) ? parts : []) {
@@ -85,25 +148,18 @@ export default async (req) => {
         const webhookUrl = String(body?.webhookUrl || "").trim();
         if (!webhookUrl) return Response.json({ error: "webhookUrl required" }, { status: 400 });
 
-        const upstreamRes = await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: String(body?.action || "").toLowerCase() === "sync-google-sheet" ? "deduct_inventory" : body?.action,
-            orderId: String(body?.orderId || "").trim(),
-            items: Array.isArray(body?.items) ? body.items : [],
-            sentAt: body?.sentAt || new Date().toISOString(),
-          }),
+        const result = await syncGoogleSheet(webhookUrl, {
+          action: "deduct_inventory",
+          orderId: String(body?.orderId || "").trim(),
+          items: Array.isArray(body?.items) ? body.items : [],
+          sentAt: body?.sentAt || new Date().toISOString(),
         });
 
-        const text = await upstreamRes.text();
-        if (!upstreamRes.ok) {
-          return Response.json({ error: `Google Sheet sync failed (${upstreamRes.status}): ${text.slice(0, 300)}` }, { status: 502 });
+        if (!result.ok) {
+          return Response.json({ error: result.error }, { status: 502 });
         }
 
-        let parsed = null;
-        try { parsed = text ? JSON.parse(text) : null; } catch {}
-        return Response.json({ ok: true, upstream: parsed || text || null });
+        return Response.json(result);
       }
 
       if (action !== "apply-order") {
