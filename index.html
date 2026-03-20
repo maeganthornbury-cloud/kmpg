@@ -966,13 +966,25 @@ body.auth-locked .auth-gate{ display:flex; }
 .tech-home-wrap table{ width:100%; border-collapse:collapse; }
 .tech-home-wrap th,.tech-home-wrap td{ border:1px solid #d8dee8; padding:8px; font-size:12px; text-align:left; }
 .tech-home-wrap th{ background:#f1f5f9; }
-.measure-modal{ position:fixed; inset:0; background:rgba(2,6,23,.55); display:none; align-items:center; justify-content:center; z-index:20000; }
-.measure-card{ width:min(620px, 95vw); background:#fff; border-radius:12px; padding:16px; }
+.measure-modal{ position:fixed; inset:0; background:rgba(2,6,23,.55); display:none; align-items:flex-start; justify-content:center; z-index:20000; padding:14px 10px; overflow:auto; }
+.measure-card{ width:min(900px, 96vw); max-height:95vh; overflow:auto; background:#fff; border-radius:12px; padding:16px; }
 .measure-card h3{ margin:0 0 8px 0; }
 .measure-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-bottom:12px; }
 .measure-grid .full{ grid-column:1 / -1; }
 .measure-card label{ display:block; font-size:12px; font-weight:700; margin-bottom:4px; }
 .measure-card input,.measure-card select,.measure-card textarea{ width:100%; text-transform:none; }
+.measure-type-buttons{ display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
+.measure-type-buttons button{ border:1px solid #cfd8e3; background:#f8fafc; color:#0f172a; border-radius:10px; padding:10px 12px; font-weight:800; cursor:pointer; }
+.measure-type-buttons button.done{ background:#e8f5e9; border-color:#34a853; color:#166534; }
+.measure-selected-list{ margin-top:8px; font-size:12px; color:#334155; }
+.measure-editor{ margin-top:10px; border:1px solid #d8dee8; border-radius:10px; padding:10px; background:#fff; }
+.measure-editor .row2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.measure-editor .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.measure-editor .row2,.measure-editor .row3{ margin-bottom:8px; }
+.measure-editor .editor-actions{ display:flex; gap:8px; justify-content:flex-end; }
+.measure-shelving-frame{ width:100%; min-height:760px; height:78vh; border:1px solid #d1d5db; border-radius:10px; resize:vertical; }
+.measure-mirror-frame{ width:100%; min-height:620px; height:70vh; border:1px solid #d1d5db; border-radius:10px; resize:vertical; }
+@media (max-width:720px){ .measure-editor .row2,.measure-editor .row3{ grid-template-columns:1fr; } }
 .measure-actions{ display:flex; gap:8px; justify-content:flex-end; }
 
 .kympg-iframeWrap{ border:1px solid var(--line); border-radius: var(--radius2); overflow:hidden; height:min(72vh, 860px); background:#fff; }
@@ -984,6 +996,7 @@ body.auth-locked .auth-gate{ display:flex; }
 </style>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%231f2937%27/%3E%3Ctext x=%2750%25%27 y=%2756%25%27 dominant-baseline=%27middle%27 text-anchor=%27middle%27 font-family=%27Arial%27 font-size=%2716%27 fill=%27white%27%3EK%3C/text%3E%3C/svg%3E"/>
 </head>
 <body>
 
@@ -993,7 +1006,8 @@ body.auth-locked .auth-gate{ display:flex; }
     <p>Sign in with Netlify Identity to access the app.</p>
     <div class="row">
       <button type="button" class="kympg-authBtn primary" onclick="openLogin()">Use Netlify Login</button>
-      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineLogin()">Continue Offline</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineLogin()">Continue Offline (Admin)</button>
+      <button type="button" class="kympg-authBtn secondary" onclick="continueOfflineTechLogin()">Testing Login (Tech)</button>
     </div>
   </div>
 </div>
@@ -1135,9 +1149,13 @@ body.auth-locked .auth-gate{ display:flex; }
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M6 7v13"/><path d="M18 7v13"/><path d="M6 20h12"/><path d="M9 10h6"/></svg></span>
         <span class="kympg-labelWrap"><span class="kympg-label">Shower Designer</span><span class="kympg-hint">Measure and preview shower doors</span></span>
       </button>
-      <button class="kympg-navBtn" data-tip="Open Requests" type="button" onclick="kympgOpen('residentialdb', this)">
+      <button class="kympg-navBtn" data-tip="Measure" type="button" onclick="kympgOpen('residentialdb', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></span>
-        <span class="kympg-labelWrap"><span class="kympg-label">Open Requests</span><span class="kympg-hint">Edit assigned requests</span></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">Measure</span><span class="kympg-hint">Open assigned requests</span></span>
+      </button>
+      <button class="kympg-navBtn" data-tip="Ready to Be Quoted" type="button" onclick="kympgOpen('readytoquote', this)">
+        <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h10"/><path d="M16 17l2 2 4-4"/></svg></span>
+        <span class="kympg-labelWrap"><span class="kympg-label">Ready to Be Quoted</span><span class="kympg-hint">Measured and submitted requests</span></span>
       </button>
       <button class="kympg-navBtn" data-tip="Service Techs" type="button" onclick="kympgOpen('servicetechs', this)">
         <span class="kympg-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c2-4 14-4 16 0"/></svg></span>
@@ -1320,6 +1338,14 @@ body.auth-locked .auth-gate{ display:flex; }
             </table>
           </div>
 
+          <div id="readytoquote-section" style="display:none;">
+            <h2 style="margin-top:0;">Ready to Be Quoted</h2>
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr><th>Request #</th><th>Customer</th><th>Phone</th><th>Assigned Tech</th><th>Submitted</th><th>Actions</th></tr></thead>
+              <tbody id="readyToQuoteTableBody"><tr><td colspan="6" style="text-align:center;">Loading requests...</td></tr></tbody>
+            </table>
+          </div>
+
           <div id="servicetechs-section" style="display:none;">
             <h2 style="margin-top:0;">Service Tech Database</h2>
             <div class="customer-info-row">
@@ -1442,13 +1468,14 @@ body.auth-locked .auth-gate{ display:flex; }
     </table>
       <!-- Hardware Pricing Section -->
   <div style="flex: 1; margin-top: 16px;">
-    <h2 style="margin-top: 10px; text-align:left;">Hardware</h2>
+    <h2 style="margin-top: 10px; text-align:left;">Hardware/Stock Glass</h2>
     <table id="hardwareTable" style="width:100%; border-collapse:collapse;">
       <thead>
         <tr>
           <th style="border:1px solid #ccc; padding:12px; text-align:center;">Qty</th>
           <th style="border:1px solid #ccc; padding:12px; text-align:center;">Part</th>
           <th style="border:1px solid #ccc; padding:12px; text-align:center;">Price</th>
+                    <th style="border:1px solid #ccc; padding:12px; text-align:center;">In Stock</th>
           <th style="border:1px solid #ccc; padding:12px; text-align:center;">Total</th>
           <th style="border:1px solid #ccc; padding:12px; text-align:center;">Delete</th>
         </tr>
@@ -1458,6 +1485,7 @@ body.auth-locked .auth-gate{ display:flex; }
           <td style="border:1px solid #ccc;"><input type="number" class="hw-qty" min="0" value="0" style="width:80px;"></td>
           <td style="border:1px solid #ccc;"><input type="text" class="hw-part" list="hardwarePartsList" placeholder="Start typing part name" style="width:95%;"></td>
           <td class="hw-price" style="border:1px solid #ccc;">$0.00</td>
+                    <td class="hw-stock" style="border:1px solid #ccc;">Not inventoried</td>
           <td class="hw-total" style="border:1px solid #ccc;">$0.00</td>
           <td class="delete-cell" style="border:1px solid #ccc; text-align:center;">
             <button class="icon-btn hw-clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
@@ -1467,6 +1495,7 @@ body.auth-locked .auth-gate{ display:flex; }
           <td style="border:1px solid #ccc;"><input type="number" class="hw-qty" min="0" value="0" style="width:80px;"></td>
           <td style="border:1px solid #ccc;"><input type="text" class="hw-part" list="hardwarePartsList" placeholder="Start typing part name" style="width:95%;"></td>
           <td class="hw-price" style="border:1px solid #ccc;">$0.00</td>
+                    <td class="hw-stock" style="border:1px solid #ccc;">Not inventoried</td>
           <td class="hw-total" style="border:1px solid #ccc;">$0.00</td>
           <td class="delete-cell" style="border:1px solid #ccc; text-align:center;">
             <button class="icon-btn hw-clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
@@ -1476,6 +1505,7 @@ body.auth-locked .auth-gate{ display:flex; }
           <td style="border:1px solid #ccc;"><input type="number" class="hw-qty" min="0" value="0" style="width:80px;"></td>
           <td style="border:1px solid #ccc;"><input type="text" class="hw-part" list="hardwarePartsList" placeholder="Start typing part name" style="width:95%;"></td>
           <td class="hw-price" style="border:1px solid #ccc;">$0.00</td>
+                    <td class="hw-stock" style="border:1px solid #ccc;">Not inventoried</td>
           <td class="hw-total" style="border:1px solid #ccc;">$0.00</td>
           <td class="delete-cell" style="border:1px solid #ccc; text-align:center;">
             <button class="icon-btn hw-clear-line" aria-label="Clear line" title="Clear line">🗑️</button>
@@ -1483,6 +1513,9 @@ body.auth-locked .auth-gate{ display:flex; }
         </tr>
       </tbody>
     </table>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+      <button type="button" onclick="openInventoryManager()">Manage Stock</button>
+    </div>
     <datalist id="hardwarePartsList"></datalist>
   </div>
 
@@ -1733,7 +1766,7 @@ body.auth-locked .auth-gate{ display:flex; }
     const landing = document.getElementById('landing-section');
     if (landing) landing.style.display = 'block';
 
-    ['calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','readytoquote-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   }
 
@@ -1741,7 +1774,7 @@ body.auth-locked .auth-gate{ display:flex; }
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
-    ['landing-section','calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','servicetechs-section']
+    ['landing-section','calculator-section','orders-section','shower-section','invoiced-section','customer-section','vendor-section','breakage-section','pricelist-section','quotedb-section','po-section','residential-section','residentialdb-section','readytoquote-section','servicetechs-section']
       .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
 
     const map = {
@@ -1758,6 +1791,7 @@ body.auth-locked .auth-gate{ display:flex; }
       po: 'po-section',
       residential: 'residential-section',
       residentialdb: 'residentialdb-section',
+      readytoquote: 'readytoquote-section',
       servicetechs: 'servicetechs-section',
     };
 
@@ -1792,7 +1826,7 @@ body.auth-locked .auth-gate{ display:flex; }
 // Create a Google Sheet with these tabs (exact names recommended):
 //   1) Glass_Standard   columns: Glass Type | Price | Min
 //   2) Glass_Special    columns: Glass Type | Price | Min
-//   3) Hardware         columns: Part | Price
+//   3) Hardware         columns: Part | Price | Inventory | Qty On Hand
 //
 // Then: File → Share → Publish to web → Publish EACH TAB as "CSV"
 // Paste the published CSV links below.
@@ -1806,6 +1840,9 @@ const SHEET_CSV = {
   hardware:      "https://docs.google.com/spreadsheets/d/1NJS6RbTqk5JDWKs6xgP3PA6cLYYHMalYXBzclECSw-0/gviz/tq?tqx=out:csv&gid=1473389068"
 };
 
+// Optional Apps Script/Webhook URL for pushing inventory deductions back to Google Sheets.
+const INVENTORY_SYNC_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwXAh5qHrEH0QGO0ldAwi15QPkAQkAtcd4e7Gelj3CTp9XDVmiqqrRKgLUtR0bR0M7p/exec';
+
 // These get populated from Google Sheets
 let standardglassPartsData = {};
 let specialGlassPartsData  = {};
@@ -1813,6 +1850,100 @@ let hardwareParts          = {};
 
 // Active glass dataset (standard vs special)
 let glassPartsData = standardglassPartsData;
+let hardwareInventory = {};
+
+function normalizeInventoryPartName(value) {
+  return String(value || '').trim().toUpperCase();
+}
+
+function getInventoryEntry(partName) {
+  return hardwareInventory[normalizeInventoryPartName(partName)] || null;
+}
+
+function updateHardwareInventoryDisplayForRow(row) {
+  const partName = (row.querySelector('.hw-part')?.value || '').trim();
+  const stockEl = row.querySelector('.hw-stock');
+  const inv = getInventoryEntry(partName);
+  if (!inv || !inv.trackInventory) {
+    if (stockEl) stockEl.textContent = 'Not inventoried';
+    return;
+  }
+  if (stockEl) stockEl.textContent = String(Number(inv.qtyOnHand || 0));
+}
+
+function refreshHardwareInventoryUi() {
+  document.querySelectorAll('#hardwareTableBody tr').forEach(updateHardwareInventoryDisplayForRow);
+}
+
+function openInventoryManager() {
+  alert(`Inventory is now managed from the Google Sheet Hardware tab.
+
+Set columns:
+- Inventory (true/false)
+- Qty On Hand (number)
+
+Then refresh pricing in the app.
+
+To push deductions back to the sheet automatically, set INVENTORY_SYNC_WEBHOOK_URL in index.html to your Google Apps Script webhook URL.`);
+}
+
+async function applyInventoryForOrder(orderId, hardwareItems = []) {
+  const usedItems = (Array.isArray(hardwareItems) ? hardwareItems : [])
+    .map(item => ({
+      partName: String(item?.name || '').trim(),
+      qtyUsed: Math.max(0, parseInt(item?.qty, 10) || 0)
+    }))
+    .filter(item => item.partName && item.qtyUsed > 0)
+    .map(item => {
+      const key = normalizeInventoryPartName(item.partName);
+      const inv = hardwareInventory[key];
+      return {
+        ...item,
+        key,
+        trackInventory: !!inv?.trackInventory,
+        qtyOnHand: Number(inv?.qtyOnHand || 0)
+      };
+    })
+    .filter(item => item.trackInventory);
+
+  if (!usedItems.length) return;
+
+  // Optimistic local decrement so in-app stock updates immediately.
+  usedItems.forEach(item => {
+    const nextQty = Math.max(0, Number(item.qtyOnHand || 0) - item.qtyUsed);
+    hardwareInventory[item.key] = {
+      ...(hardwareInventory[item.key] || {}),
+      trackInventory: true,
+      qtyOnHand: nextQty,
+      source: 'google-sheet'
+    };
+  });
+  refreshHardwareInventoryUi();
+
+  // Optional webhook to sync quantity changes back to Google Sheets.
+  if (!INVENTORY_SYNC_WEBHOOK_URL || INVENTORY_SYNC_WEBHOOK_URL.includes('PASTE_')) return;
+
+  const payload = {
+    action: 'deduct_inventory',
+    orderId: String(orderId || '').trim(),
+    items: usedItems.map(item => ({ partName: item.partName, qtyUsed: item.qtyUsed })),
+    sentAt: new Date().toISOString()
+  };
+
+  const res = await fetchApi('/api/inventory', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'sync-google-sheet',
+      webhookUrl: INVENTORY_SYNC_WEBHOOK_URL,
+      ...payload
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Inventory sync webhook failed.');
+  }
+}
 
 // Bevel pricing stays in code (rule-based pricing table)
 const bevelPrices = {
@@ -1921,25 +2052,35 @@ function rowsToGlassMap(rows) {
 }
 
 function rowsToHardwareMap(rows) {
-  // Expect header: Part | Price  (or Name | Price)
-  if (!rows || rows.length < 2) return {};
+  // Expect header: Part | Price | Inventory | Qty On Hand
+  if (!rows || rows.length < 2) return { prices: {}, inventory: {} };
 
   const header = rows[0].map(h => h.toLowerCase());
   const nameIdx  = header.findIndex(h => h.includes('part') || h.includes('name') || h.includes('item') || h.includes('hardware'));
   const priceIdx = header.findIndex(h => h.includes('price'));
+  const invIdx = header.findIndex(h => h === 'inventory' || h.includes('inventor'));
+  const qtyIdx = header.findIndex(h => h.includes('qty on hand') || h.includes('qty') || h.includes('on hand'));
 
-  const map = {};
+  const prices = {};
+  const inventory = {};
   for (let r = 1; r < rows.length; r++) {
     const cols = rows[r];
     const name = (cols[nameIdx] ?? '').trim();
     if (!name) continue;
 
     const price = toNumber(cols[priceIdx]);
-    if (Number.isNaN(price)) continue;
+    if (!Number.isNaN(price)) prices[name] = price;
 
-    map[name] = price;
+    const invRaw = String(cols[invIdx] ?? '').trim().toLowerCase();
+    const trackInventory = ['true', 'yes', 'y', '1'].includes(invRaw);
+    const qty = Math.max(0, Math.floor(toNumber(cols[qtyIdx])) || 0);
+    inventory[normalizeInventoryPartName(name)] = {
+      trackInventory,
+      qtyOnHand: qty,
+      source: 'google-sheet'
+    };
   }
-  return map;
+  return { prices, inventory };
 }
 
 function setLoadingState(isLoading, msg) {
@@ -1977,8 +2118,11 @@ async function loadPricingFromSheets() {
 
     standardglassPartsData = rowsToGlassMap(stdRows);
     specialGlassPartsData  = rowsToGlassMap(spRows);
-    hardwareParts          = rowsToHardwareMap(hwRows);
+    const hardwareData      = rowsToHardwareMap(hwRows);
+    hardwareParts          = hardwareData.prices || {};
+    hardwareInventory      = hardwareData.inventory || {};
     refreshHardwareDatalist();
+    refreshHardwareInventoryUi();
 
     // Refresh active pointer after load
     const specialToggle = document.getElementById('specialPricingToggle');
@@ -2147,6 +2291,7 @@ document.getElementById('hardwareTableBody').addEventListener('click', function(
   if (partEl) partEl.value = '';
   if (priceEl) priceEl.innerText = '$0.00';
   if (totalEl) totalEl.innerText = '$0.00';
+  updateHardwareInventoryDisplayForRow(row);
 
   updateTotals(); // totals already include hardware
 });
@@ -2486,6 +2631,7 @@ function updateHardwareRow(row) {
 
   if (priceEl) priceEl.innerText = `$${unitPrice.toFixed(2)}`;
   if (totalEl) totalEl.innerText = `$${lineTotal.toFixed(2)}`;
+  updateHardwareInventoryDisplayForRow(row);
 }
 
 function updateHardwareTotals() {
@@ -2511,6 +2657,7 @@ function clearHardware() {
     row.querySelector('.hw-total').innerText = '$0.00';
   });
   updateHardwareTotals();
+  refreshHardwareInventoryUi();
 }
 
 // ===================== TAB SWITCHING =====================
@@ -4014,8 +4161,8 @@ async function saveQuoteToDatabase(options = {}) {
     return null;
   }
 
-  if (data.items.length === 0) {
-    alert('Please add at least one glass line item before saving the quote.');
+  if (data.items.length === 0 && data.hardwareItems.length === 0) {
+    alert('Please add at least one glass or hardware line item before saving the quote.');
     return null;
   }
 
@@ -4075,6 +4222,9 @@ async function convertCurrentQuoteToOrder() {
     }
 
     const createdOrder = await orderRes.json();
+
+    await queuePrintUrl(`/api/orders?id=${encodeURIComponent(createdOrder.id)}&print=ticket`);
+    try { await applyInventoryForOrder(createdOrder.id, data.hardwareItems || []); } catch (inventoryErr) { console.warn('Inventory webhook sync failed after quote conversion.', inventoryErr); }
 
     await fetchApi(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
       method: 'PUT',
@@ -4159,8 +4309,8 @@ async function saveOrder() {
     return;
   }
 
-  if (data.items.length === 0) {
-    alert('Please add at least one glass line item before saving the order.');
+  if (data.items.length === 0 && data.hardwareItems.length === 0) {
+    alert('Please add at least one glass or hardware line item before saving the order.');
     return;
   }
 
@@ -4219,6 +4369,12 @@ async function saveOrder() {
 
     currentOrderId = savedOrder.id;
     lastSavedOrderId = savedOrder.id;
+
+    try {
+      await applyInventoryForOrder(savedOrder.id, data.hardwareItems || []);
+    } catch (inventoryErr) {
+      alert(`Order saved, but inventory could not be updated: ${inventoryErr.message}`);
+    }
 
     if (poType === 'internal') {
       const poNumberGenerated = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}`;
@@ -4912,6 +5068,9 @@ async function convertSavedQuoteToOrder(id) {
     if (!orderRes.ok) throw new Error('Failed to create order from quote');
     const createdOrder = await orderRes.json();
 
+    await queuePrintUrl(`/api/orders?id=${encodeURIComponent(createdOrder.id)}&print=ticket`);
+    try { await applyInventoryForOrder(createdOrder.id, orderPayload.hardwareItems || []); } catch (inventoryErr) { console.warn('Inventory webhook sync failed after quote conversion.', inventoryErr); }
+
     await fetchApi(`/api/quotes?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -5225,7 +5384,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   function kympgHideAllSections(){
     const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
                  'shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section',
-                 'residential-section','residentialdb-section','servicetechs-section'];
+                 'residential-section','residentialdb-section','readytoquote-section','servicetechs-section'];
     ids.forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -5256,7 +5415,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     admin: ['*'],
     office: ['*'],
     shop: ['landing', 'po'],
-    field: ['residential', 'shower', 'residentialdb'],
+    field: ['residential', 'shower', 'residentialdb', 'readytoquote'],
   };
   let authUser = null;
   let authToken = '';
@@ -5278,8 +5437,386 @@ document.addEventListener("DOMContentLoaded", async function () {
   function canDeleteOrders() { return authRoles.includes('admin'); }
   function canDeleteCustomers() { return authRoles.includes('admin'); }
   function isFieldTechUser() { return authRoles.includes('field'); }
+  function shouldBypassTechAssignmentFilter() { return isOfflineAuth && isFieldTechUser(); }
 
   let currentMeasureRequest = null;
+
+  function normalizeMeasureCategories(record) {
+    const fromArray = Array.isArray(record?.measureCategories) ? record.measureCategories : [];
+    const fallback = record?.measureCategory ? [record.measureCategory] : [];
+    const normalized = [...fromArray, ...fallback]
+      .flatMap((v) => String(v || '').split(','))
+      .map((v) => String(v || '').trim().toLowerCase())
+      .map((v) => v === 'shower door' ? 'shower' : v)
+      .filter((v) => ['shower', 'mirror', 'shelving'].includes(v));
+    return Array.from(new Set(normalized));
+  }
+
+  function getMeasureCategoryText(record) {
+    const categories = normalizeMeasureCategories(record);
+    if (categories.length) return categories.map((v) => v.charAt(0).toUpperCase() + v.slice(1)).join(', ');
+    return '';
+  }
+
+
+  let currentMeasureSelections = new Set();
+  let currentMeasureDetails = {};
+  let currentMeasureAttachments = [];
+  let currentMeasureViewOnly = false;
+
+  function getAttachmentDataUrl(att = {}) {
+    if (!att || typeof att !== 'object') return '';
+    if (typeof att.dataUrl === 'string' && att.dataUrl.trim()) return att.dataUrl.trim();
+    if (typeof att.fileDataUrl === 'string' && att.fileDataUrl.trim()) return att.fileDataUrl.trim();
+    if (typeof att.url === 'string' && att.url.trim()) return att.url.trim();
+    if (typeof att.href === 'string' && att.href.trim()) return att.href.trim();
+    if (typeof att.content === 'string' && att.content.trim()) {
+      const mime = String(att.mimeType || 'application/octet-stream');
+      return `data:${mime};base64,${att.content.trim()}`;
+    }
+    return '';
+  }
+
+  function closeAttachmentPreview() {
+    const modal = document.getElementById('attachmentPreviewModal');
+    const frame = document.getElementById('attachmentPreviewFrame');
+    if (frame) frame.removeAttribute('src');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function viewMeasurementAttachment(index) {
+    const att = (Array.isArray(currentMeasureAttachments) ? currentMeasureAttachments : [])[index];
+    if (!att) return;
+    const dataUrl = getAttachmentDataUrl(att);
+
+    if (!dataUrl && String(att?.source || '').startsWith('measure-submit-packet')) {
+      printMeasurements();
+      return;
+    }
+
+    if (!dataUrl) {
+      alert('Attachment file data is missing for this item.');
+      return;
+    }
+
+    const modal = document.getElementById('attachmentPreviewModal');
+    const frame = document.getElementById('attachmentPreviewFrame');
+    const title = document.getElementById('attachmentPreviewTitle');
+    const openBtn = document.getElementById('attachmentPreviewOpenNewTab');
+
+    if (!modal || !frame) {
+      window.location.href = dataUrl;
+      return;
+    }
+
+    if (title) title.textContent = att?.filename || 'Attachment Preview';
+    if (openBtn) openBtn.href = dataUrl;
+
+    const isImage = String(att?.mimeType || '').startsWith('image/') || String(dataUrl).startsWith('data:image/');
+    if (isImage) {
+      frame.setAttribute('srcdoc', `<html><body style="margin:0;background:#0f172a;display:flex;align-items:center;justify-content:center;"><img src="${dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;"/></body></html>`);
+      frame.removeAttribute('src');
+    } else {
+      frame.removeAttribute('srcdoc');
+      frame.src = dataUrl;
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  function renderMeasureAttachments() {
+    const box = document.getElementById('measureAttachmentsList');
+    if (!box) return;
+    const attachments = Array.isArray(currentMeasureAttachments) ? currentMeasureAttachments : [];
+    if (!attachments.length) {
+      box.innerHTML = '<div style="font-size:12px;color:#64748b;">No attachments yet.</div>';
+      return;
+    }
+    box.innerHTML = attachments.map((att, idx) => {
+      const name = escapeHtml(att?.filename || `attachment-${idx + 1}`);
+      const source = escapeHtml(att?.source || 'measure-app');
+      const dataUrl = getAttachmentDataUrl(att);
+      const canView = !!dataUrl || String(att?.source || '').startsWith('measure-submit-packet');
+      const viewBtn = canView
+        ? `<button type="button" class="kympg-authBtn secondary" style="padding:6px 10px;font-size:12px;" onclick="viewMeasurementAttachment(${idx})">View attachment</button>`
+        : '<span style="color:#94a3b8;">No file</span>';
+      return `<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #e2e8f0;"><div><div style="font-weight:700;font-size:12px;">${name}</div><div style="font-size:11px;color:#64748b;">${source}</div></div><div style="font-size:12px;">${viewBtn}</div></div>`;
+    }).join('');
+  }
+
+  function setMeasureModalMode(viewOnly) {
+    currentMeasureViewOnly = !!viewOnly;
+    const typeButtons = document.querySelectorAll('[data-measure-type]');
+    typeButtons.forEach((btn) => {
+      btn.disabled = currentMeasureViewOnly;
+      btn.style.opacity = currentMeasureViewOnly ? '0.6' : '1';
+      btn.style.cursor = currentMeasureViewOnly ? 'not-allowed' : 'pointer';
+    });
+    const notes = document.getElementById('measureNotes');
+    if (notes) notes.readOnly = currentMeasureViewOnly;
+    const showerInputs = ['measureShowerWidth','measureShowerHeight','measureShowerNotes'];
+    showerInputs.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.disabled = currentMeasureViewOnly;
+      el.readOnly = currentMeasureViewOnly;
+    });
+    const saveActions = document.getElementById('measureActionsEdit');
+    const viewActions = document.getElementById('measureActionsView');
+    if (saveActions) saveActions.style.display = currentMeasureViewOnly ? 'none' : 'flex';
+    if (viewActions) viewActions.style.display = currentMeasureViewOnly ? 'flex' : 'none';
+  }
+
+  function buildMeasurementPrintHtml() {
+    const req = currentMeasureRequest || {};
+    const c = req.customer || {};
+    const categories = Array.from(currentMeasureSelections || []);
+    const cats = categories.join(', ') || 'N/A';
+    const notes = escapeHtml(document.getElementById('measureNotes')?.value || req.measureNotes || '');
+
+    const shower = currentMeasureDetails?.shower || {};
+    const mirror = currentMeasureDetails?.mirror || {};
+    const shelving = currentMeasureDetails?.shelving || {};
+
+    const sections = [];
+
+    if (categories.includes('shower')) {
+      sections.push(`<div style="margin-bottom:10px;"><h3 style="margin:0 0 4px 0;">Shower</h3><div>Opening: ${escapeHtml(shower.openingWidth || '-')}
+        x ${escapeHtml(shower.openingHeight || '-')}</div><div style="white-space:pre-wrap;">${escapeHtml(shower.notes || '')}</div></div>`);
+    }
+
+    if (categories.includes('mirror')) {
+      const mirrorRows = Array.isArray(mirror.rows) ? mirror.rows : [];
+      const mirrorLines = mirrorRows.length
+        ? mirrorRows.map((r, i) => `<div>Mirror ${i + 1}: ${escapeHtml(r.width || '-')} x ${escapeHtml(r.height || '-')}</div>`).join('')
+        : '<div>No mirror rows entered.</div>';
+
+      let layoutText = '';
+      if (mirror.mirroredWall) {
+        const walls = Array.isArray(mirror.wallMirrors) ? mirror.wallMirrors : [];
+        layoutText = `<div style="margin-top:4px;"><b>Mirrored Wall:</b> ${walls.length || 0} mirror panels</div>`;
+        if (walls.length) {
+          layoutText += walls.map((m, i) => {
+            const cuts = Array.isArray(m.cutouts) ? m.cutouts : [];
+            const cutText = cuts.length
+              ? cuts.map((c, ci) => `Cutout ${ci + 1}: ${escapeHtml(String(c.w || '-'))} x ${escapeHtml(String(c.h || '-'))} (${escapeHtml(String(Math.round((c.offsetBottom || 0) * 10) / 10))}" up, ${escapeHtml(String(Math.round((c.offsetLeft || 0) * 10) / 10))}" over)`).join('<br>')
+              : 'Cutouts: none';
+            const out = m.outage && m.outage.enabled
+              ? `Outage: ${escapeHtml(String(m.outage.size || '-'))}" ${escapeHtml(String(m.outage.corner || '').toUpperCase())} ${escapeHtml(String(m.outage.direction || '').toUpperCase())}`
+              : 'Outage: none';
+            return `<div style="margin-left:10px;margin-top:4px;">Wall Mirror ${i + 1}: ${escapeHtml(String(m.width || '-'))} x ${escapeHtml(String(m.height || '-'))}<br>${out}<br>${cutText}</div>`;
+          }).join('');
+        }
+      } else {
+        const cuts = Array.isArray(mirror.cutouts) ? mirror.cutouts : [];
+        const out = mirror.outage && mirror.outage.enabled
+          ? `<div style="margin-top:4px;">Outage: ${escapeHtml(String(mirror.outage.size || '-'))}" ${escapeHtml(String(mirror.outage.corner || '').toUpperCase())} ${escapeHtml(String(mirror.outage.direction || '').toUpperCase())}</div>`
+          : '<div style="margin-top:4px;">Outage: none</div>';
+        const cutLines = cuts.length
+          ? `<div style="margin-top:4px;">${cuts.map((c, ci) => `Cutout ${ci + 1}: ${escapeHtml(String(c.w || '-'))} x ${escapeHtml(String(c.h || '-'))} • ${escapeHtml(String(Math.round((c.offsetBottom || 0) * 10) / 10))}" up • ${escapeHtml(String(Math.round((c.offsetLeft || 0) * 10) / 10))}" over`).join('<br>')}</div>`
+          : '<div style="margin-top:4px;">Cutout: none</div>';
+        layoutText = out + cutLines;
+      }
+
+      sections.push(`<div style="margin-bottom:10px;"><h3 style="margin:0 0 4px 0;">Mirror</h3>${mirrorLines}${layoutText}</div>`);
+    }
+
+    if (categories.includes('shelving')) {
+      const shelfLines = [];
+      if (Array.isArray(shelving.closets) && shelving.closets.length) {
+        shelving.closets.forEach((cl, idx) => {
+          shelfLines.push(`<div><b>Closet ${idx + 1}:</b> ${escapeHtml(cl.room || 'Room')}</div>`);
+          if (Array.isArray(cl.walls)) {
+            const walls = cl.walls.filter(w => Number.isFinite(w?.length) && w.length > 0);
+            if (walls.length) {
+              shelfLines.push(`<div style="margin-left:10px;">${walls.map((w, i) => `W${i + 1}: ${escapeHtml(String(w.length))}${w.type ? ` (${escapeHtml(String(w.type))})` : ''}`).join(' • ')}</div>`);
+            }
+          }
+        });
+      }
+      if (!shelfLines.length && shelving.summary) shelfLines.push(`<div style="white-space:pre-wrap;">${escapeHtml(shelving.summary)}</div>`);
+      if (!shelfLines.length && shelving.shelvingAttachment?.summaryText) shelfLines.push(`<div style="white-space:pre-wrap;">${escapeHtml(shelving.shelvingAttachment.summaryText)}</div>`);
+      sections.push(`<div style="margin-bottom:10px;"><h3 style="margin:0 0 4px 0;">Shelving</h3>${shelfLines.join('') || '<div>No shelving details entered.</div>'}</div>`);
+    }
+
+    const attachmentBlocks = (Array.isArray(currentMeasureAttachments) ? currentMeasureAttachments : []).map((att, idx) => {
+      const title = escapeHtml(att?.filename || `attachment-${idx + 1}`);
+      const dataUrl = getAttachmentDataUrl(att);
+      const isImage = String(att?.mimeType || '').startsWith('image/') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(String(att?.filename || '')) || String(dataUrl || '').startsWith('data:image/');
+      const preview = (isImage && dataUrl)
+        ? `<img src="${escapeHtml(dataUrl)}" style="max-width:100%;border:1px solid #ccc;"/>`
+        : `<div style="font-size:12px;color:#475569;">Attachment source: ${escapeHtml(att?.source || '')}</div>`;
+      const breakdown = att?.summaryText ? `<div style="font-size:12px;white-space:pre-wrap;color:#0f172a;margin-top:6px;">${escapeHtml(att.summaryText)}</div>` : '';
+      return `<div style="break-inside:avoid;margin-top:12px;"><h3 style="margin:0 0 6px 0;">${title}</h3>${preview}${breakdown}</div>`;
+    }).join('');
+
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Measurement Packet</title></head><body style="font-family:Arial,sans-serif;padding:20px;">
+      <h1 style="margin:0 0 8px 0;">Measurement Packet</h1>
+      <div>Request #: ${escapeHtml(req.requestNumber || '')}</div>
+      <div>Customer: ${escapeHtml(c.name || '')}</div>
+      <div>Phone: ${escapeHtml(c.phone || '')}</div>
+      <div>Address: ${escapeHtml(c.address || '')}</div>
+      <div>Measured By: ${escapeHtml(req.measuredBy || getAuthDisplayName())}</div>
+      <div>Measure Types: ${escapeHtml(cats)}</div>
+      <h2 style="margin-top:14px;">Notes</h2><div style="white-space:pre-wrap;">${notes || '(none)'}</div>
+      <h2 style="margin-top:14px;">Details</h2><div style="background:#f8fafc;border:1px solid #cbd5e1;padding:8px;">${sections.join('') || '<div>No detail sections yet.</div>'}</div>
+      <h2 style="margin-top:14px;">Attachments</h2>${attachmentBlocks || '<div>None</div>'}
+    </body></html>`;
+  }
+
+
+  function createMeasurementPacketAttachment() {
+    const html = buildMeasurementPrintHtml();
+    const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
+    return {
+      filename: `measurement_packet_${String(currentMeasureRequest?.requestNumber || 'request').replace(/[^\w-]+/g, '_')}.html`,
+      mimeType: 'text/html',
+      dataUrl,
+      summaryText: 'Measurement packet for print/view from Ready to Be Quoted.',
+      createdAt: new Date().toISOString(),
+      source: 'measure-submit-packet'
+    };
+  }
+
+  function printMeasurements() {
+    const html = buildMeasurementPrintHtml();
+    let frame = document.getElementById('measurePrintFrame');
+    if (!frame) {
+      frame = document.createElement('iframe');
+      frame.id = 'measurePrintFrame';
+      frame.style.position = 'fixed';
+      frame.style.right = '0';
+      frame.style.bottom = '0';
+      frame.style.width = '0';
+      frame.style.height = '0';
+      frame.style.border = '0';
+      document.body.appendChild(frame);
+    }
+
+    frame.srcdoc = html;
+    frame.onload = () => {
+      try {
+        frame.contentWindow?.focus();
+        frame.contentWindow?.print();
+      } catch (e) {
+        alert('Unable to print measurements in this browser.');
+      }
+    };
+  }
+
+  function quoteFromMeasurementView() {
+    closeMeasureModal();
+    kympgOpen('quote');
+  }
+
+  function renderMeasureTypeButtons() {
+    document.querySelectorAll('[data-measure-type]').forEach((btn) => {
+      const key = String(btn.getAttribute('data-measure-type') || '').toLowerCase();
+      btn.classList.toggle('done', currentMeasureSelections.has(key));
+    });
+    const summary = document.getElementById('measureSelectedSummary');
+    if (summary) {
+      const list = Array.from(currentMeasureSelections).map((v) => v.charAt(0).toUpperCase() + v.slice(1));
+      summary.textContent = list.length ? `Selected: ${list.join(', ')}` : 'Selected: none yet';
+    }
+  }
+
+  function showMeasureEditor(type) {
+    const editor = document.getElementById('measureOptionEditor');
+    if (!editor) return;
+    document.querySelectorAll('.measure-option-panel').forEach((el) => { el.style.display = 'none'; });
+    const panel = document.getElementById(`measure-panel-${type}`);
+    const title = document.getElementById('measureEditorTitle');
+    if (title) title.textContent = `Enter ${type.charAt(0).toUpperCase() + type.slice(1)} details`;
+    if (panel) panel.style.display = 'block';
+    editor.style.display = 'block';
+  }
+
+  function closeMeasureEditor() {
+    const editor = document.getElementById('measureOptionEditor');
+    if (editor) editor.style.display = 'none';
+  }
+
+  function openMeasureType(type) {
+    if (currentMeasureViewOnly) return;
+    showMeasureEditor(type);
+    const t = String(type).toLowerCase();
+    if (t === 'shelving') {
+      const frame = document.getElementById('measureShelvingAppFrame');
+      const sendPrefill = () => {
+        try { frame?.contentWindow?.postMessage({ type: 'kympg_shelving_prefill', payload: currentMeasureDetails?.shelving || {} }, '*'); } catch (e) {}
+      };
+      if (frame) {
+        sendPrefill();
+        frame.onload = sendPrefill;
+      }
+    }
+    if (t === 'mirror') {
+      const frame = document.getElementById('measureMirrorAppFrame');
+      const sendPrefill = () => {
+        try { frame?.contentWindow?.postMessage({ type: 'kympg_mirror_prefill', payload: currentMeasureDetails?.mirror || {} }, '*'); } catch (e) {}
+      };
+      if (frame) {
+        sendPrefill();
+        frame.onload = sendPrefill;
+      }
+    }
+  }
+
+  function saveMeasureType(type) {
+    if (!currentMeasureRequest?.id) return;
+    const t = String(type || '').toLowerCase();
+    if (!['shower','mirror','shelving'].includes(t)) return;
+    if (!currentMeasureDetails) currentMeasureDetails = {};
+    if (t === 'shower') {
+      currentMeasureDetails.shower = {
+        openingWidth: (document.getElementById('measureShowerWidth')?.value || '').trim(),
+        openingHeight: (document.getElementById('measureShowerHeight')?.value || '').trim(),
+        notes: (document.getElementById('measureShowerNotes')?.value || '').trim(),
+      };
+    }
+    currentMeasureSelections.add(t);
+    renderMeasureTypeButtons();
+    renderMeasureAttachments();
+    closeMeasureEditor();
+  }
+
+  window.addEventListener('message', (event) => {
+    const msg = event?.data || {};
+
+    if (msg.type === 'kympg_shelving_saved') {
+      if (!currentMeasureDetails || typeof currentMeasureDetails !== 'object') currentMeasureDetails = {};
+      currentMeasureDetails.shelving = msg.payload || {};
+      if (msg.payload?.shelvingAttachment) {
+        const keep = (currentMeasureAttachments || []).filter((a) => !String(a?.source || "").startsWith("shelving-measure-app"));
+        const many = Array.isArray(msg.payload?.shelvingAttachments) ? msg.payload.shelvingAttachments : [];
+        currentMeasureAttachments = many.length ? [...keep, ...many] : [...keep, msg.payload.shelvingAttachment];
+      }
+      currentMeasureSelections.add('shelving');
+      renderMeasureTypeButtons();
+      renderMeasureAttachments();
+      closeMeasureEditor();
+      const statusEl = document.getElementById('measureStatus');
+      if (statusEl) statusEl.textContent = 'Shelving saved. Select next type or Save request.';
+      return;
+    }
+
+    if (msg.type === 'kympg_mirror_saved') {
+      if (!currentMeasureDetails || typeof currentMeasureDetails !== 'object') currentMeasureDetails = {};
+      currentMeasureDetails.mirror = msg.payload || {};
+      if (msg.payload?.mirrorAttachment) {
+        const keep = (currentMeasureAttachments || []).filter((a) => !String(a?.source || "").startsWith("mirror-measure-app"));
+        currentMeasureAttachments = [...keep, msg.payload.mirrorAttachment];
+      }
+      currentMeasureSelections.add('mirror');
+      renderMeasureTypeButtons();
+      renderMeasureAttachments();
+      closeMeasureEditor();
+      const statusEl = document.getElementById('measureStatus');
+      if (statusEl) statusEl.textContent = 'Mirror saved. Select next type or Save request.';
+      return;
+    }
+  });
 
   function setAuthGateVisible(visible) {
     document.body.classList.toggle('auth-locked', !!visible);
@@ -5304,6 +5841,17 @@ document.addEventListener("DOMContentLoaded", async function () {
     };
     isOfflineAuth = true;
     syncAuthState(offlineUser);
+  }
+
+  function continueOfflineTechLogin() {
+    const techUser = {
+      email: 'tech.test@local',
+      user_metadata: { full_name: 'Test Tech' },
+      app_metadata: { roles: ['field'] },
+      token: { access_token: '' },
+    };
+    isOfflineAuth = true;
+    syncAuthState(techUser);
   }
 
   async function logoutUser() {
@@ -5828,7 +6376,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     let rows = await res.json();
     rows = (rows || []).filter((r) => String(r.status || 'open').toLowerCase() === 'open');
 
-    if (isFieldTechUser()) {
+    if (isFieldTechUser() && !shouldBypassTechAssignmentFilter()) {
       const myEmail = String(authUser?.email || '').toLowerCase();
       const myName = String(getAuthDisplayName() || '').toLowerCase();
       rows = rows.filter((r) => {
@@ -5839,11 +6387,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     const detectWorkType = (r) => {
-      const text = String(r.measureCategory || r.description || '').toLowerCase();
+      const categoryText = getMeasureCategoryText(r);
+      if (categoryText) return categoryText;
+      const text = String(r.description || '').toLowerCase();
       if (text.includes('shower')) return 'Shower';
       if (text.includes('mirror')) return 'Mirror';
       if (text.includes('shel')) return 'Shelving';
-      return r.measureCategory || r.description || '';
+      return 'Shower / Mirror / Shelving';
     };
 
     tbody.innerHTML = rows.map((r) => `
@@ -5859,7 +6409,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     `).join('') || '<tr><td colspan="7" style="text-align:center;">No open requests found.</td></tr>';
   }
 
-  async function openMeasureModal(id) {
+  async function openMeasureModal(id, viewOnly = false) {
     const res = await fetchApi(`/api/residential-requests?id=${encodeURIComponent(id)}`);
     if (!res.ok) return alert('Could not load request details.');
     const r = await res.json();
@@ -5870,9 +6420,22 @@ document.addEventListener("DOMContentLoaded", async function () {
     document.getElementById('measureCustomerPhone').value = r.customer?.phone || '';
     document.getElementById('measureCustomerAddress').value = r.customer?.address || '';
     document.getElementById('measureDescription').value = r.description || '';
-    document.getElementById('measureCategory').value = r.measureCategory || '';
+    const selectedCategories = normalizeMeasureCategories(r);
+    currentMeasureSelections = new Set(selectedCategories);
+    currentMeasureDetails = (r && typeof r.measureOptionDetails === 'object' && r.measureOptionDetails) ? JSON.parse(JSON.stringify(r.measureOptionDetails)) : {};
+    currentMeasureAttachments = Array.isArray(r?.measureAttachments) ? JSON.parse(JSON.stringify(r.measureAttachments)) : [];
+    renderMeasureTypeButtons();
+    renderMeasureAttachments();
+    closeMeasureEditor();
+
+    const shower = currentMeasureDetails.shower || {};
+    document.getElementById('measureShowerWidth').value = shower.openingWidth || '';
+    document.getElementById('measureShowerHeight').value = shower.openingHeight || '';
+    document.getElementById('measureShowerNotes').value = shower.notes || '';
+
     document.getElementById('measureNotes').value = r.measureNotes || '';
     document.getElementById('measureStatus').textContent = '';
+    setMeasureModalMode(viewOnly || String(r.status || '').toLowerCase() === 'ready to be quoted');
     const modal = document.getElementById('measureModal');
     if (modal) modal.style.display = 'flex';
   }
@@ -5882,28 +6445,55 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (modal) modal.style.display = 'none';
   }
 
-  async function saveMeasureSelection() {
-    if (!currentMeasureRequest?.id) return;
-    const measureCategory = (document.getElementById('measureCategory')?.value || '').trim();
+  async function saveMeasureSelection(options = {}) {
+    if (!currentMeasureRequest?.id) return false;
+    const submitForQuote = !!options.submitForQuote;
+    const measureCategories = Array.from(currentMeasureSelections);
+    const measureCategory = measureCategories.join(', ');
     const measureNotes = (document.getElementById('measureNotes')?.value || '').trim();
     const statusEl = document.getElementById('measureStatus');
-    if (!measureCategory) {
-      if (statusEl) statusEl.textContent = 'Please pick shower door, mirror, or shelving.';
-      return;
+    if (!measureCategories.length) {
+      if (statusEl) statusEl.textContent = 'Please pick at least one: shower, mirror, or shelving.';
+      return false;
     }
 
-    const payload = { ...currentMeasureRequest, measureCategory, measureNotes, measuredAt: new Date().toISOString(), measuredBy: getAuthDisplayName() };
+    if (submitForQuote) {
+      const packet = createMeasurementPacketAttachment();
+      const keep = (currentMeasureAttachments || []).filter((a) => !String(a?.source || '').startsWith('measure-submit-packet'));
+      currentMeasureAttachments = [...keep, packet];
+      renderMeasureAttachments();
+    }
+
+    const payload = {
+      ...currentMeasureRequest,
+      measureCategory,
+      measureCategories,
+      measureOptionDetails: currentMeasureDetails,
+      measureAttachments: currentMeasureAttachments,
+      measureNotes,
+      measuredAt: new Date().toISOString(),
+      measuredBy: getAuthDisplayName(),
+      submitForQuote,
+    };
     const res = await fetchApi(`/api/residential-requests?id=${encodeURIComponent(currentMeasureRequest.id)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     if (!res.ok) {
-      if (statusEl) statusEl.textContent = 'Failed to save measure details.';
-      return;
+      if (statusEl) statusEl.textContent = submitForQuote ? 'Failed to save and submit.' : 'Failed to save measure details.';
+      return false;
     }
-    if (statusEl) statusEl.textContent = 'Saved.';
+    if (statusEl) statusEl.textContent = submitForQuote ? 'Saved + submitted to ready-to-be-quoted.' : 'Saved.';
     await loadTechHomeRequests();
+    await loadResidentialRequests();
+    await loadReadyToBeQuotedRequests();
+    if (submitForQuote) closeMeasureModal();
+    return true;
+  }
+
+  async function saveAndSubmitMeasureSelection() {
+    await saveMeasureSelection({ submitForQuote: true });
   }
 
   async function saveResidentialRequest() {
@@ -5957,7 +6547,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     const res = await fetchApi('/api/residential-requests');
     if (!res.ok) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Failed to load requests.</td></tr>'; return; }
     let rows = await res.json();
-    if (authRoles.includes('field')) {
+    rows = (rows || []).filter((r) => String(r.status || 'open').toLowerCase() === 'open');
+    if (authRoles.includes('field') && !shouldBypassTechAssignmentFilter()) {
       const myEmail = String(authUser?.email || '').toLowerCase();
       const myName = String(getAuthDisplayName() || '').toLowerCase();
       rows = (rows || []).filter((r) => {
@@ -5966,7 +6557,26 @@ document.addEventListener("DOMContentLoaded", async function () {
         return !assignedEmail || assignedEmail === myEmail || (assignedName && assignedName === myName);
       });
     }
-    tbody.innerHTML = (rows || []).map(r => `<tr><td>${escapeHtml(r.requestNumber || '')}</td><td>${escapeHtml(r.customer?.name || '')}</td><td>${escapeHtml(r.customer?.phone || '')}</td><td>${escapeHtml(r.assignedTech || '')}</td><td>${escapeHtml((r.createdAt || '').slice(0,10))}</td><td><button type="button" onclick="editResidentialRequest('${r.id}')">Edit</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No requests found.</td></tr>';
+    tbody.innerHTML = (rows || []).map(r => `<tr><td>${escapeHtml(r.requestNumber || '')}</td><td>${escapeHtml(r.customer?.name || '')}</td><td>${escapeHtml(r.customer?.phone || '')}</td><td>${escapeHtml(r.assignedTech || '')}</td><td>${escapeHtml((r.createdAt || '').slice(0,10))}</td><td><button type="button" onclick="editResidentialRequest('${r.id}')">Edit</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No open requests found.</td></tr>';
+  }
+
+  async function loadReadyToBeQuotedRequests() {
+    const tbody = document.getElementById('readyToQuoteTableBody');
+    if (!tbody) return;
+    const res = await fetchApi('/api/residential-requests');
+    if (!res.ok) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:red;">Failed to load requests.</td></tr>'; return; }
+    let rows = await res.json();
+    rows = (rows || []).filter((r) => String(r.status || '').toLowerCase() === 'ready to be quoted');
+    if (authRoles.includes('field') && !shouldBypassTechAssignmentFilter()) {
+      const myEmail = String(authUser?.email || '').toLowerCase();
+      const myName = String(getAuthDisplayName() || '').toLowerCase();
+      rows = (rows || []).filter((r) => {
+        const assignedEmail = String(r.assignedTechEmail || '').toLowerCase();
+        const assignedName = String(r.assignedTech || '').toLowerCase();
+        return !assignedEmail || assignedEmail === myEmail || (assignedName && assignedName === myName);
+      });
+    }
+    tbody.innerHTML = (rows || []).map(r => `<tr><td>${escapeHtml(r.requestNumber || '')}</td><td>${escapeHtml(r.customer?.name || '')}</td><td>${escapeHtml(r.customer?.phone || '')}</td><td>${escapeHtml(r.assignedTech || '')}</td><td>${escapeHtml((r.updatedAt || r.createdAt || '').slice(0,10))}</td><td><button type="button" onclick="openMeasureModal('${r.id}', true)">View Measurements</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;">No submitted requests found.</td></tr>';
   }
 
   async function editResidentialRequest(id) {
@@ -6084,8 +6694,15 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     if (which === 'residentialdb'){
       const r = document.getElementById('residentialdb-section');
       if (r){ r.style.display = 'block'; }
-      kympgSetHeader('Open Residential Requests', 'Search and edit saved requests.', 'Residential', 'Open Requests');
+      kympgSetHeader('Measure Requests', 'Open requests ready to measure (Shower, Mirror, or Shelving).', 'Residential', 'Measure');
       try { if (typeof loadResidentialRequests === 'function') loadResidentialRequests(); } catch(e) {}
+      return;
+    }
+    if (which === 'readytoquote'){
+      const q = document.getElementById('readytoquote-section');
+      if (q){ q.style.display = 'block'; }
+      kympgSetHeader('Ready to Be Quoted', 'Measured requests submitted for quote prep.', 'Residential', 'Ready to Be Quoted');
+      try { if (typeof loadReadyToBeQuotedRequests === 'function') loadReadyToBeQuotedRequests(); } catch(e) {}
       return;
     }
     if (which === 'servicetechs'){
@@ -6117,7 +6734,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     // Ensure app workspaces live inside the card body so navigation renders correctly.
     const content = document.getElementById('kympgContentArea');
     if (content){
-      ['calculator-section','customer-section','vendor-section','orders-section','shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','servicetechs-section']
+      ['calculator-section','customer-section','vendor-section','orders-section','shower-section','invoiced-section','quotedb-section','po-section','breakage-section','pricelist-section','residential-section','residentialdb-section','readytoquote-section','servicetechs-section']
         .forEach(id => {
           const el = document.getElementById(id);
           if (el && el.parentElement !== content) content.appendChild(el);
@@ -6203,21 +6820,74 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
       <div><label>Phone</label><input id="measureCustomerPhone" type="text" readonly></div>
       <div class="full"><label>Address</label><input id="measureCustomerAddress" type="text" readonly></div>
       <div class="full"><label>Description</label><textarea id="measureDescription" rows="3" readonly></textarea></div>
-      <div class="full"><label>Pick Type</label>
-        <select id="measureCategory">
-          <option value="">Select one...</option>
-          <option value="shower door">Shower Door</option>
-          <option value="mirror">Mirror</option>
-          <option value="shelving">Shelving</option>
-        </select>
+      <div class="full"><label>Pick Type (click one, save it, then pick the next)</label>
+        <div class="measure-type-buttons">
+          <button type="button" data-measure-type="shower" onclick="openMeasureType('shower')">Shower</button>
+          <button type="button" data-measure-type="mirror" onclick="openMeasureType('mirror')">Mirror</button>
+          <button type="button" data-measure-type="shelving" onclick="openMeasureType('shelving')">Shelving</button>
+        </div>
+        <div id="measureSelectedSummary" class="measure-selected-list">Selected: none yet</div>
+
+        <div id="measureOptionEditor" class="measure-editor" style="display:none;">
+          <div style="font-weight:800;margin-bottom:8px;" id="measureEditorTitle">Enter details</div>
+
+          <div id="measure-panel-shower" class="measure-option-panel" style="display:none;">
+            <div class="row2">
+              <div><label>Opening Width</label><input id="measureShowerWidth" type="text" placeholder="e.g., 48"></div>
+              <div><label>Opening Height</label><input id="measureShowerHeight" type="text" placeholder="e.g., 76"></div>
+            </div>
+            <div><label>Shower Notes</label><textarea id="measureShowerNotes" rows="3" placeholder="Handle, hinge, inline panel, etc."></textarea></div>
+            <div class="editor-actions">
+              <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureEditor()">Back</button>
+              <button type="button" class="kympg-authBtn primary" onclick="saveMeasureType('shower')">Save Shower</button>
+            </div>
+          </div>
+
+          <div id="measure-panel-mirror" class="measure-option-panel" style="display:none;">
+            <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Mirror app loaded below. Use its Save Mirror To Request button to return here.</div>
+            <iframe id="measureMirrorAppFrame" class="measure-mirror-frame" src="mirror-measure.html" title="Mirror Measure App"></iframe>
+            <div class="editor-actions" style="margin-top:8px;">
+              <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureEditor()">Back</button>
+            </div>
+          </div>
+
+          <div id="measure-panel-shelving" class="measure-option-panel" style="display:none;">
+            <div style="font-size:12px;color:#64748b;margin-bottom:8px;">Shelving app loaded below. Use its Save Shelving button to return here.</div>
+            <iframe id="measureShelvingAppFrame" class="measure-shelving-frame" src="shelving-measure.html" title="Shelving Measure App"></iframe>
+            <div class="editor-actions" style="margin-top:8px;">
+              <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureEditor()">Back</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="full"><label>Measure Notes</label><textarea id="measureNotes" rows="3" placeholder="Optional notes..."></textarea></div>
+      <div class="full"><label>Attachments</label><div id="measureAttachmentsList" style="border:1px solid #dbe3ef;border-radius:8px;padding:8px;background:#fff;"></div></div>
     </div>
-    <div class="measure-actions">
+    <div class="measure-actions" id="measureActionsEdit">
       <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureModal()">Close</button>
       <button type="button" class="kympg-authBtn primary" onclick="saveMeasureSelection()">Save</button>
+      <button type="button" class="kympg-authBtn primary" onclick="saveAndSubmitMeasureSelection()">Save + Submit</button>
+    </div>
+    <div class="measure-actions" id="measureActionsView" style="display:none;">
+      <button type="button" class="kympg-authBtn secondary" onclick="closeMeasureModal()">Close</button>
+      <button type="button" class="kympg-authBtn primary" onclick="quoteFromMeasurementView()">Quote</button>
+      <button type="button" class="kympg-authBtn primary" onclick="printMeasurements()">Print Measurements</button>
     </div>
     <div id="measureStatus" class="kympg-logPOStatus"></div>
+  </div>
+</div>
+
+
+<div id="attachmentPreviewModal" class="measure-modal" style="display:none;z-index:21000;" onclick="closeAttachmentPreview()">
+  <div class="measure-card" style="width:min(1100px,96vw);height:min(90vh,900px);display:flex;flex-direction:column;" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;">
+      <div id="attachmentPreviewTitle" style="font-weight:800;">Attachment Preview</div>
+      <div style="display:flex;gap:8px;">
+        <a id="attachmentPreviewOpenNewTab" class="kympg-authBtn secondary" href="#" target="_blank" rel="noopener">Open New Tab</a>
+        <button type="button" class="kympg-authBtn secondary" onclick="closeAttachmentPreview()">Close</button>
+      </div>
+    </div>
+    <iframe id="attachmentPreviewFrame" style="width:100%;height:100%;border:1px solid #cbd5e1;border-radius:8px;background:#0f172a;"></iframe>
   </div>
 </div>
 

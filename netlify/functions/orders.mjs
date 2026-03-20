@@ -302,6 +302,7 @@ function renderQuoteHTML(order) {
   </div>
 
   ${renderItemsTableNoMoney(order)}
+  ${renderHardwareTable(order, false)}
 
   <p class="small" style="margin-top:12px;">
     This quote is good for <b>30 days</b> from <b>${escapeHtml(fmtDate(savedISO))}</b>.
@@ -392,6 +393,8 @@ function renderTicketHTML(order) {
       ${rows || `<tr><td colspan="8">No line items</td></tr>`}
     </tbody>
   </table>
+
+  ${renderHardwareTable(order, false)}
 
   <div class="notes">
     <b>Shop Notes:</b><br/>
