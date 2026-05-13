@@ -1295,7 +1295,7 @@ body.auth-locked .auth-gate{ display:flex; }
               <input type="text" id="invoicedSearch" placeholder="Search by invoice #, order #, or customer..." oninput="searchInvoicedOrders()" style="width:100%;max-width:420px;padding:8px;border:1px solid #ccc;border-radius:4px;">
               <label for="invoiceExportDate" style="font-weight:bold;">Export Day</label>
               <input type="date" id="invoiceExportDate" style="max-width:180px;padding:8px;border:1px solid #ccc;border-radius:4px;">
-              <button type="button" onclick="exportInvoicedOrdersForDay()" style="padding:8px 14px;font-weight:bold;border:none;border-radius:6px;background:#198754;color:white;cursor:pointer;">Export Invoices CSV</button>
+              <button type="button" onclick="exportInvoicedOrdersForDay()" style="padding:8px 14px;font-weight:bold;border:none;border-radius:6px;background:#198754;color:white;cursor:pointer;">Export Accounting CSV</button>
             </div>
             <div id="invoiceExportStatus" style="min-height:18px;font-size:13px;color:#555;margin:-2px 0 10px;" aria-live="polite"></div>
             <table id="invoicedTable" style="width:100%;border-collapse:collapse;">
@@ -5141,73 +5141,139 @@ function invoiceItemDescription(item = {}) {
   ].filter(Boolean).join(' • ');
 }
 
+function accountingCustomerNumber(customer = {}) {
+  return customer.customerNumber || customer.accountNumber || customer.cusnum || customer.customerId || customer.id || '';
+}
+
+function accountingTerms(value) {
+  const terms = String(value || '').trim();
+  const lower = terms.toLowerCase();
+  if (!terms || lower === 'due upon receipt') return 'none';
+  if (lower.includes('cod')) return 'cod';
+  if (lower.includes('cash')) return 'cash';
+  return terms;
+}
+
 function invoiceExportRowsForInvoice(inv) {
   const customer = inv.customer || {};
   const base = {
-    invoiceDate: invoiceDateKey(inv.invoiceDate || inv.createdAt),
-    invoiceNumber: inv.invoiceNumber || '',
-    orderNumber: inv.orderNumber || '',
-    customerNumber: customer.customerId || customer.id || '',
-    customerName: customer.name || '',
-    invoiceTotal: Number(inv.grandTotalWithTax || inv.grandTotal || 0),
+    cusnum: accountingCustomerNumber(customer),
+    customername: customer.name || '',
+    invnum: inv.invoiceNumber || '',
+    deptnum: inv.departmentNumber || inv.deptnum || '',
+    jobnum: inv.jobNumber || inv.jobnum || inv.orderNumber || '',
+    notes: inv.customerNotes || inv.notes || '',
+    taxnum: inv.taxNumber || inv.taxnum || '',
+    invdate: invoiceDateKey(inv.invoiceDate || inv.createdAt),
+    duedate: invoiceDateKey(inv.dueDate || inv.duedate),
+    terms: accountingTerms(inv.terms || customer.creditTerms),
+    discdate: invoiceDateKey(inv.discountDate || inv.discdate),
+    discpcnt: inv.discountPercent || inv.discpcnt || '',
+    retamnt: inv.retainageAmount || inv.retamnt || '',
+    retpcnt: inv.retainagePercent || inv.retpcnt || '',
+    freightamt: inv.freightAmount || inv.freightamt || '',
+    freighttype: inv.freightType || inv.freighttype || 'none',
+    pricecode: inv.priceCode || inv.pricecode || '',
+    salesacct: inv.salesAccount || inv.salesacct || '',
+    ponum: inv.vendorPoNumber || inv.customerPoNumber || inv.ponum || '',
+    shipvia: inv.shipVia || inv.shipvia || '',
+    shipdate: invoiceDateKey(inv.shipDate || inv.shipdate),
+    blurb: inv.blurb || '',
+    depositamt: inv.depositAmount || inv.depositamt || '',
+    description: inv.description || `Invoice ${inv.invoiceNumber || ''}`.trim(),
+    source: inv.source || 'KMPG',
+    sourceid: inv.sourceId || inv.orderId || '',
+    salesrepid: inv.salesRepId || inv.salesrepid || '',
+    invoicetotal: Number(inv.grandTotalWithTax || inv.grandTotal || 0),
   };
 
-  const glassRows = (Array.isArray(inv.items) ? inv.items : []).map((item, idx) => ({
-    ...base,
-    lineType: 'Glass',
-    lineNumber: idx + 1,
-    qty: item.qty ?? item.quantity ?? 1,
-    description: invoiceItemDescription(item),
-    width: item.width || '',
-    height: item.height || '',
-    unitCost: parseCurrencyValue(item.eachPrice ?? item.unitPrice ?? item.price),
-    lineCost: parseCurrencyValue(item.lineTotal ?? item.total ?? item.lineTotalAmount),
-  }));
+  const glassRows = (Array.isArray(inv.items) ? inv.items : []).map((item, idx) => {
+    const qty = item.qty ?? item.quantity ?? 1;
+    const unitPrice = parseCurrencyValue(item.eachPrice ?? item.unitPrice ?? item.price);
+    const lineCost = parseCurrencyValue(item.lineTotal ?? item.total ?? item.lineTotalAmount) || (Number(qty) * unitPrice);
+    return {
+      ...base,
+      itemnum: item.itemnum || item.itemNumber || item.sku || item.glassType || '',
+      itemdescription: invoiceItemDescription(item),
+      location: item.location || '',
+      qty,
+      unitprice: unitPrice,
+      unitcost: parseCurrencyValue(item.unitcost ?? item.unitCost ?? item.cost),
+      linecost: lineCost,
+      linenumber: idx + 1,
+    };
+  });
 
-  const hardwareRows = (Array.isArray(inv.hardwareItems) ? inv.hardwareItems : []).map((item, idx) => ({
-    ...base,
-    lineType: 'Hardware',
-    lineNumber: glassRows.length + idx + 1,
-    qty: item.qty ?? item.quantity ?? 1,
-    description: item.name || item.part || item.description || '',
-    width: '',
-    height: '',
-    unitCost: parseCurrencyValue(item.price ?? item.unitPrice),
-    lineCost: parseCurrencyValue(item.total ?? item.lineTotal),
-  }));
+  const hardwareRows = (Array.isArray(inv.hardwareItems) ? inv.hardwareItems : []).map((item, idx) => {
+    const qty = item.qty ?? item.quantity ?? 1;
+    const unitPrice = parseCurrencyValue(item.price ?? item.unitPrice);
+    const lineCost = parseCurrencyValue(item.total ?? item.lineTotal) || (Number(qty) * unitPrice);
+    return {
+      ...base,
+      itemnum: item.itemnum || item.itemNumber || item.sku || item.part || item.name || '',
+      itemdescription: item.description || item.name || item.part || '',
+      location: item.location || '',
+      qty,
+      unitprice: unitPrice,
+      unitcost: parseCurrencyValue(item.unitcost ?? item.unitCost ?? item.cost),
+      linecost: lineCost,
+      linenumber: glassRows.length + idx + 1,
+    };
+  });
 
   return [...glassRows, ...hardwareRows].length ? [...glassRows, ...hardwareRows] : [{
     ...base,
-    lineType: 'Invoice',
-    lineNumber: '',
+    itemnum: '',
+    itemdescription: 'No line items',
+    location: '',
     qty: '',
-    description: 'No line items',
-    width: '',
-    height: '',
-    unitCost: '',
-    lineCost: base.invoiceTotal,
+    unitprice: '',
+    unitcost: '',
+    linecost: base.invoicetotal,
+    linenumber: '',
   }];
 }
 
 function downloadCsvFile(fileName, rows) {
   const headers = [
-    'Invoice Date',
-    'Invoice #',
-    'Order #',
-    'Customer #',
-    'Customer Name',
-    'Line Type',
-    'Line #',
-    'Qty',
-    'Description',
-    'Width',
-    'Height',
-    'Unit Cost',
-    'Line Cost',
-    'Invoice Total',
+    'cusnum',
+    'customername',
+    'invnum',
+    'deptnum',
+    'jobnum',
+    'notes',
+    'taxnum',
+    'invdate',
+    'duedate',
+    'terms',
+    'discdate',
+    'discpcnt',
+    'retamnt',
+    'retpcnt',
+    'freightamt',
+    'freighttype',
+    'pricecode',
+    'salesacct',
+    'ponum',
+    'shipvia',
+    'shipdate',
+    'blurb',
+    'depositamt',
+    'description',
+    'source',
+    'sourceid',
+    'salesrepid',
+    'itemnum',
+    'itemdescription',
+    'location',
+    'qty',
+    'unitprice',
+    'unitcost',
+    'linecost',
+    'linenumber',
+    'invoicetotal',
   ];
-  const keys = ['invoiceDate','invoiceNumber','orderNumber','customerNumber','customerName','lineType','lineNumber','qty','description','width','height','unitCost','lineCost','invoiceTotal'];
-  const csv = [headers.map(csvCell).join(','), ...rows.map(row => keys.map(key => csvCell(row[key])).join(','))].join('\n');
+  const csv = [headers.map(csvCell).join(','), ...rows.map(row => headers.map(key => csvCell(row[key])).join(','))].join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -5236,7 +5302,7 @@ async function exportInvoicedOrdersForDay() {
     }
 
     const rows = invoicesForDay.flatMap(invoiceExportRowsForInvoice);
-    downloadCsvFile(`invoiced-orders-${selectedDate}.csv`, rows);
+    downloadCsvFile(`accounting-invoices-${selectedDate}.csv`, rows);
     if (statusEl) statusEl.textContent = `Exported ${rows.length} line item row(s) from ${invoicesForDay.length} invoice(s) for ${selectedDate}.`;
   } catch (err) {
     if (statusEl) statusEl.textContent = `Export failed: ${err.message}`;
