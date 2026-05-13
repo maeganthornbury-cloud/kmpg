@@ -1291,7 +1291,13 @@ body.auth-locked .auth-gate{ display:flex; }
 
           <div id="invoiced-section" style="display:none;">
             <h2 style="margin-top:0;">Invoiced Orders</h2>
-            <input type="text" id="invoicedSearch" placeholder="Search by invoice #, order #, or customer..." oninput="searchInvoicedOrders()" style="width:100%;max-width:420px;margin:10px 0;padding:8px;border:1px solid #ccc;border-radius:4px;">
+            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0;">
+              <input type="text" id="invoicedSearch" placeholder="Search by invoice #, order #, or customer..." oninput="searchInvoicedOrders()" style="width:100%;max-width:420px;padding:8px;border:1px solid #ccc;border-radius:4px;">
+              <label for="invoiceExportDate" style="font-weight:bold;">Export Day</label>
+              <input type="date" id="invoiceExportDate" style="max-width:180px;padding:8px;border:1px solid #ccc;border-radius:4px;">
+              <button type="button" onclick="exportInvoicedOrdersForDay()" style="padding:8px 14px;font-weight:bold;border:none;border-radius:6px;background:#198754;color:white;cursor:pointer;">Export Invoices CSV</button>
+            </div>
+            <div id="invoiceExportStatus" style="min-height:18px;font-size:13px;color:#555;margin:-2px 0 10px;" aria-live="polite"></div>
             <table id="invoicedTable" style="width:100%;border-collapse:collapse;">
               <thead>
                 <tr>
@@ -5101,6 +5107,141 @@ function searchInvoicedOrders() {
     (inv.customer?.name || '').toLowerCase().includes(q)
   );
   renderInvoicedTable(filtered);
+}
+
+function invoiceDateKey(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseCurrencyValue(value) {
+  if (typeof value === 'number') return value;
+  const match = String(value || '').match(/-?[\d,]+(?:\.\d+)?/);
+  return match ? Number(match[0].replace(/,/g, '')) : 0;
+}
+
+function csvCell(value) {
+  const text = String(value ?? '');
+  return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function invoiceItemDescription(item = {}) {
+  return item.description || item.name || [
+    item.glassType || item.type,
+    item.thickness,
+    item.width && item.height ? `${item.width} x ${item.height}` : '',
+    item.bevel ? `${item.bevelWidth || ''} BEVEL`.trim() : '',
+    item.shape ? 'SHAPE' : '',
+    item.notes,
+  ].filter(Boolean).join(' • ');
+}
+
+function invoiceExportRowsForInvoice(inv) {
+  const customer = inv.customer || {};
+  const base = {
+    invoiceDate: invoiceDateKey(inv.invoiceDate || inv.createdAt),
+    invoiceNumber: inv.invoiceNumber || '',
+    orderNumber: inv.orderNumber || '',
+    customerNumber: customer.customerId || customer.id || '',
+    customerName: customer.name || '',
+    invoiceTotal: Number(inv.grandTotalWithTax || inv.grandTotal || 0),
+  };
+
+  const glassRows = (Array.isArray(inv.items) ? inv.items : []).map((item, idx) => ({
+    ...base,
+    lineType: 'Glass',
+    lineNumber: idx + 1,
+    qty: item.qty ?? item.quantity ?? 1,
+    description: invoiceItemDescription(item),
+    width: item.width || '',
+    height: item.height || '',
+    unitCost: parseCurrencyValue(item.eachPrice ?? item.unitPrice ?? item.price),
+    lineCost: parseCurrencyValue(item.lineTotal ?? item.total ?? item.lineTotalAmount),
+  }));
+
+  const hardwareRows = (Array.isArray(inv.hardwareItems) ? inv.hardwareItems : []).map((item, idx) => ({
+    ...base,
+    lineType: 'Hardware',
+    lineNumber: glassRows.length + idx + 1,
+    qty: item.qty ?? item.quantity ?? 1,
+    description: item.name || item.part || item.description || '',
+    width: '',
+    height: '',
+    unitCost: parseCurrencyValue(item.price ?? item.unitPrice),
+    lineCost: parseCurrencyValue(item.total ?? item.lineTotal),
+  }));
+
+  return [...glassRows, ...hardwareRows].length ? [...glassRows, ...hardwareRows] : [{
+    ...base,
+    lineType: 'Invoice',
+    lineNumber: '',
+    qty: '',
+    description: 'No line items',
+    width: '',
+    height: '',
+    unitCost: '',
+    lineCost: base.invoiceTotal,
+  }];
+}
+
+function downloadCsvFile(fileName, rows) {
+  const headers = [
+    'Invoice Date',
+    'Invoice #',
+    'Order #',
+    'Customer #',
+    'Customer Name',
+    'Line Type',
+    'Line #',
+    'Qty',
+    'Description',
+    'Width',
+    'Height',
+    'Unit Cost',
+    'Line Cost',
+    'Invoice Total',
+  ];
+  const keys = ['invoiceDate','invoiceNumber','orderNumber','customerNumber','customerName','lineType','lineNumber','qty','description','width','height','unitCost','lineCost','invoiceTotal'];
+  const csv = [headers.map(csvCell).join(','), ...rows.map(row => keys.map(key => csvCell(row[key])).join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function exportInvoicedOrdersForDay() {
+  const statusEl = document.getElementById('invoiceExportStatus');
+  const dateInput = document.getElementById('invoiceExportDate');
+  const selectedDate = dateInput?.value || invoiceDateKey(new Date());
+  if (dateInput && !dateInput.value) dateInput.value = selectedDate;
+  if (!selectedDate) return alert('Please choose an invoice date to export.');
+
+  try {
+    if (!allInvoicedOrders.length) await loadInvoicedOrders();
+    const invoicesForDay = allInvoicedOrders.filter(inv => invoiceDateKey(inv.invoiceDate || inv.createdAt) === selectedDate);
+    if (!invoicesForDay.length) {
+      if (statusEl) statusEl.textContent = `No invoices found for ${selectedDate}.`;
+      alert(`No invoices found for ${selectedDate}.`);
+      return;
+    }
+
+    const rows = invoicesForDay.flatMap(invoiceExportRowsForInvoice);
+    downloadCsvFile(`invoiced-orders-${selectedDate}.csv`, rows);
+    if (statusEl) statusEl.textContent = `Exported ${rows.length} line item row(s) from ${invoicesForDay.length} invoice(s) for ${selectedDate}.`;
+  } catch (err) {
+    if (statusEl) statusEl.textContent = `Export failed: ${err.message}`;
+    alert('Could not export invoices: ' + err.message);
+  }
 }
 
 async function reprintInvoice(orderId) {
