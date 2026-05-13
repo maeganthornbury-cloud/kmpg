@@ -34,6 +34,32 @@ async function nextInvoiceSequence() {
 }
 
 
+
+function sanitizeBackupFileName(fileName) {
+  return String(fileName || "backup-file")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 120) || "backup-file";
+}
+
+function extractSequenceFromOrderValue(value) {
+  const match = String(value || "").match(/(?:^|[^0-9])0*([1-9][0-9]{2,})(?:[^0-9]|$)/);
+  return match ? Number(match[1]) : null;
+}
+
+async function findOrderBySequence(store, sequenceNumber) {
+  if (!Number.isFinite(sequenceNumber)) return null;
+  const { blobs } = await store.list();
+  for (const blob of blobs) {
+    if (blob.key === "_counter") continue;
+    const data = await store.get(blob.key, { type: "json" });
+    if (!data) continue;
+    const storedSequence = Number(data.sequenceNumber) || extractSequenceFromOrderValue(data.orderNumber);
+    if (storedSequence === sequenceNumber) return { id: blob.key, order: data };
+  }
+  return null;
+}
+
 function normalizeStringsUpper(value) {
   if (Array.isArray(value)) return value.map(normalizeStringsUpper);
   if (value && typeof value === "object") {
@@ -550,11 +576,13 @@ function renderInvoiceHTML(order) {
 
 export default async (req) => {
   const store = getStore({ name: "orders", consistency: "strong" });
+  const backupStore = getStore({ name: "order-backups", consistency: "strong" });
   const url = new URL(req.url);
   const id = url.searchParams.get("id");
   const search = url.searchParams.get("search");
   const print = url.searchParams.get("print"); // quote | ticket | packing-list | invoice
   const action = url.searchParams.get("action");
+  const backupId = url.searchParams.get("backupId");
 
   const jsonHeaders = {
     "Content-Type": "application/json",
@@ -583,6 +611,42 @@ export default async (req) => {
           return new Response(JSON.stringify({ error: "Order not found" }), {
             status: 404,
             headers: jsonHeaders,
+          });
+        }
+
+        if (action === "backup") {
+          if (!backupId) {
+            return new Response(JSON.stringify({ error: "backupId is required" }), {
+              status: 400,
+              headers: jsonHeaders,
+            });
+          }
+
+          const backup = (Array.isArray(order.backups) ? order.backups : []).find((item) => item.id === backupId);
+          if (!backup) {
+            return new Response(JSON.stringify({ error: "Backup not found" }), {
+              status: 404,
+              headers: jsonHeaders,
+            });
+          }
+
+          const fileData = await backupStore.get(backup.key, { type: "arrayBuffer" });
+          if (!fileData) {
+            return new Response(JSON.stringify({ error: "Backup file not found" }), {
+              status: 404,
+              headers: jsonHeaders,
+            });
+          }
+
+          return new Response(fileData, {
+            status: 200,
+            headers: {
+              "Content-Type": backup.contentType || "application/octet-stream",
+              "Content-Disposition": `attachment; filename="${sanitizeBackupFileName(backup.fileName)}"`,
+              "Access-Control-Allow-Origin": "*",
+              "Access-Control-Allow-Methods": "GET, OPTIONS",
+              "Access-Control-Allow-Headers": "Content-Type",
+            },
           });
         }
 
@@ -639,9 +703,69 @@ export default async (req) => {
       return new Response(JSON.stringify(orders), { status: 200, headers: jsonHeaders });
     }
 
-    // POST — create a new order with auto-assigned order number
+    // POST — create a new order with auto-assigned order number, invoice, or attach backup file
     if (req.method === "POST") {
-      const body = normalizeStringsUpper(await req.json());
+      const rawBody = await req.json();
+
+      if (action === "backup") {
+        const fileName = String(rawBody.fileName || "").trim();
+        const contentBase64 = String(rawBody.contentBase64 || "");
+        const contentType = String(rawBody.contentType || "application/octet-stream");
+        const sequenceNumber = extractSequenceFromOrderValue(rawBody.orderNumber || fileName);
+
+        if (!fileName || !contentBase64) {
+          return new Response(JSON.stringify({ error: "fileName and contentBase64 are required" }), {
+            status: 400,
+            headers: jsonHeaders,
+          });
+        }
+
+        const target = id
+          ? { id, order: await store.get(id, { type: "json" }) }
+          : await findOrderBySequence(store, sequenceNumber);
+
+        if (!target?.order) {
+          return new Response(JSON.stringify({ error: "No matching order found for this file name" }), {
+            status: 404,
+            headers: jsonHeaders,
+          });
+        }
+
+        const safeName = sanitizeBackupFileName(fileName);
+        const nowISO = new Date().toISOString();
+        const newBackupId = `backup_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const key = `${target.id}/${newBackupId}/${safeName}`;
+        const bytes = Uint8Array.from(Buffer.from(contentBase64, "base64"));
+
+        await backupStore.set(key, bytes, {
+          metadata: {
+            orderId: target.id,
+            orderNumber: target.order.orderNumber || "",
+            fileName: safeName,
+            contentType,
+          },
+        });
+
+        const backup = {
+          id: newBackupId,
+          fileName: safeName,
+          originalFileName: fileName,
+          contentType,
+          size: Number(rawBody.size) || bytes.byteLength,
+          uploadedAt: nowISO,
+          key,
+        };
+        const backups = [...(Array.isArray(target.order.backups) ? target.order.backups : []), backup];
+        const updatedOrder = { ...target.order, backups, updatedAt: nowISO };
+        await store.setJSON(target.id, updatedOrder);
+
+        return new Response(JSON.stringify({ id: target.id, orderNumber: updatedOrder.orderNumber, backup }), {
+          status: 201,
+          headers: jsonHeaders,
+        });
+      }
+
+      const body = normalizeStringsUpper(rawBody);
 
       if (action === "invoice") {
         if (!id) {
@@ -729,6 +853,7 @@ export default async (req) => {
         items: body.items || [],
         hardware: body.hardware || null,
         hardwareItems: Array.isArray(body.hardwareItems) ? body.hardwareItems : [],
+        backups: Array.isArray(body.backups) ? body.backups : [],
         specialPricing: body.specialPricing || false,
         customerNotes: body.customerNotes || body.notes || "",
         shopNotes: body.shopNotes || "",
