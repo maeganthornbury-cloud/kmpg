@@ -1272,6 +1272,11 @@ body.auth-locked .auth-gate{ display:flex; }
           <div id="quotedb-section" style="display:none;">
             <h2 style="margin-top:0;">Open Quotes</h2>
             <input type="text" id="quoteSearch" placeholder="Search by quote id or customer name..." oninput="searchQuotes()" style="width:100%;max-width:420px;margin:10px 0;padding:8px;border:1px solid #ccc;border-radius:4px;">
+            <div id="quoteBackupDropzone" class="order-backup-dropzone">
+              Drop quote attachment files here to attach them to matching quotes
+              <small>Include the quote number in the file name, for example QUOTE-1000.PDF or Q1000.PDF.</small>
+            </div>
+            <div id="quoteBackupStatus" class="order-backup-status" aria-live="polite"></div>
             <table id="quoteTable" style="width:100%;border-collapse:collapse;">
               <thead>
                 <tr>
@@ -1437,11 +1442,12 @@ body.auth-locked .auth-gate{ display:flex; }
       <span class="order-label" id="orderSavedStatus"></span>
     </div>
     <div id="calculatorOrderBackupDropzone" class="order-backup-dropzone">
-      Drop backup files here while entering this order
-      <small>Unsaved orders will attach queued files automatically after you click Save Order.</small>
+      <span id="calculatorBackupDropzoneTitle">Drop attachment files here</span>
+      <small id="calculatorBackupDropzoneHint">Unsaved orders or quotes will attach queued files automatically after you save.</small>
     </div>
     <div id="calculatorOrderBackupStatus" class="order-backup-status" aria-live="polite"></div>
     <div id="pendingOrderBackupList" class="order-backup-pending-list"></div>
+    <div id="calculatorAttachmentList" class="order-backup-list" style="display:none;"></div>
 
     <!-- Customer Info -->
     <div class="customer-info-row">
@@ -3431,13 +3437,20 @@ function setCalculatorMode(mode) {
   const backupDropzone = document.getElementById('calculatorOrderBackupDropzone');
   const backupStatus = document.getElementById('calculatorOrderBackupStatus');
   const pendingBackupList = document.getElementById('pendingOrderBackupList');
+  const attachmentList = document.getElementById('calculatorAttachmentList');
+  const backupTitle = document.getElementById('calculatorBackupDropzoneTitle');
+  const backupHint = document.getElementById('calculatorBackupDropzoneHint');
   const isOrderMode = calculatorMode === 'order';
-  if (quoteButtons) quoteButtons.style.display = calculatorMode === 'quote' ? 'block' : 'none';
+  const isQuoteMode = calculatorMode === 'quote';
+  if (quoteButtons) quoteButtons.style.display = isQuoteMode ? 'block' : 'none';
   if (orderButtons) orderButtons.style.display = isOrderMode ? 'block' : 'none';
   if (shopNotesField) shopNotesField.style.display = isOrderMode ? 'block' : 'none';
-  if (backupDropzone) backupDropzone.style.display = isOrderMode ? 'block' : 'none';
-  if (backupStatus) backupStatus.style.display = isOrderMode ? 'block' : 'none';
-  if (pendingBackupList) pendingBackupList.style.display = isOrderMode ? 'block' : 'none';
+  if (backupDropzone) backupDropzone.style.display = (isOrderMode || isQuoteMode) ? 'block' : 'none';
+  if (backupStatus) backupStatus.style.display = (isOrderMode || isQuoteMode) ? 'block' : 'none';
+  if (pendingBackupList) pendingBackupList.style.display = (isOrderMode || isQuoteMode) ? 'block' : 'none';
+  if (attachmentList) attachmentList.style.display = 'none';
+  if (backupTitle) backupTitle.textContent = isQuoteMode ? 'Drop attachment files here while entering this quote' : 'Drop attachment files here while entering this order';
+  if (backupHint) backupHint.textContent = isQuoteMode ? 'Unsaved quotes will attach queued files automatically after you click Save Quote.' : 'Unsaved orders will attach queued files automatically after you click Save Order.';
 }
 
 async function saveQuote() {
@@ -4118,6 +4131,10 @@ async function saveQuoteToDatabase(options = {}) {
   const savedQuote = await res.json();
   currentQuoteId = savedQuote.id;
   lastSavedQuoteId = savedQuote.id;
+  const backupAttachResult = await attachPendingBackupsToSavedQuote(savedQuote.id);
+  if (backupAttachResult?.successes?.length) {
+    try { await loadQuotes(); } catch (e) {}
+  }
   document.getElementById('orderSavedStatus').textContent = '';
   document.getElementById('currentOrderNumber').textContent = savedQuote.quoteNumber || savedQuote.id;
   if (showMessage) {
@@ -4469,13 +4486,18 @@ async function saveOrder() {
   }
 }
 
-// ===================== ORDERS LIST (Orders Tab) =====================
+// ===================== ORDERS LIST / ATTACHMENTS =====================
 let allOrders = [];
 
 let pendingOrderBackupFiles = [];
 
 function setOrderBackupStatus(message, type = '', target = 'orders') {
-  const statusEl = document.getElementById(target === 'calculator' ? 'calculatorOrderBackupStatus' : 'orderBackupStatus');
+  const targetMap = {
+    calculator: 'calculatorOrderBackupStatus',
+    quotes: 'quoteBackupStatus',
+    orders: 'orderBackupStatus',
+  };
+  const statusEl = document.getElementById(targetMap[target] || targetMap.orders);
   if (!statusEl) return;
   statusEl.textContent = message || '';
   statusEl.className = `order-backup-status ${type}`.trim();
@@ -4490,7 +4512,7 @@ function renderPendingOrderBackups() {
     return;
   }
 
-  pendingEl.innerHTML = `<strong>Queued backup files:</strong><ul>${pendingOrderBackupFiles.map((file, idx) =>
+  pendingEl.innerHTML = `<strong>Queued attachment files:</strong><ul>${pendingOrderBackupFiles.map((file, idx) =>
     `<li>${escapeHtml(file.name)} (${Math.ceil(file.size / 1024)} KB) <button type="button" onclick="removePendingOrderBackup(${idx})" style="padding:2px 8px;font-size:12px;">Remove</button></li>`
   ).join('')}</ul>`;
 }
@@ -4498,13 +4520,15 @@ function renderPendingOrderBackups() {
 function removePendingOrderBackup(index) {
   pendingOrderBackupFiles.splice(index, 1);
   renderPendingOrderBackups();
-  setOrderBackupStatus(pendingOrderBackupFiles.length ? `${pendingOrderBackupFiles.length} backup file${pendingOrderBackupFiles.length === 1 ? '' : 's'} queued until this order is saved.` : '', '', 'calculator');
+  const docLabel = calculatorMode === 'quote' ? 'quote' : 'order';
+  setOrderBackupStatus(pendingOrderBackupFiles.length ? `${pendingOrderBackupFiles.length} attachment file${pendingOrderBackupFiles.length === 1 ? '' : 's'} queued until this ${docLabel} is saved.` : '', '', 'calculator');
 }
 
 function clearPendingOrderBackups() {
   pendingOrderBackupFiles = [];
   renderPendingOrderBackups();
   setOrderBackupStatus('', '', 'calculator');
+  renderCalculatorAttachments();
 }
 
 function extractOrderNumberFromFileName(fileName) {
@@ -4521,26 +4545,31 @@ function readFileAsBase64(file) {
   });
 }
 
-async function attachDroppedOrderBackup(file, orderId = '') {
-  const orderNumber = orderId ? '' : extractOrderNumberFromFileName(file.name);
-  if (!orderId && !orderNumber) {
-    throw new Error(`${file.name}: include an order number in the file name.`);
+function attachmentEndpoint(docType, docId = '') {
+  const base = docType === 'quote' ? '/api/quotes' : '/api/orders';
+  return docId ? `${base}?id=${encodeURIComponent(docId)}&action=backup` : `${base}?action=backup`;
+}
+
+async function attachDroppedOrderBackup(file, docId = '', docType = 'order') {
+  const sequenceNumber = docId ? '' : extractOrderNumberFromFileName(file.name);
+  if (!docId && !sequenceNumber) {
+    throw new Error(`${file.name}: include an ${docType === 'quote' ? 'quote' : 'order'} number in the file name.`);
   }
 
   const contentBase64 = await readFileAsBase64(file);
-  const url = orderId
-    ? `/api/orders?id=${encodeURIComponent(orderId)}&action=backup`
-    : '/api/orders?action=backup';
-  const res = await fetchApi(url, {
+  const body = {
+    fileName: file.name,
+    contentType: file.type || 'application/octet-stream',
+    size: file.size,
+    contentBase64,
+  };
+  if (docType === 'quote') body.quoteNumber = sequenceNumber;
+  else body.orderNumber = sequenceNumber;
+
+  const res = await fetchApi(attachmentEndpoint(docType, docId), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      orderNumber,
-      fileName: file.name,
-      contentType: file.type || 'application/octet-stream',
-      size: file.size,
-      contentBase64,
-    }),
+    body: JSON.stringify(body),
   });
   const payload = await parseJsonSafe(res);
   if (!res.ok) throw new Error(`${file.name}: ${payload.error || 'Could not attach file'}`);
@@ -4552,20 +4581,26 @@ async function handleOrderBackupFiles(files, options = {}) {
   if (!fileList.length) return;
 
   const statusTarget = options.statusTarget || 'orders';
-  const orderId = options.orderId || '';
+  const docType = options.docType || 'order';
+  const docId = options.docId || options.orderId || '';
+  const docLabel = docType === 'quote' ? 'quote' : 'order';
 
-  if (options.queueIfUnsaved && !orderId) {
+  if (options.queueIfUnsaved && !docId) {
     pendingOrderBackupFiles.push(...fileList);
     renderPendingOrderBackups();
-    setOrderBackupStatus(`${pendingOrderBackupFiles.length} backup file${pendingOrderBackupFiles.length === 1 ? '' : 's'} queued. They will attach automatically when you save this order.`, 'success', statusTarget);
+    setOrderBackupStatus(`${pendingOrderBackupFiles.length} attachment file${pendingOrderBackupFiles.length === 1 ? '' : 's'} queued. They will attach automatically when you save this ${docLabel}.`, 'success', statusTarget);
     return;
   }
 
-  setOrderBackupStatus(`Attaching ${fileList.length} backup file${fileList.length === 1 ? '' : 's'}...`, '', statusTarget);
-  const result = await uploadOrderBackupFiles(fileList, orderId);
+  setOrderBackupStatus(`Attaching ${fileList.length} attachment file${fileList.length === 1 ? '' : 's'}...`, '', statusTarget);
+  const result = await uploadOrderBackupFiles(fileList, docId, docType);
 
   if (result.successes.length) {
-    try { await loadOrders(); } catch (e) {}
+    if (docType === 'quote') {
+      try { await loadQuotes(); } catch (e) {}
+    } else {
+      try { await loadOrders(); } catch (e) {}
+    }
   }
 
   const messageParts = [];
@@ -4575,14 +4610,14 @@ async function handleOrderBackupFiles(files, options = {}) {
   return result;
 }
 
-async function uploadOrderBackupFiles(fileList, orderId = '') {
+async function uploadOrderBackupFiles(fileList, docId = '', docType = 'order') {
   const successes = [];
   const errors = [];
 
   for (const file of fileList) {
     try {
-      const attached = await attachDroppedOrderBackup(file, orderId);
-      successes.push(`${attached.backup?.fileName || file.name} → ${attached.orderNumber || attached.id}`);
+      const attached = await attachDroppedOrderBackup(file, docId, docType);
+      successes.push(`${attached.backup?.fileName || file.name} → ${attached.quoteNumber || attached.orderNumber || attached.id}`);
     } catch (err) {
       errors.push(err.message);
     }
@@ -4591,12 +4626,13 @@ async function uploadOrderBackupFiles(fileList, orderId = '') {
   return { successes, errors };
 }
 
-async function attachPendingBackupsToSavedOrder(orderId) {
-  if (!pendingOrderBackupFiles.length || !orderId) return { successes: [], errors: [] };
+async function attachPendingBackupsToSavedDocument(docId, docType = 'order') {
+  if (!pendingOrderBackupFiles.length || !docId) return { successes: [], errors: [] };
 
   const queuedFiles = [...pendingOrderBackupFiles];
-  setOrderBackupStatus(`Attaching ${queuedFiles.length} queued backup file${queuedFiles.length === 1 ? '' : 's'}...`, '', 'calculator');
-  const result = await uploadOrderBackupFiles(queuedFiles, orderId);
+  const docLabel = docType === 'quote' ? 'quote' : 'order';
+  setOrderBackupStatus(`Attaching ${queuedFiles.length} queued attachment file${queuedFiles.length === 1 ? '' : 's'}...`, '', 'calculator');
+  const result = await uploadOrderBackupFiles(queuedFiles, docId, docType);
 
   if (result.errors.length) {
     const failedNames = new Set(result.errors.map(message => String(message).split(':')[0]));
@@ -4607,10 +4643,37 @@ async function attachPendingBackupsToSavedOrder(orderId) {
   renderPendingOrderBackups();
 
   const messageParts = [];
-  if (result.successes.length) messageParts.push(`Attached queued backups: ${result.successes.join(', ')}`);
+  if (result.successes.length) messageParts.push(`Attached queued ${docLabel} files: ${result.successes.join(', ')}`);
   if (result.errors.length) messageParts.push(`Errors: ${result.errors.join('; ')}`);
   setOrderBackupStatus(messageParts.join(' | '), result.errors.length ? 'error' : 'success', 'calculator');
   return result;
+}
+
+async function attachPendingBackupsToSavedOrder(orderId) {
+  return attachPendingBackupsToSavedDocument(orderId, 'order');
+}
+
+async function attachPendingBackupsToSavedQuote(quoteId) {
+  return attachPendingBackupsToSavedDocument(quoteId, 'quote');
+}
+
+function renderCalculatorAttachments(doc = null, docType = calculatorMode) {
+  const listEl = document.getElementById('calculatorAttachmentList');
+  if (!listEl) return;
+  const backups = Array.isArray(doc?.backups) ? doc.backups : [];
+  if (!backups.length || !doc?.id) {
+    listEl.style.display = 'none';
+    listEl.innerHTML = '';
+    return;
+  }
+  const endpoint = docType === 'quote' ? '/api/quotes' : '/api/orders';
+  listEl.style.display = 'block';
+  listEl.innerHTML = `<strong>Attached Files</strong><ul>${backups.map(backup => {
+    const uploaded = backup.uploadedAt ? new Date(backup.uploadedAt).toLocaleString() : '';
+    const sizeKb = backup.size ? ` (${Math.ceil(Number(backup.size) / 1024)} KB)` : '';
+    const url = `${endpoint}?id=${encodeURIComponent(doc.id)}&action=backup&backupId=${encodeURIComponent(backup.id)}`;
+    return `<li><a href="${url}" target="_blank" rel="noopener">${escapeHtml(backup.fileName || backup.originalFileName || 'Attachment')}</a>${escapeHtml(sizeKb)}${uploaded ? ` <span style="color:#666;">uploaded ${escapeHtml(uploaded)}</span>` : ''}</li>`;
+  }).join('')}</ul>`;
 }
 
 function setupDropzoneElement(dropzone, onDrop) {
@@ -4638,11 +4701,15 @@ function setupDropzoneElement(dropzone, onDrop) {
 
 function setupOrderBackupDropzone() {
   const ordersDropzone = document.getElementById('orderBackupDropzone');
-  setupDropzoneElement(ordersDropzone, files => handleOrderBackupFiles(files, { statusTarget: 'orders' }));
+  setupDropzoneElement(ordersDropzone, files => handleOrderBackupFiles(files, { statusTarget: 'orders', docType: 'order' }));
+
+  const quotesDropzone = document.getElementById('quoteBackupDropzone');
+  setupDropzoneElement(quotesDropzone, files => handleOrderBackupFiles(files, { statusTarget: 'quotes', docType: 'quote' }));
 
   const calculatorDropzone = document.getElementById('calculatorOrderBackupDropzone');
   setupDropzoneElement(calculatorDropzone, files => handleOrderBackupFiles(files, {
-    orderId: currentOrderId,
+    docId: calculatorMode === 'quote' ? currentQuoteId : currentOrderId,
+    docType: calculatorMode === 'quote' ? 'quote' : 'order',
     queueIfUnsaved: true,
     statusTarget: 'calculator',
   }));
@@ -4661,21 +4728,26 @@ function setupOrderBackupDropzone() {
   window.addEventListener('drop', event => {
     if (!event.dataTransfer?.files?.length) return;
     const ordersSection = document.getElementById('orders-section');
+    const quotesSection = document.getElementById('quotedb-section');
     const calculatorSection = document.getElementById('calculator-section');
     const ordersVisible = ordersSection && getComputedStyle(ordersSection).display !== 'none';
-    const calculatorVisible = calculatorSection && getComputedStyle(calculatorSection).display !== 'none' && calculatorMode === 'order';
-    if (!ordersVisible && !calculatorVisible) return;
+    const quotesVisible = quotesSection && getComputedStyle(quotesSection).display !== 'none';
+    const calculatorVisible = calculatorSection && getComputedStyle(calculatorSection).display !== 'none' && (calculatorMode === 'order' || calculatorMode === 'quote');
+    if (!ordersVisible && !quotesVisible && !calculatorVisible) return;
 
     event.preventDefault();
     document.body.classList.remove('order-backup-dragging');
     if (calculatorVisible) {
       handleOrderBackupFiles(event.dataTransfer.files, {
-        orderId: currentOrderId,
+        docId: calculatorMode === 'quote' ? currentQuoteId : currentOrderId,
+        docType: calculatorMode === 'quote' ? 'quote' : 'order',
         queueIfUnsaved: true,
         statusTarget: 'calculator',
       });
+    } else if (quotesVisible) {
+      handleOrderBackupFiles(event.dataTransfer.files, { statusTarget: 'quotes', docType: 'quote' });
     } else {
-      handleOrderBackupFiles(event.dataTransfer.files, { statusTarget: 'orders' });
+      handleOrderBackupFiles(event.dataTransfer.files, { statusTarget: 'orders', docType: 'order' });
     }
   });
 }
@@ -4998,7 +5070,8 @@ function populateCalculatorFromOrder(order, mode = 'order') {
     setOrderActionMode(true);
   }
   document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
-  document.getElementById('orderSavedStatus').textContent = formatOrderStatusSummary(order);
+  document.getElementById('orderSavedStatus').textContent = isQuoteMode ? `Loaded ${order.orderNumber || order.quoteNumber || order.id || 'quote'}` : formatOrderStatusSummary(order);
+  renderCalculatorAttachments(order, isQuoteMode ? 'quote' : 'order');
 
   const cust = order.customer || {};
   document.getElementById('customerName').value = cust.name || '';
