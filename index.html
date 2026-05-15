@@ -6003,6 +6003,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (authUser && !isOfflineAuth) isOfflineAuth = false;
     setAuthGateVisible(false);
     hasPromptedLogin = false;
+    setTimeout(kympgOpenRequestedScreen, 0);
   }
 
   function openAdminCreateUserModal() {
@@ -6517,6 +6518,31 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (modal) modal.style.display = 'none';
   }
 
+
+  function kympgBuildScreenUrl(which) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('screen', which);
+    url.hash = '';
+    return url.toString();
+  }
+
+  function kympgOpenScreenInNewTab(which) {
+    const url = kympgBuildScreenUrl(which);
+    const opened = window.open(url, '_blank', 'noopener');
+    if (opened) opened.opener = null;
+    return !!opened;
+  }
+
+  let kympgOpenedRequestedScreen = false;
+
+  function kympgOpenRequestedScreen() {
+    if (kympgOpenedRequestedScreen || !authUser) return;
+    const requested = new URLSearchParams(window.location.search).get('screen');
+    if (!requested) return;
+    kympgOpenedRequestedScreen = true;
+    kympgOpen(requested, null, { sameTab: true });
+  }
+
   async function saveMeasureSelection() {
     if (!currentMeasureRequest?.id) return;
     const measureCategory = (document.getElementById('measureCategory')?.value || '').trim();
@@ -6619,7 +6645,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     pendingResidentialPayload.id = id;
   }
 
-  function kympgOpen(which, btn){
+  function kympgOpen(which, btn, options = {}){
+    if (btn && !options.sameTab) {
+      if (kympgOpenScreenInNewTab(which)) return;
+      // Popup blockers can prevent a new tab; fall back to this tab rather than doing nothing.
+      options.sameTab = true;
+    }
+
     if (!authUser) {
       alert('Please log in to continue.');
       return;
@@ -6759,7 +6791,8 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
           if (el) el.style.display = 'none';
         });
     }
-    kympgShowLanding();
+    if (!new URLSearchParams(window.location.search).get('screen')) kympgShowLanding();
+    setTimeout(kympgOpenRequestedScreen, 0);
     try { if (typeof setupResidentialCustomerLookup === 'function') setupResidentialCustomerLookup(); } catch(e) {}
 
     const quickInput = document.getElementById('homeQuickSearchInput');
