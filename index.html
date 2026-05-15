@@ -3902,11 +3902,13 @@ async function convertToOrder() {
 // ===================== ORDER MANAGEMENT =====================
 let currentOrderId = null;      // currently loaded order in the form (null = unsaved / new)
 let lastSavedOrderId = null;    // last saved order id (kept even after clearing the form)
+let currentLoadedOrderSnapshot = null;
 let currentQuoteId = null;
 let lastSavedQuoteId = null;
 
 function startNewOrder() {
   currentOrderId = null;
+  currentLoadedOrderSnapshot = null;
   document.getElementById('currentOrderNumber').textContent = 'Will be assigned on save';
   document.getElementById('orderSavedStatus').textContent = '';
   setOrderActionMode(false);
@@ -4154,6 +4156,7 @@ async function convertCurrentQuoteToOrder() {
     data.status = 'shop production';
     data.sequenceNumber = savedQuote.sequenceNumber;
     data.requiresPoSetup = true;
+    data.hardwareItems = Array.isArray(savedQuote.hardwareItems) ? savedQuote.hardwareItems : data.hardwareItems;
 
     const orderRes = await fetchApi('/api/orders', {
       method: 'POST',
@@ -4167,6 +4170,11 @@ async function convertCurrentQuoteToOrder() {
     }
 
     const createdOrder = await orderRes.json();
+    const quoteForTransfer = await getLatestQuoteForConversion(savedQuote);
+    const transferResult = await transferQuoteBackupsToOrder(quoteForTransfer, createdOrder.id);
+    if (transferResult.errors.length) {
+      alert(`Quote converted, but some attachments did not transfer: ${transferResult.errors.join('; ')}`);
+    }
 
     await fetchApi(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
       method: 'PUT',
@@ -4231,7 +4239,7 @@ function normalizeOrderForPoPrompt(order = {}) {
 async function saveOrder() {
   const data = gatherOrderData();
   const isNewOrder = !currentOrderId;
-  const previousOrder = isNewOrder ? null : (allOrders.find(o => o.id === currentOrderId) || null);
+  const previousOrder = isNewOrder ? null : (allOrders.find(o => o.id === currentOrderId) || (currentLoadedOrderSnapshot?.id === currentOrderId ? currentLoadedOrderSnapshot : null));
   const needsInitialOrderWorkflow = !isNewOrder && !!previousOrder?.requiresPoSetup;
   const hasAnyOrderChanges = !isNewOrder && JSON.stringify(normalizeOrderForPoPrompt(previousOrder || {})) !== JSON.stringify(normalizeOrderForPoPrompt({
     ...previousOrder,
@@ -4311,6 +4319,7 @@ async function saveOrder() {
 
     currentOrderId = savedOrder.id;
     lastSavedOrderId = savedOrder.id;
+    currentLoadedOrderSnapshot = { ...savedOrder };
     const backupAttachResult = await attachPendingBackupsToSavedOrder(savedOrder.id);
     if (backupAttachResult?.successes?.length) {
       try { await loadOrders(); } catch (e) {}
@@ -4655,6 +4664,51 @@ async function attachPendingBackupsToSavedOrder(orderId) {
 
 async function attachPendingBackupsToSavedQuote(quoteId) {
   return attachPendingBackupsToSavedDocument(quoteId, 'quote');
+}
+
+async function transferQuoteBackupsToOrder(quote, orderId) {
+  const backups = Array.isArray(quote?.backups) ? quote.backups : [];
+  if (!backups.length || !quote?.id || !orderId) return { successes: [], errors: [] };
+
+  const successes = [];
+  const errors = [];
+  for (const backup of backups) {
+    try {
+      const downloadUrl = `/api/quotes?id=${encodeURIComponent(quote.id)}&action=backup&backupId=${encodeURIComponent(backup.id)}`;
+      const downloadRes = await fetchApi(downloadUrl);
+      if (!downloadRes.ok) throw new Error(`download failed (${downloadRes.status})`);
+      const blob = await downloadRes.blob();
+      const contentBase64 = await readFileAsBase64(blob);
+      const fileName = backup.fileName || backup.originalFileName || 'quote-attachment';
+      const uploadRes = await fetchApi(`/api/orders?id=${encodeURIComponent(orderId)}&action=backup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName,
+          contentType: backup.contentType || blob.type || 'application/octet-stream',
+          size: backup.size || blob.size,
+          contentBase64,
+        }),
+      });
+      const uploadPayload = await parseJsonSafe(uploadRes);
+      if (!uploadRes.ok) throw new Error(uploadPayload.error || `upload failed (${uploadRes.status})`);
+      successes.push(fileName);
+    } catch (err) {
+      errors.push(`${backup.fileName || backup.originalFileName || backup.id}: ${err.message}`);
+    }
+  }
+  return { successes, errors };
+}
+
+async function getLatestQuoteForConversion(quote) {
+  if (!quote?.id) return quote;
+  try {
+    const res = await fetchApi(`/api/quotes?id=${encodeURIComponent(quote.id)}`);
+    if (!res.ok) return quote;
+    return await res.json();
+  } catch (e) {
+    return quote;
+  }
 }
 
 function renderCalculatorAttachments(doc = null, docType = calculatorMode) {
@@ -5064,6 +5118,7 @@ function populateCalculatorFromOrder(order, mode = 'order') {
   setCalculatorMode(isQuoteMode ? 'quote' : 'order');
 
   currentOrderId = isQuoteMode ? null : order.id;
+  currentLoadedOrderSnapshot = isQuoteMode ? null : { ...order };
   currentQuoteId = isQuoteMode ? order.id : null;
   if (!isQuoteMode) {
     setEditOrderHeader();
@@ -5466,6 +5521,7 @@ async function convertSavedQuoteToOrder(id) {
     customer: quote.customer || { name: quote.customerName, phone: quote.customerPhone },
     items: quote.items || [],
     hardware: quote.hardware || null,
+    hardwareItems: Array.isArray(quote.hardwareItems) ? quote.hardwareItems : [],
     specialPricing: quote.specialPricing || false,
     grandTotal: quote.grandTotal || 0,
     grandTotalWithTax: quote.grandTotalWithTax || 0,
@@ -5484,6 +5540,11 @@ async function convertSavedQuoteToOrder(id) {
     });
     if (!orderRes.ok) throw new Error('Failed to create order from quote');
     const createdOrder = await orderRes.json();
+    const quoteForTransfer = await getLatestQuoteForConversion(quote);
+    const transferResult = await transferQuoteBackupsToOrder(quoteForTransfer, createdOrder.id);
+    if (transferResult.errors.length) {
+      alert(`Quote converted, but some attachments did not transfer: ${transferResult.errors.join('; ')}`);
+    }
 
     await fetchApi(`/api/quotes?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
