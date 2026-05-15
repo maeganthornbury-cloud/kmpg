@@ -654,7 +654,7 @@
       color: #666;
       margin-bottom: 2px;
     }
-  
+
 /* ===== KY MPG Modern Shell (SPA) ===== */
 :root{
   --bg:#f6f7fb;
@@ -815,41 +815,26 @@ body{
 .kympg-authBtn.secondary{ background:#e2e8f0; color:#0f172a; }
 .kympg-authBtn.success{ background:#198f42; color:#fff; }
 .kympg-authBtn:disabled{ opacity:.65; cursor:not-allowed; }
-.kympg-createWrap{ position:relative; display:inline-flex; }
-#createMenuBtn{
-  padding:5px 9px;
-  font-size:12px;
-  line-height:1.2;
-  border-radius:7px;
-  white-space:nowrap;
-}
-.kympg-createMenu{
-  position:absolute;
-  top:calc(100% + 8px);
-  right:0;
-  min-width:180px;
-  padding:8px;
-  background:#fff;
-  border:1px solid var(--line);
-  border-radius:12px;
-  box-shadow:var(--shadow2);
-  z-index:1000;
+.kympg-createSubmenu{
   display:none;
+  flex-direction:column;
+  gap:4px;
+  margin:-2px 0 4px 34px;
+  padding-left:10px;
+  border-left:2px solid rgba(79,111,173,.20);
 }
-.kympg-createMenu.active{ display:block; }
-.kympg-createMenu button{
-  width:100%;
-  border:none;
-  background:transparent;
-  color:#0f172a;
-  border-radius:9px;
-  padding:9px 10px;
-  text-align:left;
-  font-weight:800;
-  cursor:pointer;
+.kympg-createSubmenu.active{ display:flex; }
+.kympg-createSubmenu .kympg-navBtn{
+  padding:8px 10px;
+  border-radius:10px;
 }
-.kympg-createMenu button:hover{ background:rgba(79,111,173,.12); }
-.kympg-createMenu button[hidden]{ display:none; }
+.kympg-createArrow{
+  margin-left:auto;
+  font-weight:900;
+  transition:transform .15s ease;
+}
+.kympg-createToggle[aria-expanded="true"] .kympg-createArrow{ transform:rotate(90deg); }
+.kympg-sidebar.collapsed .kympg-createSubmenu{ display:none !important; }
 .admin-user-actions .kympg-authBtn{
   padding:6px 12px;
   font-size:13px;
@@ -1056,43 +1041,58 @@ body.auth-locked .auth-gate{ display:flex; }
     <div class="kympg-navGroup" id="group-work">
     <div class="kympg-sectionLabel" onclick="kympgToggleGroup('work')">Work <span class="toggleMark" id="toggle-work">−</span></div>
     <nav class="kympg-nav">
-      <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
+      <button id="sidebarCreateBtn" class="kympg-navBtn kympg-createToggle" data-tip="Create" data-areas="order,quote" type="button" onclick="toggleSidebarCreateMenu(event)" aria-expanded="false" aria-controls="sidebarCreateMenu">
         <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
         </span>
         <span class="kympg-labelWrap">
-          <span class="kympg-label">New Quote</span>
-          <span class="kympg-hint">Create a new quote</span>
+          <span class="kympg-label">Create</span>
+          <span class="kympg-hint">New order or quote</span>
         </span>
+        <span class="kympg-createArrow" aria-hidden="true">›</span>
       </button>
+      <div id="sidebarCreateMenu" class="kympg-createSubmenu" aria-label="Create options">
+        <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
+          </span>
+          <span class="kympg-labelWrap"><span class="kympg-label">New Order</span></span>
+        </button>
+        <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
+          </span>
+          <span class="kympg-labelWrap"><span class="kympg-label">New Quote</span></span>
+        </button>
+      </div>
 
-      <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">New Order</span>
-          <span class="kympg-hint">Start an order</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="Search / Open Orders" type="button" onclick="kympgOpen('orders', this)">
+      <button class="kympg-navBtn" data-tip="Search Orders" type="button" onclick="kympgOpen('orders', this)">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         </span>
         <span class="kympg-labelWrap">
-          <span class="kympg-label">Search / Open Orders</span>
+          <span class="kympg-label">Search Orders</span>
           <span class="kympg-hint">Find past orders</span>
         </span>
       </button>
 
-      <button class="kympg-navBtn" data-tip="Open Quotes" type="button" onclick="kympgOpen('quotedb', this)">
+      <button class="kympg-navBtn" data-tip="Search Quotes" type="button" onclick="kympgOpen('quotedb', this)">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M7 7h10"/><path d="M7 11h10"/><path d="M7 15h6"/><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>
         </span>
         <span class="kympg-labelWrap">
-          <span class="kympg-label">Open Quotes</span>
+          <span class="kympg-label">Search Quotes</span>
           <span class="kympg-hint">Saved quotes</span>
+        </span>
+      </button>
+
+      <button class="kympg-navBtn" data-tip="Customer List" type="button" onclick="kympgOpen('customerimport', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
+        </span>
+        <span class="kympg-labelWrap">
+          <span class="kympg-label">Customer List</span>
+          <span class="kympg-hint">Customers</span>
         </span>
       </button>
 
@@ -1103,6 +1103,16 @@ body.auth-locked .auth-gate{ display:flex; }
         <span class="kympg-labelWrap">
           <span class="kympg-label">Purchase Orders</span>
           <span class="kympg-hint">Vendor POs</span>
+        </span>
+      </button>
+
+      <button class="kympg-navBtn" data-tip="Vendor List" type="button" onclick="kympgOpen('vendors', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M19 6v12"/></svg>
+        </span>
+        <span class="kympg-labelWrap">
+          <span class="kympg-label">Vendor List</span>
+          <span class="kympg-hint">Vendors</span>
         </span>
       </button>
     </nav>
@@ -1142,25 +1152,9 @@ body.auth-locked .auth-gate{ display:flex; }
         </span>
       </button>
 
-      <button class="kympg-navBtn" data-tip="Customer List" type="button" onclick="kympgOpen('customerimport', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Customer List</span>
-          <span class="kympg-hint">Upload customer list</span>
-    </span>
-      </button>
 
-      <button class="kympg-navBtn" data-tip="Vendor List" type="button" onclick="kympgOpen('vendors', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M19 6v12"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Vendor List</span>
-          <span class="kympg-hint">Upload vendor list</span>
-    </span>
-      </button>
+
+
     </nav>
     </div>
 
@@ -1202,13 +1196,7 @@ body.auth-locked .auth-gate{ display:flex; }
             <span>Ready</span>
           </div>
           <span id="authUserMeta" class="kympg-authMeta">Not signed in</span>
-          <div id="createMenuWrap" class="kympg-createWrap" style="display:none;">
-            <button id="createMenuBtn" type="button" class="kympg-authBtn success" onclick="toggleCreateMenu(event)" aria-haspopup="true" aria-expanded="false">Create</button>
-            <div id="createMenu" class="kympg-createMenu" role="menu" aria-label="Create options">
-              <button id="createQuoteOption" type="button" role="menuitem" onclick="selectCreateOption('quote')">New Quote</button>
-              <button id="createOrderOption" type="button" role="menuitem" onclick="selectCreateOption('order')">New Order</button>
-            </div>
-          </div>
+          <button id="adminCreateUserBtn" type="button" class="kympg-authBtn success" onclick="openAdminCreateUserModal(event)" style="display:none;">Create User</button>
           <button id="loginBtn" type="button" class="kympg-authBtn primary" onclick="openLogin()">Log In</button>
           <button id="logoutBtn" type="button" class="kympg-authBtn secondary" onclick="logoutUser()" style="display:none;">Log Out</button>
         </div>
@@ -2073,7 +2061,7 @@ function printBreakdown() {
 
   breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
   breakdownWindow.document.write('</head><body>');
-  
+
   if (orderNumber && orderNumber !== 'Will be assigned on save') {
     breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${orderNumber}</h3>`);
   }
@@ -5380,23 +5368,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (logoutBtn) logoutBtn.style.display = authUser ? 'inline-block' : 'none';
 
     const isAdmin = authRoles.includes('admin');
-    const createWrap = document.getElementById('createMenuWrap');
-    const createQuoteOption = document.getElementById('createQuoteOption');
-    const createOrderOption = document.getElementById('createOrderOption');
-    const canCreateQuote = !!authUser && userCanArea('quote');
-    const canCreateOrder = !!authUser && userCanArea('order');
-    if (createWrap) createWrap.style.display = canCreateQuote || canCreateOrder ? 'inline-flex' : 'none';
-    if (createQuoteOption) createQuoteOption.hidden = !canCreateQuote;
-    if (createOrderOption) createOrderOption.hidden = !canCreateOrder;
-    if (!canCreateQuote && !canCreateOrder) closeCreateMenu();
+    const createBtn = document.getElementById('adminCreateUserBtn');
+    if (createBtn) createBtn.style.display = isAdmin && authUser ? 'inline-block' : 'none';
     if (!isAdmin) closeAdminCreateUserModal();
 
     document.querySelectorAll('.kympg-navBtn').forEach((btn) => {
+      const areasAttr = btn.getAttribute('data-areas');
       const oc = btn.getAttribute('onclick') || '';
       const m = oc.match(/kympgOpen\('([^']+)'/);
-      const area = m ? m[1] : '';
-      btn.classList.toggle('kympg-hidden-by-role', !userCanArea(area));
+      const areas = areasAttr ? areasAttr.split(',').map((a) => a.trim()).filter(Boolean) : (m ? [m[1]] : []);
+      const canUse = areas.length ? areas.some((area) => userCanArea(area)) : true;
+      btn.classList.toggle('kympg-hidden-by-role', !canUse);
     });
+    closeSidebarCreateMenuIfEmpty();
 
     ['work', 'tools', 'residential'].forEach((g) => {
       const group = document.getElementById(`group-${g}`);
@@ -5455,31 +5439,30 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
 
 
-  function closeCreateMenu() {
-    const menu = document.getElementById('createMenu');
-    const button = document.getElementById('createMenuBtn');
+  function closeSidebarCreateMenu() {
+    const menu = document.getElementById('sidebarCreateMenu');
+    const button = document.getElementById('sidebarCreateBtn');
     if (menu) menu.classList.remove('active');
     if (button) button.setAttribute('aria-expanded', 'false');
   }
 
-  function toggleCreateMenu(event) {
-    if (event) event.stopPropagation();
-    const menu = document.getElementById('createMenu');
-    const button = document.getElementById('createMenuBtn');
+  function closeSidebarCreateMenuIfEmpty() {
+    const menu = document.getElementById('sidebarCreateMenu');
     if (!menu) return;
-    const shouldOpen = !menu.classList.contains('active');
-    document.querySelectorAll('.kympg-createMenu.active').forEach((openMenu) => openMenu.classList.remove('active'));
-    menu.classList.toggle('active', shouldOpen);
-    if (button) button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    const hasVisibleOption = !!menu.querySelector('.kympg-navBtn:not(.kympg-hidden-by-role)');
+    if (!hasVisibleOption) closeSidebarCreateMenu();
   }
 
-  function selectCreateOption(which) {
-    closeCreateMenu();
-    const navButton = Array.from(document.querySelectorAll('.kympg-navBtn')).find((btn) => {
-      const onclick = btn.getAttribute('onclick') || '';
-      return onclick.includes(`kympgOpen('${which}'`);
-    });
-    kympgOpen(which, navButton || undefined);
+  function toggleSidebarCreateMenu(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('sidebarCreateMenu');
+    const button = document.getElementById('sidebarCreateBtn');
+    const sidebar = document.getElementById('kympgSidebar');
+    if (!menu || !button || button.classList.contains('kympg-hidden-by-role')) return;
+    if (sidebar?.classList.contains('collapsed')) sidebar.classList.remove('collapsed');
+    const shouldOpen = !menu.classList.contains('active');
+    menu.classList.toggle('active', shouldOpen);
+    button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
   }
 
   async function createAdminUser(event) {
@@ -6126,14 +6109,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (which === 'orders'){
       const ord = document.getElementById('orders-section');
       if (ord){ ord.style.display = 'block'; }
-      kympgSetHeader('Search / Open Orders', 'Find and open past orders.', 'Orders', 'Search and open orders');
+      kympgSetHeader('Search Orders', 'Find and open past orders.', 'Orders', 'Search orders');
       try{ if (typeof loadOrders === 'function') loadOrders(); }catch(e){}
       return;
     }
     if (which === 'quotedb'){
       const q = document.getElementById('quotedb-section');
       if (q){ q.style.display = 'block'; }
-      kympgSetHeader('Open Quotes', 'Search and open saved quotes.', 'Quotes', 'Quotes database');
+      kympgSetHeader('Search Quotes', 'Search and open saved quotes.', 'Quotes', 'Quotes database');
       try{ if (typeof loadQuotes === 'function') loadQuotes(); }catch(e){}
       return;
     }
@@ -6236,10 +6219,6 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     kympgShowLanding();
     try { if (typeof setupResidentialCustomerLookup === 'function') setupResidentialCustomerLookup(); } catch(e) {}
 
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('#createMenuWrap')) closeCreateMenu();
-    });
-
     const quickInput = document.getElementById('homeQuickSearchInput');
     const closeOpenSearchUi = () => {
       const quickResults = document.getElementById('homeQuickResults');
@@ -6269,7 +6248,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       closeOpenSearchUi();
-      closeCreateMenu();
+      closeSidebarCreateMenu();
     });
 
     if (quickInput) {
