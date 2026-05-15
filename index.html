@@ -695,6 +695,8 @@ body{
 /* Light sidebar */
 .kympg-sidebar{
   width: var(--sideW);
+  flex: 0 0 var(--sideW);
+  box-sizing:border-box;
   background:#fff;
   border-right:1px solid var(--line);
   padding:16px 14px;
@@ -704,11 +706,12 @@ body{
   position: sticky;
   top:0;
   height:100vh;
-  transition: width .22s ease;
+  transition: width .22s ease, flex-basis .22s ease, padding .22s ease;
   z-index: 50;
   overflow-y: auto;
+  overflow-x: visible;
 }
-.kympg-sidebar.collapsed{ width: var(--sideWCollapsed); }
+.kympg-sidebar.collapsed{ width: var(--sideWCollapsed); flex-basis: var(--sideWCollapsed); padding:16px 10px; }
 .kympg-sidebar::-webkit-scrollbar{ width:10px; }
 .kympg-sidebar::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:999px; }
 .kympg-topActions{ display:flex; justify-content:flex-end; padding:0 6px; }
@@ -737,8 +740,10 @@ body{
 }
 .kympg-brand .name{ font-weight: 900; font-size: 14px; letter-spacing:.2px; }
 .kympg-brand .sub{ font-size: 12px; color: rgba(15,23,42,.70); margin-top:2px; }
+.kympg-sidebar.collapsed .kympg-brand{ text-align:center; padding:12px 8px; }
+.kympg-sidebar.collapsed .kympg-brand .name,
 .kympg-sidebar.collapsed .kympg-brand .sub{ display:none; }
-.kympg-sidebar.collapsed .kympg-brand{ text-align:center; }
+.kympg-sidebar.collapsed .kympg-brand::before{ content:'KM'; font-weight:950; font-size:14px; letter-spacing:.3px; }
 
 .kympg-navGroup{ display:flex; flex-direction:column; gap:6px; }
 .kympg-sectionLabel{
@@ -770,8 +775,11 @@ body{
   gap:12px;
   transition: background .15s ease, transform .05s ease;
   position: relative;
+  text-align:left;
+  min-height:44px;
 }
 .kympg-navBtn:hover{ background: rgba(15,23,42,.06); }
+.kympg-navBtn:focus-visible,.kympg-toggleBtn:focus-visible,.kympg-brand:focus-visible{ outline:3px solid rgba(79,111,173,.35); outline-offset:2px; }
 .kympg-navBtn:active{ transform: translateY(1px); }
 .kympg-navBtn.active{
   background: rgba(79,111,173,.12);
@@ -781,10 +789,11 @@ body{
 .kympg-ico svg{ width:22px; height:22px; fill:none; stroke:#334155; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .kympg-label{ font-weight: 800; font-size: 14px; letter-spacing:.1px; }
 .kympg-hint{ display:block; font-weight:600; font-size:12px; color: rgba(15,23,42,.55); margin-top:2px; }
-.kympg-labelWrap{ display:block; }
+.kympg-labelWrap{ display:block; flex:1; min-width:0; }
 
-.kympg-sidebar.collapsed .kympg-navBtn{ justify-content:center; padding: 12px 10px; }
-.kympg-sidebar.collapsed .kympg-labelWrap{ display:none; }
+.kympg-sidebar.collapsed .kympg-navBtn{ justify-content:center; padding: 12px 10px; gap:0; }
+.kympg-sidebar.collapsed .kympg-labelWrap,
+.kympg-sidebar.collapsed .kympg-createArrow{ display:none; }
 .kympg-sidebar.collapsed .kympg-navBtn[data-tip]:hover::after{
   content: attr(data-tip);
   position:absolute;
@@ -835,6 +844,12 @@ body{
 }
 .kympg-createToggle[aria-expanded="true"] .kympg-createArrow{ transform:rotate(90deg); }
 .kympg-sidebar.collapsed .kympg-createSubmenu{ display:none !important; }
+@media (max-width: 760px){
+  :root{ --sideW: 236px; --sideWCollapsed: 64px; }
+  .kympg-main{ padding:14px; }
+  .kympg-sidebar{ padding:12px 10px; }
+  .kympg-navBtn{ min-height:42px; }
+}
 .admin-user-actions .kympg-authBtn{
   padding:6px 12px;
   font-size:13px;
@@ -1096,14 +1111,14 @@ body.auth-locked .auth-gate{ display:flex; }
 <div class="kympg-shell">
   <aside class="kympg-sidebar" id="kympgSidebar">
     <div class="kympg-topActions">
-      <button class="kympg-toggleBtn" type="button" title="Collapse / expand" onclick="kympgToggleSidebar()">
+      <button id="kympgSidebarToggle" class="kympg-toggleBtn" type="button" title="Collapse / expand" aria-label="Collapse or expand sidebar" aria-expanded="true" onclick="kympgToggleSidebar()">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
         </span>
       </button>
     </div>
 
-    <div class="kympg-brand" id="kympgHomeLink" onclick="kympgShowLanding()">
+    <div class="kympg-brand" id="kympgHomeLink" role="button" tabindex="0" onclick="kympgShowLanding()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();kympgShowLanding();}">
       <div class="name">Kentucky Mirror</div>
       <div class="sub">Home</div>
     </div>
@@ -1216,7 +1231,7 @@ body.auth-locked .auth-gate{ display:flex; }
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M16 4v4h4"/><path d="M8 12h8"/><path d="M8 16h8"/></svg>
         </span>
-        <span class="kympg-text">
+        <span class="kympg-labelWrap">
           <span class="kympg-label">Invoiced List</span>
           <span class="kympg-hint">Closed / invoiced orders</span>
         </span>
@@ -1895,8 +1910,11 @@ body.auth-locked .auth-gate{ display:flex; }
   // Sidebar + shell navigation (load this early so inline onclick works)
   function kympgToggleSidebar() {
     const sb = document.getElementById('kympgSidebar');
+    const toggle = document.getElementById('kympgSidebarToggle');
     if (!sb) return;
-    sb.classList.toggle('collapsed');
+    const collapsed = sb.classList.toggle('collapsed');
+    if (toggle) toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    if (collapsed && typeof closeSidebarCreateMenu === 'function') closeSidebarCreateMenu();
   }
 
   function kympgShowLanding() {
@@ -5778,7 +5796,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 <script>
   function kympgToggleSidebar(){
-    document.getElementById('kympgSidebar')?.classList.toggle('collapsed');
+    const sidebar = document.getElementById('kympgSidebar');
+    const toggle = document.getElementById('kympgSidebarToggle');
+    if (!sidebar) return;
+    const collapsed = sidebar.classList.toggle('collapsed');
+    if (toggle) toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    if (collapsed) closeSidebarCreateMenu();
   }
   function kympgClearActiveNav(){
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
@@ -5805,6 +5828,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (cs) cs.textContent = cardSub || '';
   }
   function kympgShowLanding(){
+    closeSidebarCreateMenu();
     kympgClearActiveNav();
     kympgHideAllSections();
     const el = document.getElementById('landing-section');
@@ -6302,7 +6326,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     const marker = document.getElementById(`toggle-${groupName}`);
     if (!group || !marker) return;
     group.classList.toggle('collapsed');
-    marker.textContent = group.classList.contains('collapsed') ? '+' : '−';
+    const collapsed = group.classList.contains('collapsed');
+    marker.textContent = collapsed ? '+' : '−';
+    if (collapsed && groupName === 'work') closeSidebarCreateMenu();
   }
 
   async function loadServiceTechs() {
@@ -6611,7 +6637,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     if (btn){
       kympgClearActiveNav();
-      btn.classList.add('active');
+      const createParent = btn.closest('#sidebarCreateMenu') ? document.getElementById('sidebarCreateBtn') : null;
+      (createParent || btn).classList.add('active');
+      if (createParent) closeSidebarCreateMenu();
     }
     kympgHideAllSections();
 
