@@ -480,6 +480,56 @@
       margin: 0 auto;
     }
     #orders-section.active { display: block; }
+    .order-backup-dropzone {
+      border: 2px dashed #0d6efd;
+      border-radius: 10px;
+      background: #f3f8ff;
+      color: #123b66;
+      padding: 14px 16px;
+      margin: 12px 0 16px;
+      text-align: center;
+      font-weight: bold;
+      transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .order-backup-dropzone.drag-over,
+    body.order-backup-dragging .order-backup-dropzone {
+      background: #dceeff;
+      border-color: #084298;
+      box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+    }
+    .order-backup-dropzone small {
+      display: block;
+      margin-top: 4px;
+      font-weight: normal;
+      color: #555;
+      text-transform: none;
+    }
+    .order-backup-status {
+      min-height: 20px;
+      margin: 6px 0 12px;
+      font-size: 13px;
+      color: #555;
+    }
+    .order-backup-status.success { color: #198754; font-weight: bold; }
+    .order-backup-status.error { color: #dc3545; font-weight: bold; }
+    .order-backup-pending-list {
+      margin: -6px 0 12px;
+      font-size: 13px;
+      color: #555;
+      text-align: left;
+    }
+    .order-backup-pending-list ul { margin: 6px 0 0 20px; padding: 0; }
+    .order-backup-pending-list li { margin: 3px 0; }
+    .order-backup-list {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid #d8dde5;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    .order-backup-list ul { margin: 8px 0 0 20px; padding: 0; }
+    .order-backup-list li { margin: 5px 0; text-align: left; }
+    .order-backup-list a { color: #0d6efd; text-decoration: underline; }
     #shower-section {
       display: none;
       max-width: 1100px;
@@ -801,6 +851,57 @@ body{
   z-index: 9999;
 }
 
+.kympg-createWrap{ position:relative; }
+.kympg-createBtn{
+  background:#16a34a;
+  color:#fff;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.18), 0 8px 18px rgba(22,163,74,.22);
+}
+.kympg-createBtn:hover, .kympg-createBtn.active{ background:#15803d; }
+.kympg-createBtn .kympg-ico svg{ stroke:#fff; }
+.kympg-createBtn .kympg-hint{ color:rgba(255,255,255,.82); }
+.kympg-createMenu{
+  display:none;
+  position:absolute;
+  left:calc(100% + 10px);
+  top:0;
+  min-width:220px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:var(--shadow2);
+  padding:8px;
+  z-index:10000;
+}
+.kympg-createMenu.active{ display:block; }
+.kympg-createMenu::before{
+  content:'';
+  position:absolute;
+  left:-6px;
+  top:18px;
+  width:10px;
+  height:10px;
+  background:#fff;
+  border-left:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  transform:rotate(45deg);
+}
+.kympg-createOption{
+  width:100%;
+  border:none;
+  background:transparent;
+  color:#0f172a;
+  border-radius:10px;
+  padding:10px 12px;
+  text-align:left;
+  cursor:pointer;
+  display:block;
+}
+.kympg-createOption:hover{ background:rgba(15,23,42,.06); }
+.kympg-createOption strong{ display:block; font-size:14px; }
+.kympg-createOption span{ display:block; margin-top:2px; color:rgba(15,23,42,.58); font-size:12px; font-weight:600; }
+.kympg-sidebar.collapsed .kympg-createMenu{ left:calc(100% + 10px); top:0; }
+
 .kympg-spacer{ flex:1; }
 
 /* Main */
@@ -1016,25 +1117,27 @@ body.auth-locked .auth-gate{ display:flex; }
     <div class="kympg-navGroup" id="group-work">
     <div class="kympg-sectionLabel" onclick="kympgToggleGroup('work')">Work <span class="toggleMark" id="toggle-work">−</span></div>
     <nav class="kympg-nav">
-      <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">New Quote</span>
-          <span class="kympg-hint">Create a new quote</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">New Order</span>
-          <span class="kympg-hint">Start an order</span>
-        </span>
-      </button>
+      <div class="kympg-createWrap" id="kympgCreateWrap" data-area="quote,order">
+        <button id="kympgCreateBtn" class="kympg-navBtn kympg-createBtn" data-tip="Create" data-area="quote,order" type="button" onclick="kympgToggleCreateMenu(event, this)" aria-haspopup="menu" aria-expanded="false">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          </span>
+          <span class="kympg-labelWrap">
+            <span class="kympg-label">Create</span>
+            <span class="kympg-hint">Quote or order</span>
+          </span>
+        </button>
+        <div id="kympgCreateMenu" class="kympg-createMenu" role="menu" aria-label="Create new">
+          <button class="kympg-createOption" type="button" data-area="quote" onclick="kympgCreateNew('quote')" role="menuitem">
+            <strong>New Quote</strong>
+            <span>Create a new customer quote</span>
+          </button>
+          <button class="kympg-createOption" type="button" data-area="order" onclick="kympgCreateNew('order')" role="menuitem">
+            <strong>New Order</strong>
+            <span>Start a new production order</span>
+          </button>
+        </div>
+      </div>
 
       <button class="kympg-navBtn" data-tip="Search / Open Orders" type="button" onclick="kympgOpen('orders', this)">
         <span class="kympg-ico" aria-hidden="true">
@@ -1222,6 +1325,11 @@ body.auth-locked .auth-gate{ display:flex; }
           <div id="quotedb-section" style="display:none;">
             <h2 style="margin-top:0;">Open Quotes</h2>
             <input type="text" id="quoteSearch" placeholder="Search by quote id or customer name..." oninput="searchQuotes()" style="width:100%;max-width:420px;margin:10px 0;padding:8px;border:1px solid #ccc;border-radius:4px;">
+            <div id="quoteBackupDropzone" class="order-backup-dropzone">
+              Drop quote attachment files here to attach them to matching quotes
+              <small>Include the quote number in the file name, for example QUOTE-1000.PDF or Q1000.PDF.</small>
+            </div>
+            <div id="quoteBackupStatus" class="order-backup-status" aria-live="polite"></div>
             <table id="quoteTable" style="width:100%;border-collapse:collapse;">
               <thead>
                 <tr>
@@ -1241,7 +1349,13 @@ body.auth-locked .auth-gate{ display:flex; }
 
           <div id="invoiced-section" style="display:none;">
             <h2 style="margin-top:0;">Invoiced Orders</h2>
-            <input type="text" id="invoicedSearch" placeholder="Search by invoice #, order #, or customer..." oninput="searchInvoicedOrders()" style="width:100%;max-width:420px;margin:10px 0;padding:8px;border:1px solid #ccc;border-radius:4px;">
+            <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:10px 0;">
+              <input type="text" id="invoicedSearch" placeholder="Search by invoice #, order #, or customer..." oninput="searchInvoicedOrders()" style="width:100%;max-width:420px;padding:8px;border:1px solid #ccc;border-radius:4px;">
+              <label for="invoiceExportDate" style="font-weight:bold;">Export Day</label>
+              <input type="date" id="invoiceExportDate" style="max-width:180px;padding:8px;border:1px solid #ccc;border-radius:4px;">
+              <button type="button" onclick="exportInvoicedOrdersForDay()" style="padding:8px 14px;font-weight:bold;border:none;border-radius:6px;background:#198754;color:white;cursor:pointer;">Export Accounting CSV</button>
+            </div>
+            <div id="invoiceExportStatus" style="min-height:18px;font-size:13px;color:#555;margin:-2px 0 10px;" aria-live="polite"></div>
             <table id="invoicedTable" style="width:100%;border-collapse:collapse;">
               <thead>
                 <tr>
@@ -1380,6 +1494,13 @@ body.auth-locked .auth-gate{ display:flex; }
       <span class="order-num" id="currentOrderNumber">Will be assigned on save</span>
       <span class="order-label" id="orderSavedStatus"></span>
     </div>
+    <div id="calculatorOrderBackupDropzone" class="order-backup-dropzone">
+      <span id="calculatorBackupDropzoneTitle">Drop attachment files here</span>
+      <small id="calculatorBackupDropzoneHint">Unsaved orders or quotes will attach queued files automatically after you save.</small>
+    </div>
+    <div id="calculatorOrderBackupStatus" class="order-backup-status" aria-live="polite"></div>
+    <div id="pendingOrderBackupList" class="order-backup-pending-list"></div>
+    <div id="calculatorAttachmentList" class="order-backup-list" style="display:none;"></div>
 
     <!-- Customer Info -->
     <div class="customer-info-row">
@@ -1621,6 +1742,11 @@ body.auth-locked .auth-gate{ display:flex; }
 <div id="orders-section">
   <h2>Orders</h2>
   <input type="text" id="orderSearch" placeholder="Search by order number or customer name..." oninput="searchOrders()">
+  <div id="orderBackupDropzone" class="order-backup-dropzone">
+    Drop backup files here to attach them to matching orders
+    <small>Include the order number in the file name, for example ORDER-1000.PDF or O1000.PDF.</small>
+  </div>
+  <div id="orderBackupStatus" class="order-backup-status" aria-live="polite"></div>
 
   <table id="orderTable">
     <thead>
@@ -3361,9 +3487,23 @@ function setCalculatorMode(mode) {
   const quoteButtons = document.getElementById('quoteButtons');
   const orderButtons = document.getElementById('orderButtons');
   const shopNotesField = document.getElementById('shopNotesField');
-  if (quoteButtons) quoteButtons.style.display = calculatorMode === 'quote' ? 'block' : 'none';
-  if (orderButtons) orderButtons.style.display = calculatorMode === 'order' ? 'block' : 'none';
-  if (shopNotesField) shopNotesField.style.display = calculatorMode === 'order' ? 'block' : 'none';
+  const backupDropzone = document.getElementById('calculatorOrderBackupDropzone');
+  const backupStatus = document.getElementById('calculatorOrderBackupStatus');
+  const pendingBackupList = document.getElementById('pendingOrderBackupList');
+  const attachmentList = document.getElementById('calculatorAttachmentList');
+  const backupTitle = document.getElementById('calculatorBackupDropzoneTitle');
+  const backupHint = document.getElementById('calculatorBackupDropzoneHint');
+  const isOrderMode = calculatorMode === 'order';
+  const isQuoteMode = calculatorMode === 'quote';
+  if (quoteButtons) quoteButtons.style.display = isQuoteMode ? 'block' : 'none';
+  if (orderButtons) orderButtons.style.display = isOrderMode ? 'block' : 'none';
+  if (shopNotesField) shopNotesField.style.display = isOrderMode ? 'block' : 'none';
+  if (backupDropzone) backupDropzone.style.display = (isOrderMode || isQuoteMode) ? 'block' : 'none';
+  if (backupStatus) backupStatus.style.display = (isOrderMode || isQuoteMode) ? 'block' : 'none';
+  if (pendingBackupList) pendingBackupList.style.display = (isOrderMode || isQuoteMode) ? 'block' : 'none';
+  if (attachmentList) attachmentList.style.display = 'none';
+  if (backupTitle) backupTitle.textContent = isQuoteMode ? 'Drop attachment files here while entering this quote' : 'Drop attachment files here while entering this order';
+  if (backupHint) backupHint.textContent = isQuoteMode ? 'Unsaved quotes will attach queued files automatically after you click Save Quote.' : 'Unsaved orders will attach queued files automatically after you click Save Order.';
 }
 
 async function saveQuote() {
@@ -3815,11 +3955,13 @@ async function convertToOrder() {
 // ===================== ORDER MANAGEMENT =====================
 let currentOrderId = null;      // currently loaded order in the form (null = unsaved / new)
 let lastSavedOrderId = null;    // last saved order id (kept even after clearing the form)
+let currentLoadedOrderSnapshot = null;
 let currentQuoteId = null;
 let lastSavedQuoteId = null;
 
 function startNewOrder() {
   currentOrderId = null;
+  currentLoadedOrderSnapshot = null;
   document.getElementById('currentOrderNumber').textContent = 'Will be assigned on save';
   document.getElementById('orderSavedStatus').textContent = '';
   setOrderActionMode(false);
@@ -3835,6 +3977,7 @@ function startNewOrder() {
   const shopNotesEl = document.getElementById('shopNotes');
   if (customerNotesEl) customerNotesEl.value = '';
   if (shopNotesEl) shopNotesEl.value = '';
+  if (typeof clearPendingOrderBackups === 'function') clearPendingOrderBackups();
 }
 
 function prepareForNewQuote() {
@@ -4043,6 +4186,10 @@ async function saveQuoteToDatabase(options = {}) {
   const savedQuote = await res.json();
   currentQuoteId = savedQuote.id;
   lastSavedQuoteId = savedQuote.id;
+  const backupAttachResult = await attachPendingBackupsToSavedQuote(savedQuote.id);
+  if (backupAttachResult?.successes?.length) {
+    try { await loadQuotes(); } catch (e) {}
+  }
   document.getElementById('orderSavedStatus').textContent = '';
   document.getElementById('currentOrderNumber').textContent = savedQuote.quoteNumber || savedQuote.id;
   if (showMessage) {
@@ -4062,6 +4209,7 @@ async function convertCurrentQuoteToOrder() {
     data.status = 'shop production';
     data.sequenceNumber = savedQuote.sequenceNumber;
     data.requiresPoSetup = true;
+    data.hardwareItems = Array.isArray(savedQuote.hardwareItems) ? savedQuote.hardwareItems : data.hardwareItems;
 
     const orderRes = await fetchApi('/api/orders', {
       method: 'POST',
@@ -4075,6 +4223,11 @@ async function convertCurrentQuoteToOrder() {
     }
 
     const createdOrder = await orderRes.json();
+    const quoteForTransfer = await getLatestQuoteForConversion(savedQuote);
+    const transferResult = await transferQuoteBackupsToOrder(quoteForTransfer, createdOrder.id);
+    if (transferResult.errors.length) {
+      alert(`Quote converted, but some attachments did not transfer: ${transferResult.errors.join('; ')}`);
+    }
 
     await fetchApi(`/api/quotes?id=${encodeURIComponent(savedQuote.id)}`, {
       method: 'PUT',
@@ -4139,7 +4292,7 @@ function normalizeOrderForPoPrompt(order = {}) {
 async function saveOrder() {
   const data = gatherOrderData();
   const isNewOrder = !currentOrderId;
-  const previousOrder = isNewOrder ? null : (allOrders.find(o => o.id === currentOrderId) || null);
+  const previousOrder = isNewOrder ? null : (allOrders.find(o => o.id === currentOrderId) || (currentLoadedOrderSnapshot?.id === currentOrderId ? currentLoadedOrderSnapshot : null));
   const needsInitialOrderWorkflow = !isNewOrder && !!previousOrder?.requiresPoSetup;
   const hasAnyOrderChanges = !isNewOrder && JSON.stringify(normalizeOrderForPoPrompt(previousOrder || {})) !== JSON.stringify(normalizeOrderForPoPrompt({
     ...previousOrder,
@@ -4219,6 +4372,11 @@ async function saveOrder() {
 
     currentOrderId = savedOrder.id;
     lastSavedOrderId = savedOrder.id;
+    currentLoadedOrderSnapshot = { ...savedOrder };
+    const backupAttachResult = await attachPendingBackupsToSavedOrder(savedOrder.id);
+    if (backupAttachResult?.successes?.length) {
+      try { await loadOrders(); } catch (e) {}
+    }
 
     if (poType === 'internal') {
       const poNumberGenerated = `PO${String(savedOrder.orderNumber || '').replace(/^o/i, '')}`;
@@ -4390,8 +4548,316 @@ async function saveOrder() {
   }
 }
 
-// ===================== ORDERS LIST (Orders Tab) =====================
+// ===================== ORDERS LIST / ATTACHMENTS =====================
 let allOrders = [];
+
+let pendingOrderBackupFiles = [];
+
+function setOrderBackupStatus(message, type = '', target = 'orders') {
+  const targetMap = {
+    calculator: 'calculatorOrderBackupStatus',
+    quotes: 'quoteBackupStatus',
+    orders: 'orderBackupStatus',
+  };
+  const statusEl = document.getElementById(targetMap[target] || targetMap.orders);
+  if (!statusEl) return;
+  statusEl.textContent = message || '';
+  statusEl.className = `order-backup-status ${type}`.trim();
+}
+
+function renderPendingOrderBackups() {
+  const pendingEl = document.getElementById('pendingOrderBackupList');
+  if (!pendingEl) return;
+
+  if (!pendingOrderBackupFiles.length) {
+    pendingEl.innerHTML = '';
+    return;
+  }
+
+  pendingEl.innerHTML = `<strong>Queued attachment files:</strong><ul>${pendingOrderBackupFiles.map((file, idx) =>
+    `<li>${escapeHtml(file.name)} (${Math.ceil(file.size / 1024)} KB) <button type="button" onclick="removePendingOrderBackup(${idx})" style="padding:2px 8px;font-size:12px;">Remove</button></li>`
+  ).join('')}</ul>`;
+}
+
+function removePendingOrderBackup(index) {
+  pendingOrderBackupFiles.splice(index, 1);
+  renderPendingOrderBackups();
+  const docLabel = calculatorMode === 'quote' ? 'quote' : 'order';
+  setOrderBackupStatus(pendingOrderBackupFiles.length ? `${pendingOrderBackupFiles.length} attachment file${pendingOrderBackupFiles.length === 1 ? '' : 's'} queued until this ${docLabel} is saved.` : '', '', 'calculator');
+}
+
+function clearPendingOrderBackups() {
+  pendingOrderBackupFiles = [];
+  renderPendingOrderBackups();
+  setOrderBackupStatus('', '', 'calculator');
+  renderCalculatorAttachments();
+}
+
+function extractOrderNumberFromFileName(fileName) {
+  const match = String(fileName || '').match(/(?:^|[^0-9])0*([1-9][0-9]{2,})(?:[^0-9]|$)/);
+  return match ? match[1] : '';
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || '').split(',')[1] || '');
+    reader.onerror = () => reject(reader.error || new Error('Could not read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function attachmentEndpoint(docType, docId = '') {
+  const base = docType === 'quote' ? '/api/quotes' : '/api/orders';
+  return docId ? `${base}?id=${encodeURIComponent(docId)}&action=backup` : `${base}?action=backup`;
+}
+
+async function attachDroppedOrderBackup(file, docId = '', docType = 'order') {
+  const sequenceNumber = docId ? '' : extractOrderNumberFromFileName(file.name);
+  if (!docId && !sequenceNumber) {
+    throw new Error(`${file.name}: include an ${docType === 'quote' ? 'quote' : 'order'} number in the file name.`);
+  }
+
+  const contentBase64 = await readFileAsBase64(file);
+  const body = {
+    fileName: file.name,
+    contentType: file.type || 'application/octet-stream',
+    size: file.size,
+    contentBase64,
+  };
+  if (docType === 'quote') body.quoteNumber = sequenceNumber;
+  else body.orderNumber = sequenceNumber;
+
+  const res = await fetchApi(attachmentEndpoint(docType, docId), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const payload = await parseJsonSafe(res);
+  if (!res.ok) throw new Error(`${file.name}: ${payload.error || 'Could not attach file'}`);
+  return payload;
+}
+
+async function handleOrderBackupFiles(files, options = {}) {
+  const fileList = Array.from(files || []).filter(file => file && file.name);
+  if (!fileList.length) return;
+
+  const statusTarget = options.statusTarget || 'orders';
+  const docType = options.docType || 'order';
+  const docId = options.docId || options.orderId || '';
+  const docLabel = docType === 'quote' ? 'quote' : 'order';
+
+  if (options.queueIfUnsaved && !docId) {
+    pendingOrderBackupFiles.push(...fileList);
+    renderPendingOrderBackups();
+    setOrderBackupStatus(`${pendingOrderBackupFiles.length} attachment file${pendingOrderBackupFiles.length === 1 ? '' : 's'} queued. They will attach automatically when you save this ${docLabel}.`, 'success', statusTarget);
+    return;
+  }
+
+  setOrderBackupStatus(`Attaching ${fileList.length} attachment file${fileList.length === 1 ? '' : 's'}...`, '', statusTarget);
+  const result = await uploadOrderBackupFiles(fileList, docId, docType);
+
+  if (result.successes.length) {
+    if (docType === 'quote') {
+      try { await loadQuotes(); } catch (e) {}
+    } else {
+      try { await loadOrders(); } catch (e) {}
+    }
+  }
+
+  const messageParts = [];
+  if (result.successes.length) messageParts.push(`Attached: ${result.successes.join(', ')}`);
+  if (result.errors.length) messageParts.push(`Errors: ${result.errors.join('; ')}`);
+  setOrderBackupStatus(messageParts.join(' | '), result.errors.length ? 'error' : 'success', statusTarget);
+  return result;
+}
+
+async function uploadOrderBackupFiles(fileList, docId = '', docType = 'order') {
+  const successes = [];
+  const errors = [];
+
+  for (const file of fileList) {
+    try {
+      const attached = await attachDroppedOrderBackup(file, docId, docType);
+      successes.push(`${attached.backup?.fileName || file.name} → ${attached.quoteNumber || attached.orderNumber || attached.id}`);
+    } catch (err) {
+      errors.push(err.message);
+    }
+  }
+
+  return { successes, errors };
+}
+
+async function attachPendingBackupsToSavedDocument(docId, docType = 'order') {
+  if (!pendingOrderBackupFiles.length || !docId) return { successes: [], errors: [] };
+
+  const queuedFiles = [...pendingOrderBackupFiles];
+  const docLabel = docType === 'quote' ? 'quote' : 'order';
+  setOrderBackupStatus(`Attaching ${queuedFiles.length} queued attachment file${queuedFiles.length === 1 ? '' : 's'}...`, '', 'calculator');
+  const result = await uploadOrderBackupFiles(queuedFiles, docId, docType);
+
+  if (result.errors.length) {
+    const failedNames = new Set(result.errors.map(message => String(message).split(':')[0]));
+    pendingOrderBackupFiles = pendingOrderBackupFiles.filter(file => failedNames.has(file.name));
+  } else {
+    pendingOrderBackupFiles = [];
+  }
+  renderPendingOrderBackups();
+
+  const messageParts = [];
+  if (result.successes.length) messageParts.push(`Attached queued ${docLabel} files: ${result.successes.join(', ')}`);
+  if (result.errors.length) messageParts.push(`Errors: ${result.errors.join('; ')}`);
+  setOrderBackupStatus(messageParts.join(' | '), result.errors.length ? 'error' : 'success', 'calculator');
+  return result;
+}
+
+async function attachPendingBackupsToSavedOrder(orderId) {
+  return attachPendingBackupsToSavedDocument(orderId, 'order');
+}
+
+async function attachPendingBackupsToSavedQuote(quoteId) {
+  return attachPendingBackupsToSavedDocument(quoteId, 'quote');
+}
+
+async function transferQuoteBackupsToOrder(quote, orderId) {
+  const backups = Array.isArray(quote?.backups) ? quote.backups : [];
+  if (!backups.length || !quote?.id || !orderId) return { successes: [], errors: [] };
+
+  const successes = [];
+  const errors = [];
+  for (const backup of backups) {
+    try {
+      const downloadUrl = `/api/quotes?id=${encodeURIComponent(quote.id)}&action=backup&backupId=${encodeURIComponent(backup.id)}`;
+      const downloadRes = await fetchApi(downloadUrl);
+      if (!downloadRes.ok) throw new Error(`download failed (${downloadRes.status})`);
+      const blob = await downloadRes.blob();
+      const contentBase64 = await readFileAsBase64(blob);
+      const fileName = backup.fileName || backup.originalFileName || 'quote-attachment';
+      const uploadRes = await fetchApi(`/api/orders?id=${encodeURIComponent(orderId)}&action=backup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName,
+          contentType: backup.contentType || blob.type || 'application/octet-stream',
+          size: backup.size || blob.size,
+          contentBase64,
+        }),
+      });
+      const uploadPayload = await parseJsonSafe(uploadRes);
+      if (!uploadRes.ok) throw new Error(uploadPayload.error || `upload failed (${uploadRes.status})`);
+      successes.push(fileName);
+    } catch (err) {
+      errors.push(`${backup.fileName || backup.originalFileName || backup.id}: ${err.message}`);
+    }
+  }
+  return { successes, errors };
+}
+
+async function getLatestQuoteForConversion(quote) {
+  if (!quote?.id) return quote;
+  try {
+    const res = await fetchApi(`/api/quotes?id=${encodeURIComponent(quote.id)}`);
+    if (!res.ok) return quote;
+    return await res.json();
+  } catch (e) {
+    return quote;
+  }
+}
+
+function renderCalculatorAttachments(doc = null, docType = calculatorMode) {
+  const listEl = document.getElementById('calculatorAttachmentList');
+  if (!listEl) return;
+  const backups = Array.isArray(doc?.backups) ? doc.backups : [];
+  if (!backups.length || !doc?.id) {
+    listEl.style.display = 'none';
+    listEl.innerHTML = '';
+    return;
+  }
+  const endpoint = docType === 'quote' ? '/api/quotes' : '/api/orders';
+  listEl.style.display = 'block';
+  listEl.innerHTML = `<strong>Attached Files</strong><ul>${backups.map(backup => {
+    const uploaded = backup.uploadedAt ? new Date(backup.uploadedAt).toLocaleString() : '';
+    const sizeKb = backup.size ? ` (${Math.ceil(Number(backup.size) / 1024)} KB)` : '';
+    const url = `${endpoint}?id=${encodeURIComponent(doc.id)}&action=backup&backupId=${encodeURIComponent(backup.id)}`;
+    return `<li><a href="${url}" target="_blank" rel="noopener">${escapeHtml(backup.fileName || backup.originalFileName || 'Attachment')}</a>${escapeHtml(sizeKb)}${uploaded ? ` <span style="color:#666;">uploaded ${escapeHtml(uploaded)}</span>` : ''}</li>`;
+  }).join('')}</ul>`;
+}
+
+function setupDropzoneElement(dropzone, onDrop) {
+  if (!dropzone) return;
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropzone.addEventListener(eventName, event => {
+      event.preventDefault();
+      dropzone.classList.add('drag-over');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropzone.addEventListener(eventName, event => {
+      event.preventDefault();
+      dropzone.classList.remove('drag-over');
+    });
+  });
+
+  dropzone.addEventListener('drop', event => {
+    event.stopPropagation();
+    onDrop(event.dataTransfer?.files);
+  });
+}
+
+function setupOrderBackupDropzone() {
+  const ordersDropzone = document.getElementById('orderBackupDropzone');
+  setupDropzoneElement(ordersDropzone, files => handleOrderBackupFiles(files, { statusTarget: 'orders', docType: 'order' }));
+
+  const quotesDropzone = document.getElementById('quoteBackupDropzone');
+  setupDropzoneElement(quotesDropzone, files => handleOrderBackupFiles(files, { statusTarget: 'quotes', docType: 'quote' }));
+
+  const calculatorDropzone = document.getElementById('calculatorOrderBackupDropzone');
+  setupDropzoneElement(calculatorDropzone, files => handleOrderBackupFiles(files, {
+    docId: calculatorMode === 'quote' ? currentQuoteId : currentOrderId,
+    docType: calculatorMode === 'quote' ? 'quote' : 'order',
+    queueIfUnsaved: true,
+    statusTarget: 'calculator',
+  }));
+
+  window.addEventListener('dragover', event => {
+    if (event.dataTransfer?.types?.includes('Files')) {
+      event.preventDefault();
+      document.body.classList.add('order-backup-dragging');
+    }
+  });
+
+  window.addEventListener('dragleave', event => {
+    if (!event.relatedTarget) document.body.classList.remove('order-backup-dragging');
+  });
+
+  window.addEventListener('drop', event => {
+    if (!event.dataTransfer?.files?.length) return;
+    const ordersSection = document.getElementById('orders-section');
+    const quotesSection = document.getElementById('quotedb-section');
+    const calculatorSection = document.getElementById('calculator-section');
+    const ordersVisible = ordersSection && getComputedStyle(ordersSection).display !== 'none';
+    const quotesVisible = quotesSection && getComputedStyle(quotesSection).display !== 'none';
+    const calculatorVisible = calculatorSection && getComputedStyle(calculatorSection).display !== 'none' && (calculatorMode === 'order' || calculatorMode === 'quote');
+    if (!ordersVisible && !quotesVisible && !calculatorVisible) return;
+
+    event.preventDefault();
+    document.body.classList.remove('order-backup-dragging');
+    if (calculatorVisible) {
+      handleOrderBackupFiles(event.dataTransfer.files, {
+        docId: calculatorMode === 'quote' ? currentQuoteId : currentOrderId,
+        docType: calculatorMode === 'quote' ? 'quote' : 'order',
+        queueIfUnsaved: true,
+        statusTarget: 'calculator',
+      });
+    } else if (quotesVisible) {
+      handleOrderBackupFiles(event.dataTransfer.files, { statusTarget: 'quotes', docType: 'quote' });
+    } else {
+      handleOrderBackupFiles(event.dataTransfer.files, { statusTarget: 'orders', docType: 'order' });
+    }
+  });
+}
 
 async function loadOrders() {
   try {
@@ -4507,6 +4973,16 @@ function viewOrder(id) {
     ? `<p><strong>Hardware:</strong> ${escapeHtml(order.hardware.name)} — $${(order.hardware.price || 0).toFixed(2)}</p>`
     : '';
 
+  const backups = Array.isArray(order.backups) ? order.backups : [];
+  const backupsHtml = backups.length
+    ? `<div class="order-backup-list"><strong>Backup Attachments</strong><ul>${backups.map(backup => {
+        const uploaded = backup.uploadedAt ? new Date(backup.uploadedAt).toLocaleString() : '';
+        const sizeKb = backup.size ? ` (${Math.ceil(Number(backup.size) / 1024)} KB)` : '';
+        const url = `/api/orders?id=${encodeURIComponent(order.id)}&action=backup&backupId=${encodeURIComponent(backup.id)}`;
+        return `<li><a href="${url}" target="_blank" rel="noopener">${escapeHtml(backup.fileName || backup.originalFileName || 'Backup')}</a>${escapeHtml(sizeKb)}${uploaded ? ` <span style="color:#666;">uploaded ${escapeHtml(uploaded)}</span>` : ''}</li>`;
+      }).join('')}</ul></div>`
+    : `<div class="order-backup-list"><strong>Backup Attachments</strong><div style="margin-top:6px;color:#666;">No backup files attached yet.</div></div>`;
+
   const modal = document.createElement('div');
   modal.id = 'orderDetailModal';
   modal.className = 'order-detail-modal-overlay';
@@ -4531,6 +5007,7 @@ function viewOrder(id) {
       </table>
 
       ${hwHtml}
+      ${backupsHtml}
 
       <p style="font-size:16px;font-weight:bold;margin-top:15px;">
         Grand Total: $${(order.grandTotal || 0).toFixed(2)}<br>
@@ -4688,18 +5165,21 @@ function formatOrderStatusSummary(order = {}) {
 }
 
 function populateCalculatorFromOrder(order, mode = 'order') {
+  if (typeof clearPendingOrderBackups === 'function') clearPendingOrderBackups();
   const isQuoteMode = mode === 'quote';
   showCalculatorWorkspace(isQuoteMode ? 'quote' : 'order');
   setCalculatorMode(isQuoteMode ? 'quote' : 'order');
 
   currentOrderId = isQuoteMode ? null : order.id;
+  currentLoadedOrderSnapshot = isQuoteMode ? null : { ...order };
   currentQuoteId = isQuoteMode ? order.id : null;
   if (!isQuoteMode) {
     setEditOrderHeader();
     setOrderActionMode(true);
   }
   document.getElementById('currentOrderNumber').textContent = order.orderNumber || 'N/A';
-  document.getElementById('orderSavedStatus').textContent = formatOrderStatusSummary(order);
+  document.getElementById('orderSavedStatus').textContent = isQuoteMode ? `Loaded ${order.orderNumber || order.quoteNumber || order.id || 'quote'}` : formatOrderStatusSummary(order);
+  renderCalculatorAttachments(order, isQuoteMode ? 'quote' : 'order');
 
   const cust = order.customer || {};
   document.getElementById('customerName').value = cust.name || '';
@@ -4810,6 +5290,207 @@ function searchInvoicedOrders() {
   renderInvoicedTable(filtered);
 }
 
+function invoiceDateKey(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function parseCurrencyValue(value) {
+  if (typeof value === 'number') return value;
+  const match = String(value || '').match(/-?[\d,]+(?:\.\d+)?/);
+  return match ? Number(match[0].replace(/,/g, '')) : 0;
+}
+
+function csvCell(value) {
+  const text = String(value ?? '');
+  return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function invoiceItemDescription(item = {}) {
+  return item.description || item.name || [
+    item.glassType || item.type,
+    item.thickness,
+    item.width && item.height ? `${item.width} x ${item.height}` : '',
+    item.bevel ? `${item.bevelWidth || ''} BEVEL`.trim() : '',
+    item.shape ? 'SHAPE' : '',
+    item.notes,
+  ].filter(Boolean).join(' • ');
+}
+
+function accountingCustomerNumber(customer = {}) {
+  return customer.customerNumber || customer.accountNumber || customer.cusnum || customer.customerId || customer.id || '';
+}
+
+function accountingTerms(value) {
+  const terms = String(value || '').trim();
+  const lower = terms.toLowerCase();
+  if (!terms || lower === 'due upon receipt') return 'none';
+  if (lower.includes('cod')) return 'cod';
+  if (lower.includes('cash')) return 'cash';
+  return terms;
+}
+
+function invoiceExportRowsForInvoice(inv) {
+  const customer = inv.customer || {};
+  const base = {
+    cusnum: accountingCustomerNumber(customer),
+    customername: customer.name || '',
+    invnum: inv.invoiceNumber || '',
+    deptnum: inv.departmentNumber || inv.deptnum || '',
+    jobnum: inv.jobNumber || inv.jobnum || inv.orderNumber || '',
+    notes: inv.customerNotes || inv.notes || '',
+    taxnum: inv.taxNumber || inv.taxnum || '',
+    invdate: invoiceDateKey(inv.invoiceDate || inv.createdAt),
+    duedate: invoiceDateKey(inv.dueDate || inv.duedate),
+    terms: accountingTerms(inv.terms || customer.creditTerms),
+    discdate: invoiceDateKey(inv.discountDate || inv.discdate),
+    discpcnt: inv.discountPercent || inv.discpcnt || '',
+    retamnt: inv.retainageAmount || inv.retamnt || '',
+    retpcnt: inv.retainagePercent || inv.retpcnt || '',
+    freightamt: inv.freightAmount || inv.freightamt || '',
+    freighttype: inv.freightType || inv.freighttype || 'none',
+    pricecode: inv.priceCode || inv.pricecode || '',
+    salesacct: inv.salesAccount || inv.salesacct || '',
+    ponum: inv.vendorPoNumber || inv.customerPoNumber || inv.ponum || '',
+    shipvia: inv.shipVia || inv.shipvia || '',
+    shipdate: invoiceDateKey(inv.shipDate || inv.shipdate),
+    blurb: inv.blurb || '',
+    depositamt: inv.depositAmount || inv.depositamt || '',
+    description: inv.description || `Invoice ${inv.invoiceNumber || ''}`.trim(),
+    source: inv.source || 'KMPG',
+    sourceid: inv.sourceId || inv.orderId || '',
+    salesrepid: inv.salesRepId || inv.salesrepid || '',
+    invoicetotal: Number(inv.grandTotalWithTax || inv.grandTotal || 0),
+  };
+
+  const glassRows = (Array.isArray(inv.items) ? inv.items : []).map((item, idx) => {
+    const qty = item.qty ?? item.quantity ?? 1;
+    const unitPrice = parseCurrencyValue(item.eachPrice ?? item.unitPrice ?? item.price);
+    const lineCost = parseCurrencyValue(item.lineTotal ?? item.total ?? item.lineTotalAmount) || (Number(qty) * unitPrice);
+    return {
+      ...base,
+      itemnum: item.itemnum || item.itemNumber || item.sku || item.glassType || '',
+      itemdescription: invoiceItemDescription(item),
+      location: item.location || '',
+      qty,
+      unitprice: unitPrice,
+      unitcost: parseCurrencyValue(item.unitcost ?? item.unitCost ?? item.cost),
+      linecost: lineCost,
+      linenumber: idx + 1,
+    };
+  });
+
+  const hardwareRows = (Array.isArray(inv.hardwareItems) ? inv.hardwareItems : []).map((item, idx) => {
+    const qty = item.qty ?? item.quantity ?? 1;
+    const unitPrice = parseCurrencyValue(item.price ?? item.unitPrice);
+    const lineCost = parseCurrencyValue(item.total ?? item.lineTotal) || (Number(qty) * unitPrice);
+    return {
+      ...base,
+      itemnum: item.itemnum || item.itemNumber || item.sku || item.part || item.name || '',
+      itemdescription: item.description || item.name || item.part || '',
+      location: item.location || '',
+      qty,
+      unitprice: unitPrice,
+      unitcost: parseCurrencyValue(item.unitcost ?? item.unitCost ?? item.cost),
+      linecost: lineCost,
+      linenumber: glassRows.length + idx + 1,
+    };
+  });
+
+  return [...glassRows, ...hardwareRows].length ? [...glassRows, ...hardwareRows] : [{
+    ...base,
+    itemnum: '',
+    itemdescription: 'No line items',
+    location: '',
+    qty: '',
+    unitprice: '',
+    unitcost: '',
+    linecost: base.invoicetotal,
+    linenumber: '',
+  }];
+}
+
+function downloadCsvFile(fileName, rows) {
+  const headers = [
+    'cusnum',
+    'customername',
+    'invnum',
+    'deptnum',
+    'jobnum',
+    'notes',
+    'taxnum',
+    'invdate',
+    'duedate',
+    'terms',
+    'discdate',
+    'discpcnt',
+    'retamnt',
+    'retpcnt',
+    'freightamt',
+    'freighttype',
+    'pricecode',
+    'salesacct',
+    'ponum',
+    'shipvia',
+    'shipdate',
+    'blurb',
+    'depositamt',
+    'description',
+    'source',
+    'sourceid',
+    'salesrepid',
+    'itemnum',
+    'itemdescription',
+    'location',
+    'qty',
+    'unitprice',
+    'unitcost',
+    'linecost',
+    'linenumber',
+    'invoicetotal',
+  ];
+  const csv = [headers.map(csvCell).join(','), ...rows.map(row => headers.map(key => csvCell(row[key])).join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function exportInvoicedOrdersForDay() {
+  const statusEl = document.getElementById('invoiceExportStatus');
+  const dateInput = document.getElementById('invoiceExportDate');
+  const selectedDate = dateInput?.value || invoiceDateKey(new Date());
+  if (dateInput && !dateInput.value) dateInput.value = selectedDate;
+  if (!selectedDate) return alert('Please choose an invoice date to export.');
+
+  try {
+    if (!allInvoicedOrders.length) await loadInvoicedOrders();
+    const invoicesForDay = allInvoicedOrders.filter(inv => invoiceDateKey(inv.invoiceDate || inv.createdAt) === selectedDate);
+    if (!invoicesForDay.length) {
+      if (statusEl) statusEl.textContent = `No invoices found for ${selectedDate}.`;
+      alert(`No invoices found for ${selectedDate}.`);
+      return;
+    }
+
+    const rows = invoicesForDay.flatMap(invoiceExportRowsForInvoice);
+    downloadCsvFile(`accounting-invoices-${selectedDate}.csv`, rows);
+    if (statusEl) statusEl.textContent = `Exported ${rows.length} line item row(s) from ${invoicesForDay.length} invoice(s) for ${selectedDate}.`;
+  } catch (err) {
+    if (statusEl) statusEl.textContent = `Export failed: ${err.message}`;
+    alert('Could not export invoices: ' + err.message);
+  }
+}
+
 async function reprintInvoice(orderId) {
   if (!orderId) {
     alert('Missing order id for invoice.');
@@ -4893,6 +5574,7 @@ async function convertSavedQuoteToOrder(id) {
     customer: quote.customer || { name: quote.customerName, phone: quote.customerPhone },
     items: quote.items || [],
     hardware: quote.hardware || null,
+    hardwareItems: Array.isArray(quote.hardwareItems) ? quote.hardwareItems : [],
     specialPricing: quote.specialPricing || false,
     grandTotal: quote.grandTotal || 0,
     grandTotalWithTax: quote.grandTotalWithTax || 0,
@@ -4911,6 +5593,11 @@ async function convertSavedQuoteToOrder(id) {
     });
     if (!orderRes.ok) throw new Error('Failed to create order from quote');
     const createdOrder = await orderRes.json();
+    const quoteForTransfer = await getLatestQuoteForConversion(quote);
+    const transferResult = await transferQuoteBackupsToOrder(quoteForTransfer, createdOrder.id);
+    if (transferResult.errors.length) {
+      alert(`Quote converted, but some attachments did not transfer: ${transferResult.errors.join('; ')}`);
+    }
 
     await fetchApi(`/api/quotes?id=${encodeURIComponent(id)}`, {
       method: 'PUT',
@@ -5184,6 +5871,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   updateTotals();
   // Ensure calculator always starts with visible editable lines.
   try { if (typeof startNewOrder === 'function') startNewOrder(); } catch (e) {}
+  try { if (typeof setupOrderBackupDropzone === 'function') setupOrderBackupDropzone(); } catch (e) {}
 
   await loadCalcCustomers();
   setupCustomerLookup();
@@ -5221,6 +5909,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   }
   function kympgClearActiveNav(){
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
+    const createBtn = document.getElementById('kympgCreateBtn');
+    if (createBtn) createBtn.setAttribute('aria-expanded', 'false');
+    document.getElementById('kympgCreateMenu')?.classList.remove('active');
   }
   function kympgHideAllSections(){
     const ids = ['landing-section','calculator-section','customer-section','vendor-section','orders-section',
@@ -5252,6 +5943,51 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (authUser && isFieldTechUser()) { try { loadTechHomeRequests(); } catch (e) {} }
   }
 
+  function kympgCloseCreateMenu() {
+    const menu = document.getElementById('kympgCreateMenu');
+    const btn = document.getElementById('kympgCreateBtn');
+    if (menu) menu.classList.remove('active');
+    if (btn) {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function kympgToggleCreateMenu(event, btn) {
+    if (event) event.stopPropagation();
+    if (!authUser) {
+      alert('Please log in to continue.');
+      return;
+    }
+    const menu = document.getElementById('kympgCreateMenu');
+    if (!menu) return;
+    const willOpen = !menu.classList.contains('active');
+    kympgClearActiveNav();
+    if (willOpen) {
+      menu.classList.add('active');
+      if (btn) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    } else {
+      kympgCloseCreateMenu();
+    }
+  }
+
+  function kympgCreateNew(which) {
+    kympgCloseCreateMenu();
+    kympgOpen(which);
+  }
+
+  document.addEventListener('click', (event) => {
+    const wrap = document.getElementById('kympgCreateWrap');
+    if (wrap && !wrap.contains(event.target)) kympgCloseCreateMenu();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') kympgCloseCreateMenu();
+  });
+
   const ROLE_PERMISSIONS = {
     admin: ['*'],
     office: ['*'],
@@ -5274,6 +6010,13 @@ document.addEventListener("DOMContentLoaded", async function () {
       (ROLE_PERMISSIONS[r] || []).forEach((p) => perms.add(p));
     });
     return perms.has('*') || perms.has(area);
+  }
+  function userCanAnyArea(areas) {
+    return String(areas || '')
+      .split(',')
+      .map((area) => area.trim())
+      .filter(Boolean)
+      .some((area) => userCanArea(area));
   }
   function canDeleteOrders() { return authRoles.includes('admin'); }
   function canDeleteCustomers() { return authRoles.includes('admin'); }
@@ -5333,11 +6076,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!isAdmin) closeAdminCreateUserModal();
 
     document.querySelectorAll('.kympg-navBtn').forEach((btn) => {
+      const dataArea = btn.getAttribute('data-area') || '';
       const oc = btn.getAttribute('onclick') || '';
       const m = oc.match(/kympgOpen\('([^']+)'/);
-      const area = m ? m[1] : '';
-      btn.classList.toggle('kympg-hidden-by-role', !userCanArea(area));
+      const area = dataArea || (m ? m[1] : '');
+      btn.classList.toggle('kympg-hidden-by-role', area.includes(',') ? !userCanAnyArea(area) : !userCanArea(area));
     });
+
+    document.querySelectorAll('.kympg-createOption').forEach((option) => {
+      const area = option.getAttribute('data-area') || '';
+      option.classList.toggle('kympg-hidden-by-role', !userCanArea(area));
+    });
+    const createWrap = document.getElementById('kympgCreateWrap');
+    if (createWrap) createWrap.classList.toggle('kympg-hidden-by-role', !userCanAnyArea(createWrap.getAttribute('data-area') || ''));
 
     ['work', 'tools', 'residential'].forEach((g) => {
       const group = document.getElementById(`group-${g}`);
