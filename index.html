@@ -654,7 +654,7 @@
       color: #666;
       margin-bottom: 2px;
     }
-  
+
 /* ===== KY MPG Modern Shell (SPA) ===== */
 :root{
   --bg:#f6f7fb;
@@ -695,6 +695,8 @@ body{
 /* Light sidebar */
 .kympg-sidebar{
   width: var(--sideW);
+  flex: 0 0 var(--sideW);
+  box-sizing:border-box;
   background:#fff;
   border-right:1px solid var(--line);
   padding:16px 14px;
@@ -704,11 +706,12 @@ body{
   position: sticky;
   top:0;
   height:100vh;
-  transition: width .22s ease;
+  transition: width .22s ease, flex-basis .22s ease, padding .22s ease;
   z-index: 50;
   overflow-y: auto;
+  overflow-x: visible;
 }
-.kympg-sidebar.collapsed{ width: var(--sideWCollapsed); }
+.kympg-sidebar.collapsed{ width: var(--sideWCollapsed); flex-basis: var(--sideWCollapsed); padding:16px 10px; }
 .kympg-sidebar::-webkit-scrollbar{ width:10px; }
 .kympg-sidebar::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:999px; }
 .kympg-topActions{ display:flex; justify-content:flex-end; padding:0 6px; }
@@ -737,8 +740,10 @@ body{
 }
 .kympg-brand .name{ font-weight: 900; font-size: 14px; letter-spacing:.2px; }
 .kympg-brand .sub{ font-size: 12px; color: rgba(15,23,42,.70); margin-top:2px; }
+.kympg-sidebar.collapsed .kympg-brand{ text-align:center; padding:12px 8px; }
+.kympg-sidebar.collapsed .kympg-brand .name,
 .kympg-sidebar.collapsed .kympg-brand .sub{ display:none; }
-.kympg-sidebar.collapsed .kympg-brand{ text-align:center; }
+.kympg-sidebar.collapsed .kympg-brand::before{ content:'KM'; font-weight:950; font-size:14px; letter-spacing:.3px; }
 
 .kympg-navGroup{ display:flex; flex-direction:column; gap:6px; }
 .kympg-sectionLabel{
@@ -770,8 +775,11 @@ body{
   gap:12px;
   transition: background .15s ease, transform .05s ease;
   position: relative;
+  text-align:left;
+  min-height:44px;
 }
 .kympg-navBtn:hover{ background: rgba(15,23,42,.06); }
+.kympg-navBtn:focus-visible,.kympg-toggleBtn:focus-visible,.kympg-brand:focus-visible{ outline:3px solid rgba(79,111,173,.35); outline-offset:2px; }
 .kympg-navBtn:active{ transform: translateY(1px); }
 .kympg-navBtn.active{
   background: rgba(79,111,173,.12);
@@ -781,10 +789,11 @@ body{
 .kympg-ico svg{ width:22px; height:22px; fill:none; stroke:#334155; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 .kympg-label{ font-weight: 800; font-size: 14px; letter-spacing:.1px; }
 .kympg-hint{ display:block; font-weight:600; font-size:12px; color: rgba(15,23,42,.55); margin-top:2px; }
-.kympg-labelWrap{ display:block; }
+.kympg-labelWrap{ display:block; flex:1; min-width:0; }
 
-.kympg-sidebar.collapsed .kympg-navBtn{ justify-content:center; padding: 12px 10px; }
-.kympg-sidebar.collapsed .kympg-labelWrap{ display:none; }
+.kympg-sidebar.collapsed .kympg-navBtn{ justify-content:center; padding: 12px 10px; gap:0; }
+.kympg-sidebar.collapsed .kympg-labelWrap,
+.kympg-sidebar.collapsed .kympg-createArrow{ display:none; }
 .kympg-sidebar.collapsed .kympg-navBtn[data-tip]:hover::after{
   content: attr(data-tip);
   position:absolute;
@@ -814,6 +823,37 @@ body{
 .kympg-authBtn.primary{ background:#0d78f0; color:#fff; }
 .kympg-authBtn.secondary{ background:#e2e8f0; color:#0f172a; }
 .kympg-authBtn.success{ background:#198f42; color:#fff; }
+.kympg-authBtn:disabled{ opacity:.65; cursor:not-allowed; }
+.kympg-createSubmenu{
+  display:none;
+  flex-direction:column;
+  gap:4px;
+  margin:-2px 0 4px 34px;
+  padding-left:10px;
+  border-left:2px solid rgba(79,111,173,.20);
+}
+.kympg-createSubmenu.active{ display:flex; }
+.kympg-createSubmenu .kympg-navBtn{
+  padding:8px 10px;
+  border-radius:10px;
+}
+.kympg-createArrow{
+  margin-left:auto;
+  font-weight:900;
+  transition:transform .15s ease;
+}
+.kympg-createToggle[aria-expanded="true"] .kympg-createArrow{ transform:rotate(90deg); }
+.kympg-sidebar.collapsed .kympg-createSubmenu{ display:none !important; }
+@media (max-width: 760px){
+  :root{ --sideW: 236px; --sideWCollapsed: 64px; }
+  .kympg-main{ padding:14px; }
+  .kympg-sidebar{ padding:12px 10px; }
+  .kympg-navBtn{ min-height:42px; }
+}
+.admin-user-actions .kympg-authBtn{
+  padding:6px 12px;
+  font-size:13px;
+}
 .kympg-hidden-by-role{ display:none !important; }
 
 .auth-gate{
@@ -978,6 +1018,76 @@ body.auth-locked .auth-gate{ display:flex; }
 .kympg-iframeWrap{ border:1px solid var(--line); border-radius: var(--radius2); overflow:hidden; height:min(72vh, 860px); background:#fff; }
 .kympg-iframeWrap iframe{ width:100%; height:100%; border:none; }
 
+
+/* Embedded Breakage Calculator */
+.breakage-calculator{
+  font-family: Arial, sans-serif;
+  color:#111827;
+}
+.breakage-calculator h2{ margin:0 0 10px; }
+.breakage-calculator table{ width:100%; border-collapse:collapse; }
+.breakage-calculator th,.breakage-calculator td{ border:1px solid #ccc; padding:8px; text-align:center; }
+.breakage-calculator input,.breakage-calculator select{ width:90%; box-sizing:border-box; }
+.breakage-layout{ display:flex; gap:40px; align-items:flex-start; margin-top:0; }
+.breakage-panel{ flex:1; min-width:0; }
+.breakage-buttons{ margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+.breakage-buttons button{
+  padding:12px 24px;
+  font-size:14px;
+  border-radius:8px;
+  border:1px solid #cbd5e1;
+  background:#f8fafc;
+  cursor:pointer;
+  font-weight:700;
+}
+.breakage-buttons button:hover{ background:#e2e8f0; }
+.breakage-glass-cell,.breakage-hardware-cell{ position:relative; }
+.breakage-glass-list,.breakage-hardware-list{
+  position:absolute;
+  left:4px;
+  right:4px;
+  top:calc(100% - 2px);
+  background:#fff;
+  border:1px solid #ccc;
+  max-height:200px;
+  overflow-y:auto;
+  list-style:none;
+  padding:0;
+  margin:2px 0 0;
+  display:none;
+  z-index:1000;
+  text-align:left;
+}
+.breakage-glass-list li,.breakage-hardware-list li{ padding:6px 8px; cursor:pointer; }
+.breakage-glass-list li:hover,.breakage-hardware-list li:hover,.breakage-glass-list li.active{ background:#cce5ff; }
+.breakage-special-row{ display:flex; align-items:center; margin-bottom:10px; white-space:nowrap; gap:8px; }
+.breakage-special-row input{ width:auto; }
+.breakage-pricing{ margin-top:20px; }
+.breakage-pricing input{ width:60px; font-size:16px; font-weight:bold; }
+#breakageMaterialTotal{ display:none; }
+@media (max-width: 1000px){ .breakage-layout{ flex-direction:column; } }
+
+
+/* Embedded Glass Price List */
+.glass-price-list{
+  font-family: Arial, sans-serif;
+  background:#f4f4f4;
+  padding:0 0 20px;
+}
+.glass-price-list table{
+  width:80%;
+  border-collapse:collapse;
+  margin:0 auto 20px;
+  background:#fff;
+}
+.glass-price-list th,.glass-price-list td{
+  padding:6px;
+  text-align:center;
+  border:1px solid #ddd;
+}
+.glass-price-list th{ background:#f2f2f2; }
+@media (max-width: 900px){ .glass-price-list table{ width:100%; } }
+
 /* Put legacy sections inside card nicely */
 #calculator-section, #customer-section, #orders-section{ max-width: none !important; }
 
@@ -1001,14 +1111,14 @@ body.auth-locked .auth-gate{ display:flex; }
 <div class="kympg-shell">
   <aside class="kympg-sidebar" id="kympgSidebar">
     <div class="kympg-topActions">
-      <button class="kympg-toggleBtn" type="button" title="Collapse / expand" onclick="kympgToggleSidebar()">
+      <button id="kympgSidebarToggle" class="kympg-toggleBtn" type="button" title="Collapse / expand" aria-label="Collapse or expand sidebar" aria-expanded="true" onclick="kympgToggleSidebar()">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
         </span>
       </button>
     </div>
 
-    <div class="kympg-brand" id="kympgHomeLink" onclick="kympgShowLanding()">
+    <div class="kympg-brand" id="kympgHomeLink" role="button" tabindex="0" onclick="kympgShowLanding()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();kympgShowLanding();}">
       <div class="name">Kentucky Mirror</div>
       <div class="sub">Home</div>
     </div>
@@ -1016,43 +1126,58 @@ body.auth-locked .auth-gate{ display:flex; }
     <div class="kympg-navGroup" id="group-work">
     <div class="kympg-sectionLabel" onclick="kympgToggleGroup('work')">Work <span class="toggleMark" id="toggle-work">−</span></div>
     <nav class="kympg-nav">
-      <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
+      <button id="sidebarCreateBtn" class="kympg-navBtn kympg-createToggle" data-tip="Create" data-areas="quote,order" type="button" onclick="toggleSidebarCreateMenu(event)" aria-expanded="false" aria-controls="sidebarCreateMenu">
         <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
         </span>
         <span class="kympg-labelWrap">
-          <span class="kympg-label">New Quote</span>
-          <span class="kympg-hint">Create a new quote</span>
+          <span class="kympg-label">Create</span>
+          <span class="kympg-hint">New quote or order</span>
         </span>
+        <span class="kympg-createArrow" aria-hidden="true">›</span>
       </button>
+      <div id="sidebarCreateMenu" class="kympg-createSubmenu" aria-label="Create options">
+        <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
+          </span>
+          <span class="kympg-labelWrap"><span class="kympg-label">New Quote</span></span>
+        </button>
+        <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
+          </span>
+          <span class="kympg-labelWrap"><span class="kympg-label">New Order</span></span>
+        </button>
+      </div>
 
-      <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">New Order</span>
-          <span class="kympg-hint">Start an order</span>
-        </span>
-      </button>
-
-      <button class="kympg-navBtn" data-tip="Search / Open Orders" type="button" onclick="kympgOpen('orders', this)">
+      <button class="kympg-navBtn" data-tip="Search Orders" type="button" onclick="kympgOpen('orders', this)">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         </span>
         <span class="kympg-labelWrap">
-          <span class="kympg-label">Search / Open Orders</span>
+          <span class="kympg-label">Search Orders</span>
           <span class="kympg-hint">Find past orders</span>
         </span>
       </button>
 
-      <button class="kympg-navBtn" data-tip="Open Quotes" type="button" onclick="kympgOpen('quotedb', this)">
+      <button class="kympg-navBtn" data-tip="Search Quotes" type="button" onclick="kympgOpen('quotedb', this)">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M7 7h10"/><path d="M7 11h10"/><path d="M7 15h6"/><path d="M6 3h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/></svg>
         </span>
         <span class="kympg-labelWrap">
-          <span class="kympg-label">Open Quotes</span>
+          <span class="kympg-label">Search Quotes</span>
           <span class="kympg-hint">Saved quotes</span>
+        </span>
+      </button>
+
+      <button class="kympg-navBtn" data-tip="Customer List" type="button" onclick="kympgOpen('customerimport', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
+        </span>
+        <span class="kympg-labelWrap">
+          <span class="kympg-label">Customer List</span>
+          <span class="kympg-hint">Customers</span>
         </span>
       </button>
 
@@ -1063,6 +1188,16 @@ body.auth-locked .auth-gate{ display:flex; }
         <span class="kympg-labelWrap">
           <span class="kympg-label">Purchase Orders</span>
           <span class="kympg-hint">Vendor POs</span>
+        </span>
+      </button>
+
+      <button class="kympg-navBtn" data-tip="Vendor List" type="button" onclick="kympgOpen('vendors', this)">
+        <span class="kympg-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M19 6v12"/></svg>
+        </span>
+        <span class="kympg-labelWrap">
+          <span class="kympg-label">Vendor List</span>
+          <span class="kympg-hint">Vendors</span>
         </span>
       </button>
     </nav>
@@ -1096,31 +1231,15 @@ body.auth-locked .auth-gate{ display:flex; }
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M16 4v4h4"/><path d="M8 12h8"/><path d="M8 16h8"/></svg>
         </span>
-        <span class="kympg-text">
+        <span class="kympg-labelWrap">
           <span class="kympg-label">Invoiced List</span>
           <span class="kympg-hint">Closed / invoiced orders</span>
         </span>
       </button>
 
-      <button class="kympg-navBtn" data-tip="Customer List" type="button" onclick="kympgOpen('customerimport', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M17 10l4 4-4 4"/><path d="M21 14H9"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Customer List</span>
-          <span class="kympg-hint">Upload customer list</span>
-    </span>
-      </button>
 
-      <button class="kympg-navBtn" data-tip="Vendor List" type="button" onclick="kympgOpen('vendors', this)">
-        <span class="kympg-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/><path d="M19 6v12"/></svg>
-        </span>
-        <span class="kympg-labelWrap">
-          <span class="kympg-label">Vendor List</span>
-          <span class="kympg-hint">Upload vendor list</span>
-    </span>
-      </button>
+
+
     </nav>
     </div>
 
@@ -1162,7 +1281,7 @@ body.auth-locked .auth-gate{ display:flex; }
             <span>Ready</span>
           </div>
           <span id="authUserMeta" class="kympg-authMeta">Not signed in</span>
-          <button id="adminCreateUserBtn" type="button" class="kympg-authBtn success" onclick="openAdminCreateUserModal()" style="display:none;">Create User</button>
+          <button id="adminCreateUserBtn" type="button" class="kympg-authBtn success" onclick="openAdminCreateUserModal(event)" style="display:none;">Create User</button>
           <button id="loginBtn" type="button" class="kympg-authBtn primary" onclick="openLogin()">Log In</button>
           <button id="logoutBtn" type="button" class="kympg-authBtn secondary" onclick="logoutUser()" style="display:none;">Log Out</button>
         </div>
@@ -1339,14 +1458,83 @@ body.auth-locked .auth-gate{ display:flex; }
             </div>
           </div>
           <div id="breakage-section" style="display:none;">
-            <div class="kympg-iframeWrap">
-              <iframe src="https://breakagepricing.netlify.app" title="Breakage Pricing"></iframe>
+            <div class="breakage-calculator" id="breakageCalculator">
+              <div class="breakage-layout">
+                <div class="breakage-panel">
+                  <h2>Glass Pricing</h2>
+                  <div class="breakage-special-row">
+                    <input type="checkbox" id="breakageSpecialPricingToggle">
+                    <label for="breakageSpecialPricingToggle">Use Special Customer Pricing</label>
+                  </div>
+                  <table id="breakageGlassTable">
+                    <thead>
+                      <tr>
+                        <th>Qty</th>
+                        <th>Width (in)</th>
+                        <th>Height (in)</th>
+                        <th>Glass Type</th>
+                        <th>Bevel?</th>
+                        <th>Bevel Width</th>
+                        <th>Shape?</th>
+                        <th>Line Total ($)</th>
+                      </tr>
+                    </thead>
+                    <tbody id="breakageGlassTableBody"></tbody>
+                  </table>
+                  <div class="breakage-buttons">
+                    <button type="button" onclick="addBreakageGlassRow()">Add Line</button>
+                    <button type="button" onclick="clearBreakageForm()">Clear Form</button>
+                    <button type="button" onclick="printBreakageQuote()">Print</button>
+                  </div>
+                  <h3 id="breakageGlassTotal">Grand Total: $0.00</h3>
+                </div>
+
+                <div class="breakage-panel">
+                  <h2>Misc Hardware Pricing</h2>
+                  <table id="breakageHardwareTable">
+                    <thead>
+                      <tr>
+                        <th>Qty</th>
+                        <th>Part</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="breakageHardwareTableBody"></tbody>
+                  </table>
+                  <h3 id="breakageHardwareTotal" data-value="0">Hardware Total: $0.00</h3>
+                </div>
+              </div>
+
+              <h3 id="breakageMaterialTotal">Total Material: $0.00</h3>
+
+              <div class="breakage-pricing">
+                <h2>Breakage Pricing (tax is included in material)</h2>
+                <h3>Number of Men: <input type="number" id="breakageNumMen" value="1" min="1"></h3>
+                <h3>Number of Hours: <input type="number" id="breakageNumHours" value="2" min="2"></h3>
+                <h3 id="breakageLabor">Labor Cost: $0.00</h3>
+                <h3 id="breakageTruckCharge">Truck Charge: $130.00</h3>
+                <h3 id="breakageMaterial">Material Cost: $0.00</h3>
+                <h3>Misc Material ($): <input type="number" id="breakageMiscMaterialInput" value="0" min="0"></h3>
+                <h3 id="breakageTotal">Total Breakage Cost: $0.00</h3>
+              </div>
             </div>
           </div>
 
           <div id="pricelist-section" style="display:none;">
-            <div class="kympg-iframeWrap">
-              <iframe src="https://kymirrorpricelist.netlify.app" title="Sq Ft Price List"></iframe>
+            <div class="glass-price-list" id="glassPriceList">
+              <table id="glassPriceListTable">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Price per Sq Ft ($)</th>
+                    <th>Minimum Charge ($)</th>
+                  </tr>
+                </thead>
+                <tbody id="glassPriceListBody">
+                  <tr><td colspan="3">Loading glass prices...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -1357,9 +1545,6 @@ body.auth-locked .auth-gate{ display:flex; }
 
 <div id="top-link-box">
   <a href="https://breakagepricing.netlify.app">Breakage Pricing</a>
-</div>
-<div id="top-link-box-a">
-  <a href="https://kympg.netlify.app">Return to Landing Page</a>
 </div>
 <div id="top-link-box-b">
   <a href="https://kymirrorpricelist.netlify.app">View Sq Ft Price List</a>
@@ -1725,8 +1910,11 @@ body.auth-locked .auth-gate{ display:flex; }
   // Sidebar + shell navigation (load this early so inline onclick works)
   function kympgToggleSidebar() {
     const sb = document.getElementById('kympgSidebar');
+    const toggle = document.getElementById('kympgSidebarToggle');
     if (!sb) return;
-    sb.classList.toggle('collapsed');
+    const collapsed = sb.classList.toggle('collapsed');
+    if (toggle) toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    if (collapsed && typeof closeSidebarCreateMenu === 'function') closeSidebarCreateMenu();
   }
 
   function kympgShowLanding() {
@@ -2027,7 +2215,7 @@ function printBreakdown() {
 
   breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
   breakdownWindow.document.write('</head><body>');
-  
+
   if (orderNumber && orderNumber !== 'Will be assigned on save') {
     breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${orderNumber}</h3>`);
   }
@@ -2952,6 +3140,9 @@ function escapeHtml(text) {
 async function fetchApi(path, options) {
   const opts = { ...(options || {}) };
   const headers = new Headers(opts.headers || {});
+  if (!authToken && authUser && typeof authUser.jwt === 'function') {
+    try { authToken = await authUser.jwt(); } catch (e) {}
+  }
   if (authToken && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${authToken}`);
   }
@@ -5171,6 +5362,391 @@ async function confirmImport() {
   }
 }
 
+
+// ===================== BREAKAGE CALCULATOR =====================
+let breakageCalculatorInitialized = false;
+
+function getBreakageGlassPartsData() {
+  const useSpecial = !!document.getElementById('breakageSpecialPricingToggle')?.checked;
+  return useSpecial ? specialGlassPartsData : standardglassPartsData;
+}
+
+function addBreakageGlassRow() {
+  const tbody = document.getElementById('breakageGlassTableBody');
+  if (!tbody) return;
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="number" class="breakage-qty" value="1" min="1" style="width:60px;"></td>
+    <td><input type="text" class="breakage-width"></td>
+    <td><input type="text" class="breakage-height"></td>
+    <td class="breakage-glass-cell">
+      <input type="text" class="breakage-glass-input" placeholder="Type to search glass..." autocomplete="off">
+      <ul class="breakage-glass-list"></ul>
+    </td>
+    <td><input type="checkbox" class="breakage-bevel"></td>
+    <td>
+      <select class="breakage-bevel-width">
+        <option value="1/2">1/2&quot;</option>
+        <option value="1">1&quot;</option>
+        <option value="1 1/4">1 1/4&quot;</option>
+      </select>
+    </td>
+    <td><input type="checkbox" class="breakage-shape"></td>
+    <td class="breakage-line-total">$0.00</td>
+  `;
+
+  tbody.appendChild(tr);
+  setupBreakageGlassSearch(tr.querySelector('.breakage-glass-input'), tr.querySelector('.breakage-glass-list'));
+  tr.querySelectorAll('input, select').forEach((el) => {
+    el.addEventListener('input', updateBreakageTotals);
+    el.addEventListener('change', updateBreakageTotals);
+  });
+}
+
+function setupBreakageGlassSearch(inputElement, listElement) {
+  let currentIndex = -1;
+
+  const hideList = () => {
+    listElement.style.display = 'none';
+    currentIndex = -1;
+  };
+
+  const selectItem = (glass) => {
+    inputElement.value = glass;
+    hideList();
+    updateBreakageTotals();
+  };
+
+  const setActiveItem = (items) => {
+    items.forEach((li, idx) => li.classList.toggle('active', idx === currentIndex));
+    if (currentIndex >= 0 && items[currentIndex]) items[currentIndex].scrollIntoView({ block: 'nearest' });
+  };
+
+  const buildList = () => {
+    const search = inputElement.value.toLowerCase().trim();
+    const data = getBreakageGlassPartsData();
+    listElement.innerHTML = '';
+    currentIndex = -1;
+    if (!search) return hideList();
+
+    Object.keys(data)
+      .filter((glass) => glass.toLowerCase().includes(search))
+      .slice(0, 80)
+      .forEach((glass) => {
+        const li = document.createElement('li');
+        li.textContent = glass;
+        li.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          selectItem(glass);
+        });
+        listElement.appendChild(li);
+      });
+
+    listElement.style.display = listElement.children.length ? 'block' : 'none';
+  };
+
+  inputElement.addEventListener('input', buildList);
+  inputElement.addEventListener('focus', () => { if (inputElement.value.trim()) buildList(); });
+  inputElement.addEventListener('keydown', (e) => {
+    const items = Array.from(listElement.querySelectorAll('li'));
+    if (e.key === 'ArrowDown' && items.length) {
+      e.preventDefault();
+      currentIndex = (currentIndex + 1) % items.length;
+      setActiveItem(items);
+    } else if (e.key === 'ArrowUp' && items.length) {
+      e.preventDefault();
+      currentIndex = (currentIndex - 1 + items.length) % items.length;
+      setActiveItem(items);
+    } else if (e.key === 'Enter' && listElement.style.display === 'block' && items.length) {
+      e.preventDefault();
+      selectItem(items[currentIndex >= 0 ? currentIndex : 0].textContent);
+    } else if (e.key === 'Escape') {
+      hideList();
+    }
+  });
+}
+
+function populateBreakageHardwareTable() {
+  const tbody = document.getElementById('breakageHardwareTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  for (let i = 0; i < 5; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="number" class="breakage-hardware-qty" min="0" value="0" style="width:70px;"></td>
+      <td class="breakage-hardware-cell">
+        <input type="text" class="breakage-hardware-input" placeholder="Type to search part..." autocomplete="off">
+        <ul class="breakage-hardware-list"></ul>
+      </td>
+      <td class="breakage-hardware-price">$0.00</td>
+      <td class="breakage-hardware-line-total">$0.00</td>
+    `;
+    tbody.appendChild(tr);
+    setupBreakageHardwareSearch(tr.querySelector('.breakage-hardware-input'), tr.querySelector('.breakage-hardware-list'));
+    tr.querySelectorAll('input').forEach((el) => {
+      el.addEventListener('input', updateBreakageHardwareTotals);
+      el.addEventListener('change', updateBreakageHardwareTotals);
+    });
+  }
+}
+
+function setupBreakageHardwareSearch(inputElement, listElement) {
+  const hideList = () => { listElement.style.display = 'none'; };
+  const selectItem = (part) => {
+    inputElement.value = part;
+    hideList();
+    updateBreakageHardwareTotals();
+  };
+  const buildList = () => {
+    const search = inputElement.value.toLowerCase().trim();
+    listElement.innerHTML = '';
+    if (!search) return hideList();
+
+    Object.keys(hardwareParts)
+      .filter((part) => part.toLowerCase().includes(search))
+      .slice(0, 80)
+      .forEach((part) => {
+        const li = document.createElement('li');
+        li.textContent = part;
+        li.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          selectItem(part);
+        });
+        listElement.appendChild(li);
+      });
+
+    listElement.style.display = listElement.children.length ? 'block' : 'none';
+  };
+
+  inputElement.addEventListener('input', buildList);
+  inputElement.addEventListener('focus', () => { if (inputElement.value.trim()) buildList(); });
+  inputElement.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideList(); });
+}
+
+function updateBreakageHardwareTotals() {
+  let subtotal = 0;
+  document.querySelectorAll('#breakageHardwareTableBody tr').forEach((row) => {
+    const qty = parseFloat(row.querySelector('.breakage-hardware-qty')?.value) || 0;
+    const part = row.querySelector('.breakage-hardware-input')?.value || '';
+    const price = hardwareParts[part] || 0;
+    const lineTotal = qty * price;
+    row.querySelector('.breakage-hardware-price').innerText = `$${price.toFixed(2)}`;
+    row.querySelector('.breakage-hardware-line-total').innerText = `$${lineTotal.toFixed(2)}`;
+    subtotal += lineTotal;
+  });
+
+  const totalWithTax = subtotal * 1.06;
+  const totalEl = document.getElementById('breakageHardwareTotal');
+  if (totalEl) {
+    totalEl.innerText = `Hardware Total: $${totalWithTax.toFixed(2)}`;
+    totalEl.dataset.value = String(totalWithTax);
+  }
+  updateBreakageMaterialTotal();
+}
+
+function updateBreakageTotals() {
+  let grandTotal = 0;
+  const data = getBreakageGlassPartsData();
+
+  document.querySelectorAll('#breakageGlassTableBody tr').forEach((row) => {
+    const glassType = row.querySelector('.breakage-glass-input')?.value || '';
+    const partInfo = data[glassType];
+    if (!glassType || !partInfo) {
+      row.querySelector('.breakage-line-total').innerText = '$0.00';
+      return;
+    }
+
+    const width = roundEven(parseInput(row.querySelector('.breakage-width')?.value || ''));
+    const height = roundEven(parseInput(row.querySelector('.breakage-height')?.value || ''));
+    if (!width || !height || Number.isNaN(width) || Number.isNaN(height)) {
+      row.querySelector('.breakage-line-total').innerText = '$0.00';
+      return;
+    }
+
+    const bevelChecked = !!row.querySelector('.breakage-bevel')?.checked;
+    const bevelWidth = row.querySelector('.breakage-bevel-width')?.value || '1/2';
+    const shapeChecked = !!row.querySelector('.breakage-shape')?.checked;
+    if (shapeChecked) row.querySelector('.breakage-bevel').checked = false;
+
+    let basePrice = (width * height / 144) * partInfo.price;
+    if (basePrice < partInfo.min) basePrice = partInfo.min;
+
+    let bevelCost = 0;
+    const thickness = glassType.includes('1/4') ? '1/4' :
+                      glassType.includes('3/8') ? '3/8' :
+                      glassType.includes('1/2') ? '1/2' : null;
+    if (bevelChecked && thickness && bevelPrices[thickness]?.[bevelWidth]) {
+      const bevelData = bevelPrices[thickness][bevelWidth];
+      bevelCost = 2 * (width + height) * bevelData.price;
+      if (bevelCost < bevelData.min) bevelCost = bevelData.min;
+      row.dataset.bevelAlerted = 'false';
+    } else if (bevelChecked && row.dataset.bevelAlerted !== 'true') {
+      alert('This glass type cannot be beveled.');
+      row.dataset.bevelAlerted = 'true';
+    }
+
+    const qty = parseInt(row.querySelector('.breakage-qty')?.value, 10) || 1;
+    let total = (basePrice + bevelCost) * qty;
+    if (shapeChecked) total *= 1.25;
+    total *= 1.06;
+
+    row.querySelector('.breakage-line-total').innerText = `$${total.toFixed(2)}`;
+    grandTotal += total;
+  });
+
+  const glassTotal = document.getElementById('breakageGlassTotal');
+  if (glassTotal) glassTotal.innerText = `Grand Total: $${grandTotal.toFixed(2)}`;
+  updateBreakageHardwareTotals();
+}
+
+function updateBreakageMaterialTotal() {
+  const glassTotal = parseFloat((document.getElementById('breakageGlassTotal')?.innerText || '').replace(/[^\d.]/g, '')) || 0;
+  const hardwareTotal = parseFloat(document.getElementById('breakageHardwareTotal')?.dataset.value || '0') || 0;
+  const materialTotal = glassTotal + hardwareTotal;
+  const materialEl = document.getElementById('breakageMaterialTotal');
+  if (materialEl) materialEl.innerText = `Total Material: $${materialTotal.toFixed(2)}`;
+  updateBreakagePricing();
+}
+
+function updateBreakagePricing() {
+  const menEl = document.getElementById('breakageNumMen');
+  const hoursEl = document.getElementById('breakageNumHours');
+  const miscEl = document.getElementById('breakageMiscMaterialInput');
+  if (!menEl || !hoursEl || !miscEl) return;
+
+  const numMen = Math.max(1, parseFloat(menEl.value) || 1);
+  const numHours = Math.max(2, parseFloat(hoursEl.value) || 2);
+  if (String(menEl.value) !== String(numMen)) menEl.value = numMen;
+  if (String(hoursEl.value) !== String(numHours)) hoursEl.value = numHours;
+
+  const laborCost = numMen * numHours * 80;
+  const materialTotal = parseFloat((document.getElementById('breakageMaterialTotal')?.innerText || '').replace(/[^\d.]/g, '')) || 0;
+  const miscMaterial = Math.max(0, parseFloat(miscEl.value) || 0);
+  const truckCharge = 130;
+  const total = Math.max(325, laborCost + materialTotal + miscMaterial + truckCharge);
+
+  document.getElementById('breakageLabor').innerText = `Labor Cost: $${laborCost.toFixed(2)}`;
+  document.getElementById('breakageTruckCharge').innerText = `Truck Charge: $${truckCharge.toFixed(2)}`;
+  document.getElementById('breakageMaterial').innerText = `Material Cost: $${materialTotal.toFixed(2)}`;
+  document.getElementById('breakageTotal').innerText = `Total Breakage Cost: $${total.toFixed(2)}`;
+}
+
+function clearBreakageForm() {
+  const glassBody = document.getElementById('breakageGlassTableBody');
+  if (glassBody) glassBody.innerHTML = '';
+  for (let i = 0; i < 5; i++) addBreakageGlassRow();
+  populateBreakageHardwareTable();
+  const menEl = document.getElementById('breakageNumMen');
+  const hoursEl = document.getElementById('breakageNumHours');
+  const miscEl = document.getElementById('breakageMiscMaterialInput');
+  if (menEl) menEl.value = 1;
+  if (hoursEl) hoursEl.value = 2;
+  if (miscEl) miscEl.value = 0;
+  updateBreakageTotals();
+}
+
+function printableBreakageTable(tableId) {
+  const clone = document.getElementById(tableId)?.cloneNode(true);
+  if (!clone) return '';
+  clone.querySelectorAll('input, select').forEach((el) => {
+    const span = document.createElement('span');
+    if (el.type === 'checkbox') span.textContent = el.checked ? 'Yes' : 'No';
+    else span.textContent = el.value || '';
+    el.replaceWith(span);
+  });
+  clone.querySelectorAll('ul').forEach((ul) => ul.remove());
+  return clone.outerHTML;
+}
+
+function printBreakageQuote() {
+  updateBreakageTotals();
+  const glassSection = printableBreakageTable('breakageGlassTable');
+  const hardwareSection = printableBreakageTable('breakageHardwareTable');
+  const summary = [
+    document.getElementById('breakageGlassTotal')?.outerHTML || '',
+    document.getElementById('breakageHardwareTotal')?.outerHTML || '',
+    document.getElementById('breakageMaterialTotal')?.outerHTML || '',
+    document.getElementById('breakageLabor')?.outerHTML || '',
+    document.getElementById('breakageTruckCharge')?.outerHTML || '',
+    document.getElementById('breakageMaterial')?.outerHTML || '',
+    `<h3>Misc Material: $${(parseFloat(document.getElementById('breakageMiscMaterialInput')?.value) || 0).toFixed(2)}</h3>`,
+    document.getElementById('breakageTotal')?.outerHTML || '',
+  ].join('\n');
+
+  const newWin = window.open('', '', 'width=900,height=700');
+  if (!newWin) return alert('Popup blocked. Please allow popups to print.');
+  newWin.document.write(`
+    <html>
+      <head>
+        <title>Breakage Quote</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin:20px; }
+          table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+          th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+          h2, h3 { margin:10px 0; }
+        </style>
+      </head>
+      <body>
+        <h2>Kentucky Mirror and Plate Glass</h2>
+        <h3>Glass Pricing</h3>
+        ${glassSection}
+        <h3>Misc Hardware Pricing</h3>
+        ${hardwareSection}
+        <h3>Breakage Pricing Breakdown</h3>
+        ${summary}
+      </body>
+    </html>
+  `);
+  newWin.document.close();
+  newWin.print();
+}
+
+function initBreakageCalculator() {
+  if (breakageCalculatorInitialized || !document.getElementById('breakageCalculator')) return;
+  breakageCalculatorInitialized = true;
+  const specialToggle = document.getElementById('breakageSpecialPricingToggle');
+  if (specialToggle) specialToggle.addEventListener('change', updateBreakageTotals);
+  ['breakageNumMen', 'breakageNumHours', 'breakageMiscMaterialInput'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', updateBreakagePricing);
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.breakage-glass-cell')) {
+      document.querySelectorAll('.breakage-glass-list').forEach((list) => { list.style.display = 'none'; });
+    }
+    if (!event.target.closest('.breakage-hardware-cell')) {
+      document.querySelectorAll('.breakage-hardware-list').forEach((list) => { list.style.display = 'none'; });
+    }
+  });
+  clearBreakageForm();
+}
+
+
+function formatPriceListNumber(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '0';
+  return Number.isInteger(num) ? String(num) : String(num).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function renderGlassPriceList() {
+  const tbody = document.getElementById('glassPriceListBody');
+  if (!tbody) return;
+  const entries = Object.entries(standardglassPartsData || {});
+  if (!entries.length) {
+    tbody.innerHTML = '<tr><td colspan="3">No glass pricing data loaded.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = entries.map(([type, info]) => `
+    <tr>
+      <td>${escapeHtml(type)}</td>
+      <td>${formatPriceListNumber(info.price)}</td>
+      <td>${formatPriceListNumber(info.min)}</td>
+    </tr>
+  `).join('');
+}
+
 // ===================== STARTUP =====================
 document.addEventListener("DOMContentLoaded", async function () {
   const specialToggle = document.getElementById('specialPricingToggle');
@@ -5184,6 +5760,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   updateTotals();
   // Ensure calculator always starts with visible editable lines.
   try { if (typeof startNewOrder === 'function') startNewOrder(); } catch (e) {}
+
+  initBreakageCalculator();
+  renderGlassPriceList();
 
   await loadCalcCustomers();
   setupCustomerLookup();
@@ -5209,7 +5788,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     <div class="admin-user-actions">
       <button type="button" class="kympg-authBtn secondary" onclick="closeAdminCreateUserModal()">Cancel</button>
-      <button type="button" class="kympg-authBtn success" onclick="createAdminUser()">Create User</button>
+      <button id="adminCreateUserSubmitBtn" type="button" class="kympg-authBtn success" onclick="createAdminUser(event)">Create User</button>
     </div>
     <div id="adminUserStatus" class="admin-user-status"></div>
   </div>
@@ -5217,7 +5796,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 <script>
   function kympgToggleSidebar(){
-    document.getElementById('kympgSidebar')?.classList.toggle('collapsed');
+    const sidebar = document.getElementById('kympgSidebar');
+    const toggle = document.getElementById('kympgSidebarToggle');
+    if (!sidebar) return;
+    const collapsed = sidebar.classList.toggle('collapsed');
+    if (toggle) toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    if (collapsed) closeSidebarCreateMenu();
   }
   function kympgClearActiveNav(){
     document.querySelectorAll('.kympg-navBtn').forEach(b => b.classList.remove('active'));
@@ -5244,6 +5828,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (cs) cs.textContent = cardSub || '';
   }
   function kympgShowLanding(){
+    closeSidebarCreateMenu();
     kympgClearActiveNav();
     kympgHideAllSections();
     const el = document.getElementById('landing-section');
@@ -5318,6 +5903,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   async function syncAuthState(user) {
     authUser = user || null;
     authToken = isOfflineAuth ? '' : (user?.token?.access_token || '');
+    if (!authToken && authUser && typeof authUser.jwt === 'function') {
+      try { authToken = await authUser.jwt(); } catch (e) {}
+    }
     authRoles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles.map((r) => String(r).toLowerCase()) : [];
 
     const meta = document.getElementById('authUserMeta');
@@ -5333,11 +5921,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!isAdmin) closeAdminCreateUserModal();
 
     document.querySelectorAll('.kympg-navBtn').forEach((btn) => {
+      const areasAttr = btn.getAttribute('data-areas');
       const oc = btn.getAttribute('onclick') || '';
       const m = oc.match(/kympgOpen\('([^']+)'/);
-      const area = m ? m[1] : '';
-      btn.classList.toggle('kympg-hidden-by-role', !userCanArea(area));
+      const areas = areasAttr ? areasAttr.split(',').map((a) => a.trim()).filter(Boolean) : (m ? [m[1]] : []);
+      const canUse = areas.length ? areas.some((area) => userCanArea(area)) : true;
+      btn.classList.toggle('kympg-hidden-by-role', !canUse);
     });
+    closeSidebarCreateMenuIfEmpty();
 
     ['work', 'tools', 'residential'].forEach((g) => {
       const group = document.getElementById(`group-${g}`);
@@ -5370,20 +5961,60 @@ document.addEventListener("DOMContentLoaded", async function () {
     hasPromptedLogin = false;
   }
 
-  function openAdminCreateUserModal() {
-    if (!authRoles.includes('admin')) return;
+  function openAdminCreateUserModal(event) {
+    if (event) event.preventDefault();
+    if (!authRoles.includes('admin')) {
+      const status = document.getElementById('adminUserStatus');
+      if (status) status.textContent = 'Only admins can create users.';
+      return;
+    }
     const modal = document.getElementById('adminUserModal');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+    }
     const status = document.getElementById('adminUserStatus');
     if (status) status.textContent = '';
+    setTimeout(() => document.getElementById('newUserEmail')?.focus(), 0);
   }
 
   function closeAdminCreateUserModal() {
     const modal = document.getElementById('adminUserModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+    }
   }
 
-  async function createAdminUser() {
+
+  function closeSidebarCreateMenu() {
+    const menu = document.getElementById('sidebarCreateMenu');
+    const button = document.getElementById('sidebarCreateBtn');
+    if (menu) menu.classList.remove('active');
+    if (button) button.setAttribute('aria-expanded', 'false');
+  }
+
+  function closeSidebarCreateMenuIfEmpty() {
+    const menu = document.getElementById('sidebarCreateMenu');
+    if (!menu) return;
+    const hasVisibleOption = !!menu.querySelector('.kympg-navBtn:not(.kympg-hidden-by-role)');
+    if (!hasVisibleOption) closeSidebarCreateMenu();
+  }
+
+  function toggleSidebarCreateMenu(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('sidebarCreateMenu');
+    const button = document.getElementById('sidebarCreateBtn');
+    const sidebar = document.getElementById('kympgSidebar');
+    if (!menu || !button || button.classList.contains('kympg-hidden-by-role')) return;
+    if (sidebar?.classList.contains('collapsed')) sidebar.classList.remove('collapsed');
+    const shouldOpen = !menu.classList.contains('active');
+    menu.classList.toggle('active', shouldOpen);
+    button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+  }
+
+  async function createAdminUser(event) {
+    if (event) event.preventDefault();
     if (!authRoles.includes('admin')) return alert('Only admins can create users.');
     const email = String(document.getElementById('newUserEmail')?.value || '').trim();
     const fullName = String(document.getElementById('newUserFullName')?.value || '').trim();
@@ -5399,21 +6030,30 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
+    const submitBtn = document.getElementById('adminCreateUserSubmitBtn');
     if (status) status.textContent = 'Creating user...';
-    const res = await fetchApi('/api/admin-create-user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, fullName, roles }),
-    });
-    const payload = await parseJsonSafe(res);
-    if (!res.ok) {
-      if (status) status.textContent = payload.error || 'Failed to create user.';
-      return;
-    }
+    if (submitBtn) submitBtn.disabled = true;
 
-    if (status) status.textContent = `User created: ${email}`;
-    document.getElementById('newUserEmail').value = '';
-    document.getElementById('newUserFullName').value = '';
+    try {
+      const res = await fetchApi('/api/admin-create-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, fullName, roles }),
+      });
+      const payload = await parseJsonSafe(res);
+      if (!res.ok) {
+        if (status) status.textContent = payload.error || 'Failed to create user.';
+        return;
+      }
+
+      if (status) status.textContent = `User created: ${email}`;
+      document.getElementById('newUserEmail').value = '';
+      document.getElementById('newUserFullName').value = '';
+    } catch (err) {
+      if (status) status.textContent = `Failed to create user: ${err?.message || err}`;
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
   }
 
   async function runHomeQuickSearch() {
@@ -5686,7 +6326,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     const marker = document.getElementById(`toggle-${groupName}`);
     if (!group || !marker) return;
     group.classList.toggle('collapsed');
-    marker.textContent = group.classList.contains('collapsed') ? '+' : '−';
+    const collapsed = group.classList.contains('collapsed');
+    marker.textContent = collapsed ? '+' : '−';
+    if (collapsed && groupName === 'work') closeSidebarCreateMenu();
   }
 
   async function loadServiceTechs() {
@@ -5995,7 +6637,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     if (btn){
       kympgClearActiveNav();
-      btn.classList.add('active');
+      const createParent = btn.closest('#sidebarCreateMenu') ? document.getElementById('sidebarCreateBtn') : null;
+      (createParent || btn).classList.add('active');
+      if (createParent) closeSidebarCreateMenu();
     }
     kympgHideAllSections();
 
@@ -6017,14 +6661,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (which === 'orders'){
       const ord = document.getElementById('orders-section');
       if (ord){ ord.style.display = 'block'; }
-      kympgSetHeader('Search / Open Orders', 'Find and open past orders.', 'Orders', 'Search and open orders');
+      kympgSetHeader('Search Orders', 'Find and open past orders.', 'Orders', 'Search orders');
       try{ if (typeof loadOrders === 'function') loadOrders(); }catch(e){}
       return;
     }
     if (which === 'quotedb'){
       const q = document.getElementById('quotedb-section');
       if (q){ q.style.display = 'block'; }
-      kympgSetHeader('Open Quotes', 'Search and open saved quotes.', 'Quotes', 'Quotes database');
+      kympgSetHeader('Search Quotes', 'Search and open saved quotes.', 'Quotes', 'Quotes database');
       try{ if (typeof loadQuotes === 'function') loadQuotes(); }catch(e){}
       return;
     }
@@ -6045,12 +6689,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (which === 'breakage'){
       const b = document.getElementById('breakage-section');
       if (b){ b.style.display = 'block'; }
+      initBreakageCalculator();
       kympgSetHeader('Breakage Pricing', 'Open the breakage calculator inside the app.', 'Breakage Pricing', 'Tool');
       return;
     }
     if (which === 'pricelist'){
       const p = document.getElementById('pricelist-section');
       if (p){ p.style.display = 'block'; }
+      renderGlassPriceList();
       kympgSetHeader('Sq Ft Price List', 'Reference pricing inside the app.', 'Sq Ft Price List', 'Tool');
       return;
     }
@@ -6156,6 +6802,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       closeOpenSearchUi();
+      closeSidebarCreateMenu();
     });
 
     if (quickInput) {
