@@ -1003,6 +1003,56 @@ body.auth-locked .auth-gate{ display:flex; }
 .kympg-iframeWrap{ border:1px solid var(--line); border-radius: var(--radius2); overflow:hidden; height:min(72vh, 860px); background:#fff; }
 .kympg-iframeWrap iframe{ width:100%; height:100%; border:none; }
 
+
+/* Embedded Breakage Calculator */
+.breakage-calculator{
+  font-family: Arial, sans-serif;
+  color:#111827;
+}
+.breakage-calculator h1{ text-align:center; margin:0 0 18px; }
+.breakage-calculator h2{ margin:0 0 10px; }
+.breakage-calculator table{ width:100%; border-collapse:collapse; }
+.breakage-calculator th,.breakage-calculator td{ border:1px solid #ccc; padding:8px; text-align:center; }
+.breakage-calculator input,.breakage-calculator select{ width:90%; box-sizing:border-box; }
+.breakage-layout{ display:flex; gap:40px; align-items:flex-start; }
+.breakage-panel{ flex:1; min-width:0; }
+.breakage-buttons{ margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+.breakage-buttons button{
+  padding:12px 24px;
+  font-size:14px;
+  border-radius:8px;
+  border:1px solid #cbd5e1;
+  background:#f8fafc;
+  cursor:pointer;
+  font-weight:700;
+}
+.breakage-buttons button:hover{ background:#e2e8f0; }
+.breakage-glass-cell,.breakage-hardware-cell{ position:relative; }
+.breakage-glass-list,.breakage-hardware-list{
+  position:absolute;
+  left:4px;
+  right:4px;
+  top:calc(100% - 2px);
+  background:#fff;
+  border:1px solid #ccc;
+  max-height:200px;
+  overflow-y:auto;
+  list-style:none;
+  padding:0;
+  margin:2px 0 0;
+  display:none;
+  z-index:1000;
+  text-align:left;
+}
+.breakage-glass-list li,.breakage-hardware-list li{ padding:6px 8px; cursor:pointer; }
+.breakage-glass-list li:hover,.breakage-hardware-list li:hover,.breakage-glass-list li.active{ background:#cce5ff; }
+.breakage-special-row{ display:flex; align-items:center; margin-bottom:10px; white-space:nowrap; gap:8px; }
+.breakage-special-row input{ width:auto; }
+.breakage-pricing{ margin-top:20px; }
+.breakage-pricing input{ width:60px; font-size:16px; font-weight:bold; }
+#breakageMaterialTotal{ display:none; }
+@media (max-width: 1000px){ .breakage-layout{ flex-direction:column; } }
+
 /* Put legacy sections inside card nicely */
 #calculator-section, #customer-section, #orders-section{ max-width: none !important; }
 
@@ -1373,8 +1423,67 @@ body.auth-locked .auth-gate{ display:flex; }
             </div>
           </div>
           <div id="breakage-section" style="display:none;">
-            <div class="kympg-iframeWrap">
-              <iframe src="https://breakagepricing.netlify.app/?embed=1&amp;hideHome=1" title="Breakage Pricing"></iframe>
+            <div class="breakage-calculator" id="breakageCalculator">
+              <h1>Breakage Calculator</h1>
+              <div class="breakage-layout">
+                <div class="breakage-panel">
+                  <h2>Glass Pricing</h2>
+                  <div class="breakage-special-row">
+                    <input type="checkbox" id="breakageSpecialPricingToggle">
+                    <label for="breakageSpecialPricingToggle">Use Special Customer Pricing</label>
+                  </div>
+                  <table id="breakageGlassTable">
+                    <thead>
+                      <tr>
+                        <th>Qty</th>
+                        <th>Width (in)</th>
+                        <th>Height (in)</th>
+                        <th>Glass Type</th>
+                        <th>Bevel?</th>
+                        <th>Bevel Width</th>
+                        <th>Shape?</th>
+                        <th>Line Total ($)</th>
+                      </tr>
+                    </thead>
+                    <tbody id="breakageGlassTableBody"></tbody>
+                  </table>
+                  <div class="breakage-buttons">
+                    <button type="button" onclick="addBreakageGlassRow()">Add Line</button>
+                    <button type="button" onclick="clearBreakageForm()">Clear Form</button>
+                    <button type="button" onclick="printBreakageQuote()">Print</button>
+                  </div>
+                  <h3 id="breakageGlassTotal">Grand Total: $0.00</h3>
+                </div>
+
+                <div class="breakage-panel">
+                  <h2>Misc Hardware Pricing</h2>
+                  <table id="breakageHardwareTable">
+                    <thead>
+                      <tr>
+                        <th>Qty</th>
+                        <th>Part</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody id="breakageHardwareTableBody"></tbody>
+                  </table>
+                  <h3 id="breakageHardwareTotal" data-value="0">Hardware Total: $0.00</h3>
+                </div>
+              </div>
+
+              <h3 id="breakageMaterialTotal">Total Material: $0.00</h3>
+
+              <div class="breakage-pricing">
+                <h2>Breakage Pricing (tax is included in material)</h2>
+                <h3>Number of Men: <input type="number" id="breakageNumMen" value="1" min="1"></h3>
+                <h3>Number of Hours: <input type="number" id="breakageNumHours" value="2" min="2"></h3>
+                <h3 id="breakageLabor">Labor Cost: $0.00</h3>
+                <h3 id="breakageTruckCharge">Truck Charge: $130.00</h3>
+                <h3 id="breakageMaterial">Material Cost: $0.00</h3>
+                <h3>Misc Material ($): <input type="number" id="breakageMiscMaterialInput" value="0" min="0"></h3>
+                <h3 id="breakageTotal">Total Breakage Cost: $0.00</h3>
+              </div>
             </div>
           </div>
 
@@ -5205,6 +5314,366 @@ async function confirmImport() {
   }
 }
 
+
+// ===================== BREAKAGE CALCULATOR =====================
+let breakageCalculatorInitialized = false;
+
+function getBreakageGlassPartsData() {
+  const useSpecial = !!document.getElementById('breakageSpecialPricingToggle')?.checked;
+  return useSpecial ? specialGlassPartsData : standardglassPartsData;
+}
+
+function addBreakageGlassRow() {
+  const tbody = document.getElementById('breakageGlassTableBody');
+  if (!tbody) return;
+
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input type="number" class="breakage-qty" value="1" min="1" style="width:60px;"></td>
+    <td><input type="text" class="breakage-width"></td>
+    <td><input type="text" class="breakage-height"></td>
+    <td class="breakage-glass-cell">
+      <input type="text" class="breakage-glass-input" placeholder="Type to search glass..." autocomplete="off">
+      <ul class="breakage-glass-list"></ul>
+    </td>
+    <td><input type="checkbox" class="breakage-bevel"></td>
+    <td>
+      <select class="breakage-bevel-width">
+        <option value="1/2">1/2&quot;</option>
+        <option value="1">1&quot;</option>
+        <option value="1 1/4">1 1/4&quot;</option>
+      </select>
+    </td>
+    <td><input type="checkbox" class="breakage-shape"></td>
+    <td class="breakage-line-total">$0.00</td>
+  `;
+
+  tbody.appendChild(tr);
+  setupBreakageGlassSearch(tr.querySelector('.breakage-glass-input'), tr.querySelector('.breakage-glass-list'));
+  tr.querySelectorAll('input, select').forEach((el) => {
+    el.addEventListener('input', updateBreakageTotals);
+    el.addEventListener('change', updateBreakageTotals);
+  });
+}
+
+function setupBreakageGlassSearch(inputElement, listElement) {
+  let currentIndex = -1;
+
+  const hideList = () => {
+    listElement.style.display = 'none';
+    currentIndex = -1;
+  };
+
+  const selectItem = (glass) => {
+    inputElement.value = glass;
+    hideList();
+    updateBreakageTotals();
+  };
+
+  const setActiveItem = (items) => {
+    items.forEach((li, idx) => li.classList.toggle('active', idx === currentIndex));
+    if (currentIndex >= 0 && items[currentIndex]) items[currentIndex].scrollIntoView({ block: 'nearest' });
+  };
+
+  const buildList = () => {
+    const search = inputElement.value.toLowerCase().trim();
+    const data = getBreakageGlassPartsData();
+    listElement.innerHTML = '';
+    currentIndex = -1;
+    if (!search) return hideList();
+
+    Object.keys(data)
+      .filter((glass) => glass.toLowerCase().includes(search))
+      .slice(0, 80)
+      .forEach((glass) => {
+        const li = document.createElement('li');
+        li.textContent = glass;
+        li.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          selectItem(glass);
+        });
+        listElement.appendChild(li);
+      });
+
+    listElement.style.display = listElement.children.length ? 'block' : 'none';
+  };
+
+  inputElement.addEventListener('input', buildList);
+  inputElement.addEventListener('focus', () => { if (inputElement.value.trim()) buildList(); });
+  inputElement.addEventListener('keydown', (e) => {
+    const items = Array.from(listElement.querySelectorAll('li'));
+    if (e.key === 'ArrowDown' && items.length) {
+      e.preventDefault();
+      currentIndex = (currentIndex + 1) % items.length;
+      setActiveItem(items);
+    } else if (e.key === 'ArrowUp' && items.length) {
+      e.preventDefault();
+      currentIndex = (currentIndex - 1 + items.length) % items.length;
+      setActiveItem(items);
+    } else if (e.key === 'Enter' && listElement.style.display === 'block' && items.length) {
+      e.preventDefault();
+      selectItem(items[currentIndex >= 0 ? currentIndex : 0].textContent);
+    } else if (e.key === 'Escape') {
+      hideList();
+    }
+  });
+}
+
+function populateBreakageHardwareTable() {
+  const tbody = document.getElementById('breakageHardwareTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  for (let i = 0; i < 5; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="number" class="breakage-hardware-qty" min="0" value="0" style="width:70px;"></td>
+      <td class="breakage-hardware-cell">
+        <input type="text" class="breakage-hardware-input" placeholder="Type to search part..." autocomplete="off">
+        <ul class="breakage-hardware-list"></ul>
+      </td>
+      <td class="breakage-hardware-price">$0.00</td>
+      <td class="breakage-hardware-line-total">$0.00</td>
+    `;
+    tbody.appendChild(tr);
+    setupBreakageHardwareSearch(tr.querySelector('.breakage-hardware-input'), tr.querySelector('.breakage-hardware-list'));
+    tr.querySelectorAll('input').forEach((el) => {
+      el.addEventListener('input', updateBreakageHardwareTotals);
+      el.addEventListener('change', updateBreakageHardwareTotals);
+    });
+  }
+}
+
+function setupBreakageHardwareSearch(inputElement, listElement) {
+  const hideList = () => { listElement.style.display = 'none'; };
+  const selectItem = (part) => {
+    inputElement.value = part;
+    hideList();
+    updateBreakageHardwareTotals();
+  };
+  const buildList = () => {
+    const search = inputElement.value.toLowerCase().trim();
+    listElement.innerHTML = '';
+    if (!search) return hideList();
+
+    Object.keys(hardwareParts)
+      .filter((part) => part.toLowerCase().includes(search))
+      .slice(0, 80)
+      .forEach((part) => {
+        const li = document.createElement('li');
+        li.textContent = part;
+        li.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          selectItem(part);
+        });
+        listElement.appendChild(li);
+      });
+
+    listElement.style.display = listElement.children.length ? 'block' : 'none';
+  };
+
+  inputElement.addEventListener('input', buildList);
+  inputElement.addEventListener('focus', () => { if (inputElement.value.trim()) buildList(); });
+  inputElement.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideList(); });
+}
+
+function updateBreakageHardwareTotals() {
+  let subtotal = 0;
+  document.querySelectorAll('#breakageHardwareTableBody tr').forEach((row) => {
+    const qty = parseFloat(row.querySelector('.breakage-hardware-qty')?.value) || 0;
+    const part = row.querySelector('.breakage-hardware-input')?.value || '';
+    const price = hardwareParts[part] || 0;
+    const lineTotal = qty * price;
+    row.querySelector('.breakage-hardware-price').innerText = `$${price.toFixed(2)}`;
+    row.querySelector('.breakage-hardware-line-total').innerText = `$${lineTotal.toFixed(2)}`;
+    subtotal += lineTotal;
+  });
+
+  const totalWithTax = subtotal * 1.06;
+  const totalEl = document.getElementById('breakageHardwareTotal');
+  if (totalEl) {
+    totalEl.innerText = `Hardware Total: $${totalWithTax.toFixed(2)}`;
+    totalEl.dataset.value = String(totalWithTax);
+  }
+  updateBreakageMaterialTotal();
+}
+
+function updateBreakageTotals() {
+  let grandTotal = 0;
+  const data = getBreakageGlassPartsData();
+
+  document.querySelectorAll('#breakageGlassTableBody tr').forEach((row) => {
+    const glassType = row.querySelector('.breakage-glass-input')?.value || '';
+    const partInfo = data[glassType];
+    if (!glassType || !partInfo) {
+      row.querySelector('.breakage-line-total').innerText = '$0.00';
+      return;
+    }
+
+    const width = roundEven(parseInput(row.querySelector('.breakage-width')?.value || ''));
+    const height = roundEven(parseInput(row.querySelector('.breakage-height')?.value || ''));
+    if (!width || !height || Number.isNaN(width) || Number.isNaN(height)) {
+      row.querySelector('.breakage-line-total').innerText = '$0.00';
+      return;
+    }
+
+    const bevelChecked = !!row.querySelector('.breakage-bevel')?.checked;
+    const bevelWidth = row.querySelector('.breakage-bevel-width')?.value || '1/2';
+    const shapeChecked = !!row.querySelector('.breakage-shape')?.checked;
+    if (shapeChecked) row.querySelector('.breakage-bevel').checked = false;
+
+    let basePrice = (width * height / 144) * partInfo.price;
+    if (basePrice < partInfo.min) basePrice = partInfo.min;
+
+    let bevelCost = 0;
+    const thickness = glassType.includes('1/4') ? '1/4' :
+                      glassType.includes('3/8') ? '3/8' :
+                      glassType.includes('1/2') ? '1/2' : null;
+    if (bevelChecked && thickness && bevelPrices[thickness]?.[bevelWidth]) {
+      const bevelData = bevelPrices[thickness][bevelWidth];
+      bevelCost = 2 * (width + height) * bevelData.price;
+      if (bevelCost < bevelData.min) bevelCost = bevelData.min;
+      row.dataset.bevelAlerted = 'false';
+    } else if (bevelChecked && row.dataset.bevelAlerted !== 'true') {
+      alert('This glass type cannot be beveled.');
+      row.dataset.bevelAlerted = 'true';
+    }
+
+    const qty = parseInt(row.querySelector('.breakage-qty')?.value, 10) || 1;
+    let total = (basePrice + bevelCost) * qty;
+    if (shapeChecked) total *= 1.25;
+    total *= 1.06;
+
+    row.querySelector('.breakage-line-total').innerText = `$${total.toFixed(2)}`;
+    grandTotal += total;
+  });
+
+  const glassTotal = document.getElementById('breakageGlassTotal');
+  if (glassTotal) glassTotal.innerText = `Grand Total: $${grandTotal.toFixed(2)}`;
+  updateBreakageHardwareTotals();
+}
+
+function updateBreakageMaterialTotal() {
+  const glassTotal = parseFloat((document.getElementById('breakageGlassTotal')?.innerText || '').replace(/[^\d.]/g, '')) || 0;
+  const hardwareTotal = parseFloat(document.getElementById('breakageHardwareTotal')?.dataset.value || '0') || 0;
+  const materialTotal = glassTotal + hardwareTotal;
+  const materialEl = document.getElementById('breakageMaterialTotal');
+  if (materialEl) materialEl.innerText = `Total Material: $${materialTotal.toFixed(2)}`;
+  updateBreakagePricing();
+}
+
+function updateBreakagePricing() {
+  const menEl = document.getElementById('breakageNumMen');
+  const hoursEl = document.getElementById('breakageNumHours');
+  const miscEl = document.getElementById('breakageMiscMaterialInput');
+  if (!menEl || !hoursEl || !miscEl) return;
+
+  const numMen = Math.max(1, parseFloat(menEl.value) || 1);
+  const numHours = Math.max(2, parseFloat(hoursEl.value) || 2);
+  if (String(menEl.value) !== String(numMen)) menEl.value = numMen;
+  if (String(hoursEl.value) !== String(numHours)) hoursEl.value = numHours;
+
+  const laborCost = numMen * numHours * 80;
+  const materialTotal = parseFloat((document.getElementById('breakageMaterialTotal')?.innerText || '').replace(/[^\d.]/g, '')) || 0;
+  const miscMaterial = Math.max(0, parseFloat(miscEl.value) || 0);
+  const truckCharge = 130;
+  const total = Math.max(325, laborCost + materialTotal + miscMaterial + truckCharge);
+
+  document.getElementById('breakageLabor').innerText = `Labor Cost: $${laborCost.toFixed(2)}`;
+  document.getElementById('breakageTruckCharge').innerText = `Truck Charge: $${truckCharge.toFixed(2)}`;
+  document.getElementById('breakageMaterial').innerText = `Material Cost: $${materialTotal.toFixed(2)}`;
+  document.getElementById('breakageTotal').innerText = `Total Breakage Cost: $${total.toFixed(2)}`;
+}
+
+function clearBreakageForm() {
+  const glassBody = document.getElementById('breakageGlassTableBody');
+  if (glassBody) glassBody.innerHTML = '';
+  for (let i = 0; i < 5; i++) addBreakageGlassRow();
+  populateBreakageHardwareTable();
+  const menEl = document.getElementById('breakageNumMen');
+  const hoursEl = document.getElementById('breakageNumHours');
+  const miscEl = document.getElementById('breakageMiscMaterialInput');
+  if (menEl) menEl.value = 1;
+  if (hoursEl) hoursEl.value = 2;
+  if (miscEl) miscEl.value = 0;
+  updateBreakageTotals();
+}
+
+function printableBreakageTable(tableId) {
+  const clone = document.getElementById(tableId)?.cloneNode(true);
+  if (!clone) return '';
+  clone.querySelectorAll('input, select').forEach((el) => {
+    const span = document.createElement('span');
+    if (el.type === 'checkbox') span.textContent = el.checked ? 'Yes' : 'No';
+    else span.textContent = el.value || '';
+    el.replaceWith(span);
+  });
+  clone.querySelectorAll('ul').forEach((ul) => ul.remove());
+  return clone.outerHTML;
+}
+
+function printBreakageQuote() {
+  updateBreakageTotals();
+  const glassSection = printableBreakageTable('breakageGlassTable');
+  const hardwareSection = printableBreakageTable('breakageHardwareTable');
+  const summary = [
+    document.getElementById('breakageGlassTotal')?.outerHTML || '',
+    document.getElementById('breakageHardwareTotal')?.outerHTML || '',
+    document.getElementById('breakageMaterialTotal')?.outerHTML || '',
+    document.getElementById('breakageLabor')?.outerHTML || '',
+    document.getElementById('breakageTruckCharge')?.outerHTML || '',
+    document.getElementById('breakageMaterial')?.outerHTML || '',
+    `<h3>Misc Material: $${(parseFloat(document.getElementById('breakageMiscMaterialInput')?.value) || 0).toFixed(2)}</h3>`,
+    document.getElementById('breakageTotal')?.outerHTML || '',
+  ].join('\n');
+
+  const newWin = window.open('', '', 'width=900,height=700');
+  if (!newWin) return alert('Popup blocked. Please allow popups to print.');
+  newWin.document.write(`
+    <html>
+      <head>
+        <title>Breakage Quote</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin:20px; }
+          table { width:100%; border-collapse:collapse; margin-bottom:20px; }
+          th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+          h2, h3 { margin:10px 0; }
+        </style>
+      </head>
+      <body>
+        <h2>Kentucky Mirror and Plate Glass</h2>
+        <h3>Glass Pricing</h3>
+        ${glassSection}
+        <h3>Misc Hardware Pricing</h3>
+        ${hardwareSection}
+        <h3>Breakage Pricing Breakdown</h3>
+        ${summary}
+      </body>
+    </html>
+  `);
+  newWin.document.close();
+  newWin.print();
+}
+
+function initBreakageCalculator() {
+  if (breakageCalculatorInitialized || !document.getElementById('breakageCalculator')) return;
+  breakageCalculatorInitialized = true;
+  const specialToggle = document.getElementById('breakageSpecialPricingToggle');
+  if (specialToggle) specialToggle.addEventListener('change', updateBreakageTotals);
+  ['breakageNumMen', 'breakageNumHours', 'breakageMiscMaterialInput'].forEach((id) => {
+    document.getElementById(id)?.addEventListener('input', updateBreakagePricing);
+  });
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('.breakage-glass-cell')) {
+      document.querySelectorAll('.breakage-glass-list').forEach((list) => { list.style.display = 'none'; });
+    }
+    if (!event.target.closest('.breakage-hardware-cell')) {
+      document.querySelectorAll('.breakage-hardware-list').forEach((list) => { list.style.display = 'none'; });
+    }
+  });
+  clearBreakageForm();
+}
+
 // ===================== STARTUP =====================
 document.addEventListener("DOMContentLoaded", async function () {
   const specialToggle = document.getElementById('specialPricingToggle');
@@ -5218,6 +5687,8 @@ document.addEventListener("DOMContentLoaded", async function () {
   updateTotals();
   // Ensure calculator always starts with visible editable lines.
   try { if (typeof startNewOrder === 'function') startNewOrder(); } catch (e) {}
+
+  initBreakageCalculator();
 
   await loadCalcCustomers();
   setupCustomerLookup();
@@ -6134,6 +6605,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (which === 'breakage'){
       const b = document.getElementById('breakage-section');
       if (b){ b.style.display = 'block'; }
+      initBreakageCalculator();
       kympgSetHeader('Breakage Pricing', 'Open the breakage calculator inside the app.', 'Breakage Pricing', 'Tool');
       return;
     }
