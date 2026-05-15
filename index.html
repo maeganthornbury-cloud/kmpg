@@ -814,6 +814,18 @@ body{
 .kympg-authBtn.primary{ background:#0d78f0; color:#fff; }
 .kympg-authBtn.secondary{ background:#e2e8f0; color:#0f172a; }
 .kympg-authBtn.success{ background:#198f42; color:#fff; }
+.kympg-authBtn:disabled{ opacity:.65; cursor:not-allowed; }
+#adminCreateUserBtn{
+  padding:5px 9px;
+  font-size:12px;
+  line-height:1.2;
+  border-radius:7px;
+  white-space:nowrap;
+}
+.admin-user-actions .kympg-authBtn{
+  padding:6px 12px;
+  font-size:13px;
+}
 .kympg-hidden-by-role{ display:none !important; }
 
 .auth-gate{
@@ -1162,7 +1174,7 @@ body.auth-locked .auth-gate{ display:flex; }
             <span>Ready</span>
           </div>
           <span id="authUserMeta" class="kympg-authMeta">Not signed in</span>
-          <button id="adminCreateUserBtn" type="button" class="kympg-authBtn success" onclick="openAdminCreateUserModal()" style="display:none;">Create User</button>
+          <button id="adminCreateUserBtn" type="button" class="kympg-authBtn success" onclick="openAdminCreateUserModal(event)" title="Create User" style="display:none;">Create</button>
           <button id="loginBtn" type="button" class="kympg-authBtn primary" onclick="openLogin()">Log In</button>
           <button id="logoutBtn" type="button" class="kympg-authBtn secondary" onclick="logoutUser()" style="display:none;">Log Out</button>
         </div>
@@ -2952,6 +2964,9 @@ function escapeHtml(text) {
 async function fetchApi(path, options) {
   const opts = { ...(options || {}) };
   const headers = new Headers(opts.headers || {});
+  if (!authToken && authUser && typeof authUser.jwt === 'function') {
+    try { authToken = await authUser.jwt(); } catch (e) {}
+  }
   if (authToken && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${authToken}`);
   }
@@ -5209,7 +5224,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     <div class="admin-user-actions">
       <button type="button" class="kympg-authBtn secondary" onclick="closeAdminCreateUserModal()">Cancel</button>
-      <button type="button" class="kympg-authBtn success" onclick="createAdminUser()">Create User</button>
+      <button id="adminCreateUserSubmitBtn" type="button" class="kympg-authBtn success" onclick="createAdminUser(event)">Create User</button>
     </div>
     <div id="adminUserStatus" class="admin-user-status"></div>
   </div>
@@ -5318,6 +5333,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   async function syncAuthState(user) {
     authUser = user || null;
     authToken = isOfflineAuth ? '' : (user?.token?.access_token || '');
+    if (!authToken && authUser && typeof authUser.jwt === 'function') {
+      try { authToken = await authUser.jwt(); } catch (e) {}
+    }
     authRoles = Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles.map((r) => String(r).toLowerCase()) : [];
 
     const meta = document.getElementById('authUserMeta');
@@ -5370,20 +5388,33 @@ document.addEventListener("DOMContentLoaded", async function () {
     hasPromptedLogin = false;
   }
 
-  function openAdminCreateUserModal() {
-    if (!authRoles.includes('admin')) return;
+  function openAdminCreateUserModal(event) {
+    if (event) event.preventDefault();
+    if (!authRoles.includes('admin')) {
+      const status = document.getElementById('adminUserStatus');
+      if (status) status.textContent = 'Only admins can create users.';
+      return;
+    }
     const modal = document.getElementById('adminUserModal');
-    if (modal) modal.classList.add('active');
+    if (modal) {
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+    }
     const status = document.getElementById('adminUserStatus');
     if (status) status.textContent = '';
+    setTimeout(() => document.getElementById('newUserEmail')?.focus(), 0);
   }
 
   function closeAdminCreateUserModal() {
     const modal = document.getElementById('adminUserModal');
-    if (modal) modal.classList.remove('active');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+    }
   }
 
-  async function createAdminUser() {
+  async function createAdminUser(event) {
+    if (event) event.preventDefault();
     if (!authRoles.includes('admin')) return alert('Only admins can create users.');
     const email = String(document.getElementById('newUserEmail')?.value || '').trim();
     const fullName = String(document.getElementById('newUserFullName')?.value || '').trim();
@@ -5399,21 +5430,30 @@ document.addEventListener("DOMContentLoaded", async function () {
       return;
     }
 
+    const submitBtn = document.getElementById('adminCreateUserSubmitBtn');
     if (status) status.textContent = 'Creating user...';
-    const res = await fetchApi('/api/admin-create-user', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, fullName, roles }),
-    });
-    const payload = await parseJsonSafe(res);
-    if (!res.ok) {
-      if (status) status.textContent = payload.error || 'Failed to create user.';
-      return;
-    }
+    if (submitBtn) submitBtn.disabled = true;
 
-    if (status) status.textContent = `User created: ${email}`;
-    document.getElementById('newUserEmail').value = '';
-    document.getElementById('newUserFullName').value = '';
+    try {
+      const res = await fetchApi('/api/admin-create-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, fullName, roles }),
+      });
+      const payload = await parseJsonSafe(res);
+      if (!res.ok) {
+        if (status) status.textContent = payload.error || 'Failed to create user.';
+        return;
+      }
+
+      if (status) status.textContent = `User created: ${email}`;
+      document.getElementById('newUserEmail').value = '';
+      document.getElementById('newUserFullName').value = '';
+    } catch (err) {
+      if (status) status.textContent = `Failed to create user: ${err?.message || err}`;
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
   }
 
   async function runHomeQuickSearch() {
@@ -6126,6 +6166,11 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     }
     kympgShowLanding();
     try { if (typeof setupResidentialCustomerLookup === 'function') setupResidentialCustomerLookup(); } catch(e) {}
+
+    const adminCreateUserBtn = document.getElementById('adminCreateUserBtn');
+    if (adminCreateUserBtn) {
+      adminCreateUserBtn.addEventListener('click', openAdminCreateUserModal);
+    }
 
     const quickInput = document.getElementById('homeQuickSearchInput');
     const closeOpenSearchUi = () => {
