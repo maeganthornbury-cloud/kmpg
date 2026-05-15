@@ -1126,28 +1126,28 @@ body.auth-locked .auth-gate{ display:flex; }
     <div class="kympg-navGroup" id="group-work">
     <div class="kympg-sectionLabel" onclick="kympgToggleGroup('work')">Work <span class="toggleMark" id="toggle-work">−</span></div>
     <nav class="kympg-nav">
-      <button id="sidebarCreateBtn" class="kympg-navBtn kympg-createToggle" data-tip="Create" data-areas="order,quote" type="button" onclick="toggleSidebarCreateMenu(event)" aria-expanded="false" aria-controls="sidebarCreateMenu">
+      <button id="sidebarCreateBtn" class="kympg-navBtn kympg-createToggle" data-tip="Create" data-areas="quote,order" type="button" onclick="toggleSidebarCreateMenu(event)" aria-expanded="false" aria-controls="sidebarCreateMenu">
         <span class="kympg-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
         </span>
         <span class="kympg-labelWrap">
           <span class="kympg-label">Create</span>
-          <span class="kympg-hint">New order or quote</span>
+          <span class="kympg-hint">New quote or order</span>
         </span>
         <span class="kympg-createArrow" aria-hidden="true">›</span>
       </button>
       <div id="sidebarCreateMenu" class="kympg-createSubmenu" aria-label="Create options">
-        <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
-          <span class="kympg-ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
-          </span>
-          <span class="kympg-labelWrap"><span class="kympg-label">New Order</span></span>
-        </button>
         <button class="kympg-navBtn" data-tip="New Quote" type="button" onclick="kympgOpen('quote', this)">
           <span class="kympg-ico" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h6"/></svg>
           </span>
           <span class="kympg-labelWrap"><span class="kympg-label">New Quote</span></span>
+        </button>
+        <button class="kympg-navBtn" data-tip="New Order" type="button" onclick="kympgOpen('order', this)">
+          <span class="kympg-ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73L13 2.27a2 2 0 0 0-2 0L4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12l8.73-5.04"/><path d="M12 22V12"/></svg>
+          </span>
+          <span class="kympg-labelWrap"><span class="kympg-label">New Order</span></span>
         </button>
       </div>
 
