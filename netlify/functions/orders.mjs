@@ -431,6 +431,11 @@ function renderPackingListHTML(order) {
   const savedISO = order.createdAt || new Date().toISOString();
   const cust = order.customer || {};
   const items = Array.isArray(order.items) ? order.items : [];
+  const statusText = String(order.status || "").toLowerCase();
+  const vendorName = String(order.vendorName || "").trim();
+  const hasExternalVendor = !!vendorName && !vendorName.toLowerCase().includes("kentucky mirror and plate glass") && !vendorName.toLowerCase().includes("internal shop");
+  const isOrderedOut = statusText.includes("vendor") || hasExternalVendor;
+  const vendorDueDate = order.vendorDeliveryDate || order.requestedDate || "";
 
   const rows = items
     .map((it, idx) => {
@@ -464,8 +469,17 @@ function renderPackingListHTML(order) {
     Order #: <b>${escapeHtml(order.orderNumber || "")}</b> &nbsp; | &nbsp;
     Order Date: ${escapeHtml(fmtDate(savedISO))} &nbsp; | &nbsp;
     Customer: ${escapeHtml(cust.name || cust.company || "")} &nbsp; | &nbsp;
-    Source: <b>${escapeHtml(String(order.status || "").includes("(vendor)") ? "Vendor" : "Shop")}</b>
-    ${String(order.status || "").includes("(vendor)") ? ` &nbsp; | &nbsp; Vendor: <b>${escapeHtml(order.vendorName || "")}</b> &nbsp; | &nbsp; PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b>` : ""}
+    Ordered Out: <b>${isOrderedOut ? "YES" : "NO"}</b>
+  </div>
+
+  <div class="box" style="margin-top:12px;">
+    <b>Vendor Order Information</b><br/>
+    Ordered Out: <b>${isOrderedOut ? "YES" : "NO"}</b><br/>
+    ${isOrderedOut ? `
+      Ordered From: <b>${escapeHtml(order.vendorName || "")}</b><br/>
+      Vendor PO #: <b>${escapeHtml(order.vendorPoNumber || "")}</b><br/>
+      Due From Vendor: <b>${escapeHtml(fmtDate(vendorDueDate) || vendorDueDate || "")}</b>
+    ` : "This order is marked for shop production."}
   </div>
 
   <table>
