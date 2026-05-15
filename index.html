@@ -815,13 +815,41 @@ body{
 .kympg-authBtn.secondary{ background:#e2e8f0; color:#0f172a; }
 .kympg-authBtn.success{ background:#198f42; color:#fff; }
 .kympg-authBtn:disabled{ opacity:.65; cursor:not-allowed; }
-#adminCreateUserBtn{
+.kympg-createWrap{ position:relative; display:inline-flex; }
+#createMenuBtn{
   padding:5px 9px;
   font-size:12px;
   line-height:1.2;
   border-radius:7px;
   white-space:nowrap;
 }
+.kympg-createMenu{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  min-width:180px;
+  padding:8px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  box-shadow:var(--shadow2);
+  z-index:1000;
+  display:none;
+}
+.kympg-createMenu.active{ display:block; }
+.kympg-createMenu button{
+  width:100%;
+  border:none;
+  background:transparent;
+  color:#0f172a;
+  border-radius:9px;
+  padding:9px 10px;
+  text-align:left;
+  font-weight:800;
+  cursor:pointer;
+}
+.kympg-createMenu button:hover{ background:rgba(79,111,173,.12); }
+.kympg-createMenu button[hidden]{ display:none; }
 .admin-user-actions .kympg-authBtn{
   padding:6px 12px;
   font-size:13px;
@@ -1174,7 +1202,13 @@ body.auth-locked .auth-gate{ display:flex; }
             <span>Ready</span>
           </div>
           <span id="authUserMeta" class="kympg-authMeta">Not signed in</span>
-          <button id="adminCreateUserBtn" type="button" class="kympg-authBtn success" onclick="openAdminCreateUserModal(event)" title="Create User" style="display:none;">Create</button>
+          <div id="createMenuWrap" class="kympg-createWrap" style="display:none;">
+            <button id="createMenuBtn" type="button" class="kympg-authBtn success" onclick="toggleCreateMenu(event)" aria-haspopup="true" aria-expanded="false">Create</button>
+            <div id="createMenu" class="kympg-createMenu" role="menu" aria-label="Create options">
+              <button id="createQuoteOption" type="button" role="menuitem" onclick="selectCreateOption('quote')">New Quote</button>
+              <button id="createOrderOption" type="button" role="menuitem" onclick="selectCreateOption('order')">New Order</button>
+            </div>
+          </div>
           <button id="loginBtn" type="button" class="kympg-authBtn primary" onclick="openLogin()">Log In</button>
           <button id="logoutBtn" type="button" class="kympg-authBtn secondary" onclick="logoutUser()" style="display:none;">Log Out</button>
         </div>
@@ -5346,8 +5380,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (logoutBtn) logoutBtn.style.display = authUser ? 'inline-block' : 'none';
 
     const isAdmin = authRoles.includes('admin');
-    const createBtn = document.getElementById('adminCreateUserBtn');
-    if (createBtn) createBtn.style.display = isAdmin && authUser ? 'inline-block' : 'none';
+    const createWrap = document.getElementById('createMenuWrap');
+    const createQuoteOption = document.getElementById('createQuoteOption');
+    const createOrderOption = document.getElementById('createOrderOption');
+    const canCreateQuote = !!authUser && userCanArea('quote');
+    const canCreateOrder = !!authUser && userCanArea('order');
+    if (createWrap) createWrap.style.display = canCreateQuote || canCreateOrder ? 'inline-flex' : 'none';
+    if (createQuoteOption) createQuoteOption.hidden = !canCreateQuote;
+    if (createOrderOption) createOrderOption.hidden = !canCreateOrder;
+    if (!canCreateQuote && !canCreateOrder) closeCreateMenu();
     if (!isAdmin) closeAdminCreateUserModal();
 
     document.querySelectorAll('.kympg-navBtn').forEach((btn) => {
@@ -5411,6 +5452,34 @@ document.addEventListener("DOMContentLoaded", async function () {
       modal.classList.remove('active');
       modal.setAttribute('aria-hidden', 'true');
     }
+  }
+
+
+  function closeCreateMenu() {
+    const menu = document.getElementById('createMenu');
+    const button = document.getElementById('createMenuBtn');
+    if (menu) menu.classList.remove('active');
+    if (button) button.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleCreateMenu(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('createMenu');
+    const button = document.getElementById('createMenuBtn');
+    if (!menu) return;
+    const shouldOpen = !menu.classList.contains('active');
+    document.querySelectorAll('.kympg-createMenu.active').forEach((openMenu) => openMenu.classList.remove('active'));
+    menu.classList.toggle('active', shouldOpen);
+    if (button) button.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+  }
+
+  function selectCreateOption(which) {
+    closeCreateMenu();
+    const navButton = Array.from(document.querySelectorAll('.kympg-navBtn')).find((btn) => {
+      const onclick = btn.getAttribute('onclick') || '';
+      return onclick.includes(`kympgOpen('${which}'`);
+    });
+    kympgOpen(which, navButton || undefined);
   }
 
   async function createAdminUser(event) {
@@ -6167,10 +6236,9 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     kympgShowLanding();
     try { if (typeof setupResidentialCustomerLookup === 'function') setupResidentialCustomerLookup(); } catch(e) {}
 
-    const adminCreateUserBtn = document.getElementById('adminCreateUserBtn');
-    if (adminCreateUserBtn) {
-      adminCreateUserBtn.addEventListener('click', openAdminCreateUserModal);
-    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#createMenuWrap')) closeCreateMenu();
+    });
 
     const quickInput = document.getElementById('homeQuickSearchInput');
     const closeOpenSearchUi = () => {
@@ -6201,6 +6269,7 @@ kympgSetHeader('Customer Database', '', 'Customer Import', '');
     document.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       closeOpenSearchUi();
+      closeCreateMenu();
     });
 
     if (quickInput) {
