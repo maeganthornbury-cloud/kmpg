@@ -120,6 +120,64 @@
     }
     .icon-btn:hover { background: #f3f3f3; }
     .delete-cell { width: 40px; }
+    .shape-cell { min-width: 130px; }
+    .shape-cell label { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; margin-bottom: 4px; }
+    .shape-details-btn {
+      display: none;
+      width: auto;
+      padding: 4px 8px;
+      font-size: 11px;
+      border: 1px solid #007BFF;
+      border-radius: 6px;
+      background: #e8f4fd;
+      color: #0056b3;
+      cursor: pointer;
+    }
+    .shape-details-btn.active { display: inline-block; }
+    .shape-summary { display: block; margin-top: 3px; font-size: 10px; color: #555; line-height: 1.2; }
+    .shape-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .shape-modal {
+      width: min(860px, 95vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      text-align: left;
+    }
+    .shape-modal h3 { margin-top: 0; }
+    .shape-library { display: grid; grid-template-columns: repeat(auto-fit, minmax(125px, 1fr)); gap: 10px; margin: 12px 0; }
+    .shape-option {
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background: #f8f8f8;
+      padding: 10px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: bold;
+      min-height: 110px;
+    }
+    .shape-option.selected { border-color: #007BFF; background: #e8f4fd; }
+    .shape-option svg { width: 72px; height: 52px; display: block; margin: 0 auto 8px; }
+    .shape-dimensions { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 12px; }
+    .shape-dimensions label { display: block; font-size: 12px; font-weight: bold; }
+    .shape-dimensions input, .shape-dimensions textarea { width: 100%; box-sizing: border-box; padding: 6px; margin-top: 3px; }
+    .shape-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .shape-actions button { padding: 8px 16px; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; }
+    .shape-actions .primary { background: #007BFF; color: #fff; }
+    .shape-print-block { page-break-inside: avoid; margin-top: 12px; }
+    .shape-print-diagram { max-width: 360px; margin: 8px auto; text-align: center; }
+    .shape-print-diagram svg { width: 100%; max-height: 220px; }
+    .shape-print-caption { font-size: 12px; text-align: center; margin-top: 4px; }
 
     /* Customer Management Styles */
     #customer-section {
@@ -2025,7 +2083,7 @@ function printBreakdown() {
 
   let breakdownWindow = window.open('', '', 'width=800,height=600');
 
-  breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
+  breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3,h4 {text-align:center;} .shape-print-block{page-break-inside:avoid;margin-top:12px;} .shape-print-diagram{max-width:360px;margin:8px auto;text-align:center;} .shape-print-diagram svg{width:100%;max-height:220px;} .shape-print-caption{font-size:12px;text-align:center;margin-top:4px;} </style>');
   breakdownWindow.document.write('</head><body>');
   
   if (orderNumber && orderNumber !== 'Will be assigned on save') {
@@ -2055,11 +2113,12 @@ function printBreakdown() {
     const shapeChecked = row.querySelector('.shape')?.checked;
     const eachPrice = row.querySelector('.eachPrice')?.innerText || '$0.00';
     const lineTotal = row.querySelector('.lineTotal')?.innerText || '$0.00';
+    const shapeDetails = getRowShapeDetails(row);
 
     if (glassType.trim() !== '') {
       const bits = [];
       if (bevelChecked) bits.push(`${bevelWidth}" BEVEL`);
-      if (shapeChecked) bits.push('SHAPE');
+      if (shapeChecked) bits.push(shapeDetails ? formatShapeSummary(shapeDetails) : 'SHAPE');
 
       if (bits.length === 1) {
         glassType += ` WITH ${bits[0]}`;
@@ -2074,6 +2133,9 @@ function printBreakdown() {
         <td>${eachPrice}</td>
         <td>${lineTotal}</td>
       </tr>`);
+      if (shapeDetails) {
+        breakdownWindow.document.write(`<tr><td colspan="5">${renderShapePrintBlock(shapeDetails, `Shape Diagram - ${glassType}`)}</td></tr>`);
+      }
     }
   });
 
@@ -2120,6 +2182,7 @@ document.getElementById('glassTableBody').addEventListener('click', function(e) 
   if (typeEl) typeEl.value = '';
   if (bevelEl) bevelEl.checked = false;
   if (shapeEl) shapeEl.checked = false;
+  writeShapeDetails(row, null);
   if (bevelWidthEl) bevelWidthEl.selectedIndex = 0;
   if (listEl) { listEl.innerHTML = ''; listEl.style.display = 'none'; }
   if (eachEl) eachEl.innerText = '$0.00';
@@ -2180,6 +2243,184 @@ function roundEven(num) {
   return (rounded % 2 === 0) ? rounded : rounded + 1;
 }
 
+
+const SHAPE_LIBRARY = [
+  { id: 'rectangle', name: 'Rectangle / Square', dims: ['width', 'height'], path: 'M20 20 H180 V120 H20 Z' },
+  { id: 'circle', name: 'Circle', dims: ['diameter'], path: 'M100 20 A60 60 0 1 1 99.9 20 Z' },
+  { id: 'oval', name: 'Oval', dims: ['width', 'height'], path: 'M20 70 A80 45 0 1 1 180 70 A80 45 0 1 1 20 70 Z' },
+  { id: 'arch', name: 'Arch Top', dims: ['width', 'height', 'legHeight'], path: 'M25 120 V65 A75 45 0 0 1 175 65 V120 Z' },
+  { id: 'halfCircle', name: 'Half Circle', dims: ['width', 'height'], path: 'M20 120 A80 80 0 0 1 180 120 Z' },
+  { id: 'triangle', name: 'Triangle', dims: ['base', 'height'], path: 'M100 20 L180 120 H20 Z' },
+  { id: 'trapezoid', name: 'Trapezoid', dims: ['topWidth', 'bottomWidth', 'height'], path: 'M60 25 H140 L180 120 H20 Z' },
+  { id: 'rightTriangle', name: 'Right Triangle', dims: ['width', 'height'], path: 'M35 20 V120 H170 Z' },
+  { id: 'radiusCorner', name: 'Radius Corner', dims: ['width', 'height', 'radius'], path: 'M20 120 V20 H145 A35 35 0 0 1 180 55 V120 Z' },
+  { id: 'notchedRectangle', name: 'Notched Rectangle', dims: ['width', 'height', 'notchWidth', 'notchHeight'], path: 'M20 20 H180 V120 H20 V80 H65 V55 H20 Z' },
+];
+
+const SHAPE_DIMENSION_LABELS = {
+  width: 'Width (in)',
+  height: 'Height (in)',
+  diameter: 'Diameter (in)',
+  legHeight: 'Straight Leg Height (in)',
+  base: 'Base (in)',
+  topWidth: 'Top Width (in)',
+  bottomWidth: 'Bottom Width (in)',
+  radius: 'Radius (in)',
+  notchWidth: 'Notch Width (in)',
+  notchHeight: 'Notch Height (in)',
+};
+
+function getShapeDefinition(shapeId) {
+  return SHAPE_LIBRARY.find(shape => shape.id === shapeId) || SHAPE_LIBRARY[0];
+}
+
+function getShapeSvg(shapeId, dimensions = {}) {
+  const shape = getShapeDefinition(shapeId);
+  const dimLabels = Object.entries(dimensions || {})
+    .filter(([, value]) => String(value || '').trim())
+    .map(([key, value]) => `${SHAPE_DIMENSION_LABELS[key] || key}: ${value}`);
+  const notes = dimensions?.notes ? String(dimensions.notes).trim() : '';
+  return `
+    <svg viewBox="0 0 200 150" role="img" aria-label="${escapeHtml(shape.name)} diagram">
+      <path d="${shape.path}" fill="rgba(0,123,255,0.10)" stroke="#000" stroke-width="3"></path>
+      <line x1="20" y1="136" x2="180" y2="136" stroke="#333" stroke-width="1.5"></line>
+      <line x1="20" y1="132" x2="20" y2="140" stroke="#333" stroke-width="1.5"></line>
+      <line x1="180" y1="132" x2="180" y2="140" stroke="#333" stroke-width="1.5"></line>
+      <line x1="188" y1="20" x2="188" y2="120" stroke="#333" stroke-width="1.5"></line>
+      <line x1="184" y1="20" x2="192" y2="20" stroke="#333" stroke-width="1.5"></line>
+      <line x1="184" y1="120" x2="192" y2="120" stroke="#333" stroke-width="1.5"></line>
+      <text x="100" y="147" text-anchor="middle" font-size="10">${escapeHtml(dimLabels[0] || 'WIDTH')}</text>
+      <text x="196" y="75" text-anchor="middle" font-size="10" transform="rotate(90 196 75)">${escapeHtml(dimLabels[1] || 'HEIGHT')}</text>
+      ${notes ? `<text x="100" y="14" text-anchor="middle" font-size="9">${escapeHtml(notes)}</text>` : ''}
+    </svg>`;
+}
+
+function formatShapeSummary(details = {}) {
+  if (!details || !details.shapeId) return '';
+  const shape = getShapeDefinition(details.shapeId);
+  const dims = Object.entries(details.dimensions || {})
+    .filter(([key, value]) => key !== 'notes' && String(value || '').trim())
+    .map(([key, value]) => `${(SHAPE_DIMENSION_LABELS[key] || key).replace(' (in)', '')}: ${value}`);
+  return [shape.name, ...dims].join(' | ');
+}
+
+function updateShapeRowUI(row) {
+  if (!row) return;
+  const shapeCheckbox = row.querySelector('.shape');
+  const detailsBtn = row.querySelector('.shape-details-btn');
+  const summary = row.querySelector('.shape-summary');
+  const isChecked = !!shapeCheckbox?.checked;
+  if (detailsBtn) detailsBtn.classList.toggle('active', isChecked);
+  if (summary) summary.textContent = isChecked ? formatShapeSummary(readShapeDetails(row)) : '';
+}
+
+function readShapeDetails(row) {
+  try {
+    return row?.dataset?.shapeDetails ? JSON.parse(row.dataset.shapeDetails) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function writeShapeDetails(row, details) {
+  if (!row) return;
+  if (details) row.dataset.shapeDetails = JSON.stringify(details);
+  else delete row.dataset.shapeDetails;
+  updateShapeRowUI(row);
+}
+
+function openShapeLibrary(row) {
+  if (!row) return;
+  const current = readShapeDetails(row) || { shapeId: 'rectangle', dimensions: {} };
+  let selectedShapeId = current.shapeId || 'rectangle';
+
+  const existing = document.getElementById('shapeLibraryModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'shapeLibraryModal';
+  modal.className = 'shape-modal-overlay';
+  modal.innerHTML = `
+    <div class="shape-modal" onclick="event.stopPropagation()">
+      <h3>Shape Library</h3>
+      <p style="margin-top:0;color:#555;">Choose a basic shape and enter the dimensions to print with this line item.</p>
+      <div class="shape-library">
+        ${SHAPE_LIBRARY.map(shape => `
+          <button type="button" class="shape-option ${shape.id === selectedShapeId ? 'selected' : ''}" data-shape-id="${shape.id}">
+            ${getShapeSvg(shape.id)}
+            <span>${escapeHtml(shape.name)}</span>
+          </button>`).join('')}
+      </div>
+      <div id="shapeDimensionFields" class="shape-dimensions"></div>
+      <div class="shape-actions">
+        <button type="button" id="clearShapeDetailsBtn">Clear Shape</button>
+        <button type="button" id="cancelShapeDetailsBtn">Cancel</button>
+        <button type="button" class="primary" id="saveShapeDetailsBtn">Save Shape</button>
+      </div>
+    </div>`;
+
+  function renderDimensionFields() {
+    const shape = getShapeDefinition(selectedShapeId);
+    const fields = modal.querySelector('#shapeDimensionFields');
+    const dims = current.dimensions || {};
+    fields.innerHTML = `
+      ${shape.dims.map(dim => `
+        <label>${SHAPE_DIMENSION_LABELS[dim] || dim}
+          <input type="text" data-shape-dim="${dim}" value="${escapeHtml(dims[dim] || '')}" placeholder="Enter ${escapeHtml((SHAPE_DIMENSION_LABELS[dim] || dim).toLowerCase())}">
+        </label>`).join('')}
+      <label style="grid-column:1 / -1;">Notes / Template Details
+        <textarea data-shape-dim="notes" rows="2" placeholder="Examples: radius location, pattern required, polished edge...">${escapeHtml(dims.notes || '')}</textarea>
+      </label>`;
+  }
+
+  modal.querySelectorAll('.shape-option').forEach(button => {
+    button.addEventListener('click', () => {
+      selectedShapeId = button.dataset.shapeId;
+      modal.querySelectorAll('.shape-option').forEach(btn => btn.classList.toggle('selected', btn === button));
+      renderDimensionFields();
+    });
+  });
+
+  modal.querySelector('#saveShapeDetailsBtn').addEventListener('click', () => {
+    const dimensions = {};
+    modal.querySelectorAll('[data-shape-dim]').forEach(input => {
+      dimensions[input.dataset.shapeDim] = input.value.trim();
+    });
+    row.querySelector('.shape').checked = true;
+    writeShapeDetails(row, { shapeId: selectedShapeId, dimensions });
+    modal.remove();
+    updateTotals();
+  });
+
+  modal.querySelector('#clearShapeDetailsBtn').addEventListener('click', () => {
+    row.querySelector('.shape').checked = false;
+    writeShapeDetails(row, null);
+    modal.remove();
+    updateTotals();
+  });
+  modal.querySelector('#cancelShapeDetailsBtn').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', () => modal.remove());
+  document.body.appendChild(modal);
+  renderDimensionFields();
+}
+
+function getRowShapeDetails(row) {
+  const details = readShapeDetails(row);
+  if (details?.shapeId) return details;
+  return row.querySelector('.shape')?.checked ? { shapeId: 'rectangle', dimensions: {} } : null;
+}
+
+function renderShapePrintBlock(details, title = '') {
+  if (!details?.shapeId) return '';
+  const summary = formatShapeSummary(details);
+  return `
+    <div class="shape-print-block">
+      ${title ? `<h4>${escapeHtml(title)}</h4>` : ''}
+      <div class="shape-print-diagram">${getShapeSvg(details.shapeId, details.dimensions || {})}</div>
+      <div class="shape-print-caption"><strong>${escapeHtml(summary)}</strong></div>
+    </div>`;
+}
+
 function addRow() {
   const tbody = document.getElementById('glassTableBody');
   const tr = document.createElement('tr');
@@ -2199,7 +2440,11 @@ function addRow() {
         <option value="1 1/4">1 1/4"</option>
       </select>
     </td>
-    <td><input type="checkbox" class="shape"></td>
+    <td class="shape-cell">
+      <label><input type="checkbox" class="shape"> SHAPE</label>
+      <button type="button" class="shape-details-btn">SHAPE LIBRARY</button>
+      <span class="shape-summary"></span>
+    </td>
     <td class="eachPrice">$0.00</td>
     <td class="lineTotal">$0.00</td>
     <td class="delete-cell">
@@ -2213,6 +2458,16 @@ function addRow() {
     el.addEventListener('input', updateTotals);
     el.addEventListener('change', updateTotals);
   });
+  tr.querySelector('.shape')?.addEventListener('change', (event) => {
+    if (event.target.checked) {
+      updateShapeRowUI(tr);
+      openShapeLibrary(tr);
+    } else {
+      writeShapeDetails(tr, null);
+    }
+  });
+  tr.querySelector('.shape-details-btn')?.addEventListener('click', () => openShapeLibrary(tr));
+  updateShapeRowUI(tr);
 }
 
 function setupGlassSearch(inputElement, listElement) {
@@ -2320,6 +2575,7 @@ function updateTotals() {
     if (shapeChecked) {
       bevelCheckbox.checked = false;
     }
+    updateShapeRowUI(row);
 
     if (!glassType || !glassPartsData[glassType]) {
       row.querySelector('.eachPrice').innerText = '$0.00';
@@ -3782,14 +4038,18 @@ async function printQuote(quoteId) {
     const quoteNotes = quote.customerNotes || quote.notes || '';
 
     printWindow.document.write('<html><head><title>Quote</title>');
-    printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #000;padding:8px;text-align:center;}h2,h3{margin:0 0 8px 0;}</style>');
+    printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:24px;}table{width:100%;border-collapse:collapse;margin-top:12px;}th,td{border:1px solid #000;padding:8px;text-align:center;}h2,h3,h4{margin:0 0 8px 0;}.shape-print-block{page-break-inside:avoid;margin-top:12px;} .shape-print-diagram{max-width:360px;margin:8px auto;text-align:center;} .shape-print-diagram svg{width:100%;max-height:220px;} .shape-print-caption{font-size:12px;text-align:center;margin-top:4px;}</style>');
     printWindow.document.write('</head><body>');
     printWindow.document.write(`<div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;"><img src="/good%20logo.jpg" style="height:56px;width:auto;"><div><div>822 W Main St, Louisville KY 40202</div><div>502-583-5541 | info@kymirror.com</div></div></div>`);
     printWindow.document.write(`<h2>QUOTE ${escapeHtml(quote.quoteNumber || quote.id || '')}</h2>`);
     printWindow.document.write(`<p><strong>Customer:</strong> ${escapeHtml(cust.name || quote.customerName || '')} &nbsp; <strong>Phone:</strong> ${escapeHtml(cust.phone || quote.customerPhone || '')}</p>`);
     printWindow.document.write('<table><thead><tr><th>Qty</th><th>Size</th><th>Glass Type</th></tr></thead><tbody>');
     items.forEach(item => {
-      printWindow.document.write(`<tr><td>${item.qty || 1}</td><td>${escapeHtml(`${item.width || ''} x ${item.height || ''}`)}</td><td>${escapeHtml(item.glassType || '')}</td></tr>`);
+      const shapeText = item.shapeDetails ? ` WITH ${formatShapeSummary(item.shapeDetails)}` : (item.shape ? ' WITH SHAPE' : '');
+      printWindow.document.write(`<tr><td>${item.qty || 1}</td><td>${escapeHtml(`${item.width || ''} x ${item.height || ''}`)}</td><td>${escapeHtml((item.glassType || '') + shapeText)}</td></tr>`);
+      if (item.shapeDetails) {
+        printWindow.document.write(`<tr><td colspan="3">${renderShapePrintBlock(item.shapeDetails, `Shape Diagram - ${item.glassType || 'Item'}`)}</td></tr>`);
+      }
     });
     printWindow.document.write('</tbody></table>');
     if (quoteNotes) {
@@ -3962,6 +4222,7 @@ function gatherOrderData() {
       bevel: row.querySelector('.bevel')?.checked || false,
       bevelWidth: row.querySelector('.bevelWidth')?.value || '1/2',
       shape: row.querySelector('.shape')?.checked || false,
+      shapeDetails: getRowShapeDetails(row),
       eachPrice: row.querySelector('.eachPrice')?.innerText || '$0.00',
       lineTotal: row.querySelector('.lineTotal')?.innerText || '$0.00',
     });
@@ -4490,7 +4751,7 @@ function viewOrder(id) {
     let typeStr = escapeHtml(item.glassType || '');
     const bits = [];
     if (item.bevel) bits.push(`${escapeHtml(item.bevelWidth || '')}" BEVEL`);
-    if (item.shape) bits.push('SHAPE');
+    if (item.shape) bits.push(item.shapeDetails ? formatShapeSummary(item.shapeDetails) : 'SHAPE');
     if (bits.length === 1) typeStr += ` WITH ${bits[0]}`;
     else if (bits.length === 2) typeStr += ` WITH ${bits[0]} & ${bits[1]}`;
 
@@ -4599,7 +4860,7 @@ function printOrderFromDetail(id) {
   const items = order.items || [];
 
   let breakdownWindow = window.open('', '', 'width=800,height=600');
-  breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3 {text-align:center;} </style>');
+  breakdownWindow.document.write('<style>table {width:100%;border-collapse:collapse;} th,td {border:1px solid #000;padding:8px;text-align:center;} h2,h3,h4 {text-align:center;} .shape-print-block{page-break-inside:avoid;margin-top:12px;} .shape-print-diagram{max-width:360px;margin:8px auto;text-align:center;} .shape-print-diagram svg{width:100%;max-height:220px;} .shape-print-caption{font-size:12px;text-align:center;margin-top:4px;} </style>');
   breakdownWindow.document.write('</head><body>');
   breakdownWindow.document.write(`<h3 style="margin-bottom:5px;">${escapeHtml(order.orderNumber || '')}</h3>`);
 
@@ -4619,7 +4880,7 @@ function printOrderFromDetail(id) {
     let typeStr = item.glassType || '';
     const bits = [];
     if (item.bevel) bits.push(`${item.bevelWidth || ''}" BEVEL`);
-    if (item.shape) bits.push('SHAPE');
+    if (item.shape) bits.push(item.shapeDetails ? formatShapeSummary(item.shapeDetails) : 'SHAPE');
     if (bits.length === 1) typeStr += ` WITH ${bits[0]}`;
     else if (bits.length === 2) typeStr += ` WITH ${bits[0]} & ${bits[1]}`;
 
@@ -4630,6 +4891,9 @@ function printOrderFromDetail(id) {
       <td>${item.eachPrice || '$0.00'}</td>
       <td>${item.lineTotal || '$0.00'}</td>
     </tr>`);
+    if (item.shapeDetails) {
+      breakdownWindow.document.write(`<tr><td colspan="5">${renderShapePrintBlock(item.shapeDetails, `Shape Diagram - ${typeStr}`)}</td></tr>`);
+    }
   });
 
   breakdownWindow.document.write('</tbody></table>');
@@ -4738,6 +5002,7 @@ function populateCalculatorFromOrder(order, mode = 'order') {
       row.querySelector('.bevel').checked = item.bevel || false;
       row.querySelector('.bevelWidth').value = item.bevelWidth || '1/2';
       row.querySelector('.shape').checked = item.shape || false;
+      writeShapeDetails(row, item.shapeDetails || null);
     });
     for (let i = 0; i < 2; i++) addRow();
   }

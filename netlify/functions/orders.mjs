@@ -88,23 +88,113 @@ function renderCompanyHeader(docTitle) {
   `;
 }
 
+
+function getShapeName(shapeId) {
+  const names = {
+    rectangle: "Rectangle / Square",
+    circle: "Circle",
+    oval: "Oval",
+    arch: "Arch Top",
+    halfCircle: "Half Circle",
+    triangle: "Triangle",
+    trapezoid: "Trapezoid",
+    rightTriangle: "Right Triangle",
+    radiusCorner: "Radius Corner",
+    notchedRectangle: "Notched Rectangle",
+  };
+  return names[shapeId] || "Custom Shape";
+}
+
+function getShapePath(shapeId) {
+  const paths = {
+    rectangle: "M20 20 H180 V120 H20 Z",
+    circle: "M100 20 A60 60 0 1 1 99.9 20 Z",
+    oval: "M20 70 A80 45 0 1 1 180 70 A80 45 0 1 1 20 70 Z",
+    arch: "M25 120 V65 A75 45 0 0 1 175 65 V120 Z",
+    halfCircle: "M20 120 A80 80 0 0 1 180 120 Z",
+    triangle: "M100 20 L180 120 H20 Z",
+    trapezoid: "M60 25 H140 L180 120 H20 Z",
+    rightTriangle: "M35 20 V120 H170 Z",
+    radiusCorner: "M20 120 V20 H145 A35 35 0 0 1 180 55 V120 Z",
+    notchedRectangle: "M20 20 H180 V120 H20 V80 H65 V55 H20 Z",
+  };
+  return paths[shapeId] || paths.rectangle;
+}
+
+function shapeDimensionLabel(key) {
+  const labels = {
+    width: "Width",
+    height: "Height",
+    diameter: "Diameter",
+    legHeight: "Straight Leg Height",
+    base: "Base",
+    topWidth: "Top Width",
+    bottomWidth: "Bottom Width",
+    radius: "Radius",
+    notchWidth: "Notch Width",
+    notchHeight: "Notch Height",
+  };
+  return labels[key] || key;
+}
+
+function formatShapeSummary(details = {}) {
+  if (!details || !details.shapeId) return "";
+  const dims = Object.entries(details.dimensions || {})
+    .filter(([key, value]) => key !== "notes" && String(value || "").trim())
+    .map(([key, value]) => `${shapeDimensionLabel(key)}: ${value}`);
+  return [getShapeName(details.shapeId), ...dims].join(" | ");
+}
+
+function renderShapeDiagram(details, title = "") {
+  if (!details || !details.shapeId) return "";
+  const dims = Object.entries(details.dimensions || {})
+    .filter(([, value]) => String(value || "").trim())
+    .map(([key, value]) => `${shapeDimensionLabel(key)}: ${value}`);
+  const notes = details.dimensions?.notes ? String(details.dimensions.notes).trim() : "";
+  return `
+    <div class="shape-diagram-block">
+      ${title ? `<h4>${escapeHtml(title)}</h4>` : ""}
+      <div class="shape-diagram">
+        <svg viewBox="0 0 200 150" role="img" aria-label="${escapeHtml(getShapeName(details.shapeId))} diagram">
+          <path d="${getShapePath(details.shapeId)}" fill="rgba(0,123,255,0.10)" stroke="#000" stroke-width="3"></path>
+          <line x1="20" y1="136" x2="180" y2="136" stroke="#333" stroke-width="1.5"></line>
+          <line x1="20" y1="132" x2="20" y2="140" stroke="#333" stroke-width="1.5"></line>
+          <line x1="180" y1="132" x2="180" y2="140" stroke="#333" stroke-width="1.5"></line>
+          <line x1="188" y1="20" x2="188" y2="120" stroke="#333" stroke-width="1.5"></line>
+          <line x1="184" y1="20" x2="192" y2="20" stroke="#333" stroke-width="1.5"></line>
+          <line x1="184" y1="120" x2="192" y2="120" stroke="#333" stroke-width="1.5"></line>
+          <text x="100" y="147" text-anchor="middle" font-size="10">${escapeHtml(dims[0] || "WIDTH")}</text>
+          <text x="196" y="75" text-anchor="middle" font-size="10" transform="rotate(90 196 75)">${escapeHtml(dims[1] || "HEIGHT")}</text>
+          ${notes ? `<text x="100" y="14" text-anchor="middle" font-size="9">${escapeHtml(notes)}</text>` : ""}
+        </svg>
+      </div>
+      <div class="shape-caption"><b>${escapeHtml(formatShapeSummary(details))}</b></div>
+    </div>`;
+}
+
+function itemDescription(it) {
+  const desc =
+    it.description ??
+    it.name ??
+    [
+      it.glassType || it.type,
+      it.thickness,
+      it.width && it.height ? `${it.width} x ${it.height}` : "",
+      it.edgework || it.bevel ? `Edge/Bevel: ${it.edgework || ""} ${it.bevel ? (it.bevelWidth || "") : ""}` : "",
+      it.shape ? (it.shapeDetails ? `Shape: ${formatShapeSummary(it.shapeDetails)}` : "Shape") : "",
+      it.notes,
+    ]
+      .filter(Boolean)
+      .join(" • ");
+  return desc;
+}
+
 function renderItemsTable(order) {
   const items = Array.isArray(order.items) ? order.items : [];
   const rows = items
     .map((it, idx) => {
       const qty = it.qty ?? it.quantity ?? "";
-      const desc =
-        it.description ??
-        it.name ??
-        [
-          it.glassType || it.type,
-          it.thickness,
-          it.width && it.height ? `${it.width} x ${it.height}` : "",
-          it.edgework || it.bevel ? `Edge/Bevel: ${it.edgework || ""} ${it.bevel ? (it.bevelWidth || "") : ""}` : "",
-          it.notes,
-        ]
-          .filter(Boolean)
-          .join(" • ");
+      const desc = itemDescription(it);
 
       const unit = it.unitPrice ?? it.price ?? "";
       const total = it.total ?? it.lineTotal ?? "";
@@ -117,6 +207,7 @@ function renderItemsTable(order) {
           <td class="right">${unit === "" ? "" : escapeHtml(money(unit))}</td>
           <td class="right">${total === "" ? "" : escapeHtml(money(total))}</td>
         </tr>
+        ${it.shapeDetails ? `<tr><td colspan="5">${renderShapeDiagram(it.shapeDetails, `Shape Diagram - Item ${idx + 1}`)}</td></tr>` : ""}
       `;
     })
     .join("");
@@ -144,18 +235,7 @@ function renderItemsTableNoMoney(order) {
   const rows = items
     .map((it, idx) => {
       const qty = it.qty ?? it.quantity ?? "";
-      const desc =
-        it.description ??
-        it.name ??
-        [
-          it.glassType || it.type,
-          it.thickness,
-          it.width && it.height ? `${it.width} x ${it.height}` : "",
-          it.edgework || it.bevel ? `Edge/Bevel: ${it.edgework || ""} ${it.bevel ? (it.bevelWidth || "") : ""}` : "",
-          it.notes,
-        ]
-          .filter(Boolean)
-          .join(" • ");
+      const desc = itemDescription(it);
 
       return `
         <tr>
@@ -163,6 +243,7 @@ function renderItemsTableNoMoney(order) {
           <td>${escapeHtml(desc)}</td>
           <td class="right">${escapeHtml(qty)}</td>
         </tr>
+        ${it.shapeDetails ? `<tr><td colspan="3">${renderShapeDiagram(it.shapeDetails, `Shape Diagram - Item ${idx + 1}`)}</td></tr>` : ""}
       `;
     })
     .join("");
@@ -258,6 +339,10 @@ function baseStyles() {
       .totals { width: 320px; margin-left:auto; margin-top:12px; }
       .signature { margin-top:28px; display:flex; gap:24px; }
       .sigline { flex:1; border-top:1px solid #000; padding-top:6px; min-height:24px; }
+      .shape-diagram-block { page-break-inside: avoid; margin-top: 8px; text-align:center; }
+      .shape-diagram { max-width: 340px; margin: 6px auto; }
+      .shape-diagram svg { width: 100%; max-height: 210px; }
+      .shape-caption { font-size: 12px; }
       @page { margin: 14mm; }
     </style>
   `;
@@ -334,7 +419,7 @@ function renderTicketHTML(order) {
       const thk = it.thickness || it.thk || "";
       const edge = it.edgework || (it.bevel ? `Bevel ${it.bevelWidth || ""}` : "") || "";
       const temper = it.tempered ? "YES" : (it.temp ? "YES" : "");
-      const notes = it.notes || it.instructions || it.descNotes || it.description || "";
+      const notes = [it.notes || it.instructions || it.descNotes || it.description || "", it.shapeDetails ? formatShapeSummary(it.shapeDetails) : ""].filter(Boolean).join(" | ");
 
       return `
         <tr>
@@ -347,6 +432,7 @@ function renderTicketHTML(order) {
           <td class="right">${escapeHtml(temper)}</td>
           <td>${escapeHtml(notes)}</td>
         </tr>
+        ${it.shapeDetails ? `<tr><td colspan="8">${renderShapeDiagram(it.shapeDetails, `Shape Diagram - Item ${idx + 1}`)}</td></tr>` : ""}
       `;
     })
     .join("");
@@ -364,6 +450,10 @@ function renderTicketHTML(order) {
     th, td { border:2px solid #000; padding:10px; font-size:13px; vertical-align:top; }
     th { font-size:12px; }
     .notes { margin-top:12px; border:2px solid #000; padding:10px; min-height:80px; }
+    .shape-diagram-block { page-break-inside: avoid; margin-top: 8px; text-align:center; }
+    .shape-diagram { max-width: 340px; margin: 6px auto; }
+    .shape-diagram svg { width: 100%; max-height: 210px; }
+    .shape-caption { font-size: 12px; }
     @page { margin: 12mm; }
   </style>
 </head>
@@ -411,7 +501,7 @@ function renderPackingListHTML(order) {
       const qty = it.qty ?? it.quantity ?? "";
       const size = it.width && it.height ? `${it.width} x ${it.height}` : (it.size || "");
       const glass = it.glassType || it.type || "";
-      const notes = it.notes || it.instructions || "";
+      const notes = [it.notes || it.instructions || "", it.shapeDetails ? formatShapeSummary(it.shapeDetails) : ""].filter(Boolean).join(" | ");
 
       return `
         <tr>
@@ -421,6 +511,7 @@ function renderPackingListHTML(order) {
           <td>${escapeHtml(glass)}</td>
           <td>${escapeHtml(notes)}</td>
         </tr>
+        ${it.shapeDetails ? `<tr><td colspan="5">${renderShapeDiagram(it.shapeDetails, `Shape Diagram - Item ${idx + 1}`)}</td></tr>` : ""}
       `;
     })
     .join("");
