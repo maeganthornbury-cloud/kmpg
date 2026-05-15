@@ -1052,6 +1052,27 @@ body.auth-locked .auth-gate{ display:flex; }
 #breakageMaterialTotal{ display:none; }
 @media (max-width: 1000px){ .breakage-layout{ flex-direction:column; } }
 
+
+/* Embedded Glass Price List */
+.glass-price-list{
+  font-family: Arial, sans-serif;
+  background:#f4f4f4;
+  padding:0 0 20px;
+}
+.glass-price-list table{
+  width:80%;
+  border-collapse:collapse;
+  margin:0 auto 20px;
+  background:#fff;
+}
+.glass-price-list th,.glass-price-list td{
+  padding:6px;
+  text-align:center;
+  border:1px solid #ddd;
+}
+.glass-price-list th{ background:#f2f2f2; }
+@media (max-width: 900px){ .glass-price-list table{ width:100%; } }
+
 /* Put legacy sections inside card nicely */
 #calculator-section, #customer-section, #orders-section{ max-width: none !important; }
 
@@ -1486,8 +1507,19 @@ body.auth-locked .auth-gate{ display:flex; }
           </div>
 
           <div id="pricelist-section" style="display:none;">
-            <div class="kympg-iframeWrap">
-              <iframe src="https://kymirrorpricelist.netlify.app" title="Sq Ft Price List"></iframe>
+            <div class="glass-price-list" id="glassPriceList">
+              <table id="glassPriceListTable">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Price per Sq Ft ($)</th>
+                    <th>Minimum Charge ($)</th>
+                  </tr>
+                </thead>
+                <tbody id="glassPriceListBody">
+                  <tr><td colspan="3">Loading glass prices...</td></tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -5672,6 +5704,31 @@ function initBreakageCalculator() {
   clearBreakageForm();
 }
 
+
+function formatPriceListNumber(value) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return '0';
+  return Number.isInteger(num) ? String(num) : String(num).replace(/0+$/, '').replace(/\.$/, '');
+}
+
+function renderGlassPriceList() {
+  const tbody = document.getElementById('glassPriceListBody');
+  if (!tbody) return;
+  const entries = Object.entries(standardglassPartsData || {});
+  if (!entries.length) {
+    tbody.innerHTML = '<tr><td colspan="3">No glass pricing data loaded.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = entries.map(([type, info]) => `
+    <tr>
+      <td>${escapeHtml(type)}</td>
+      <td>${formatPriceListNumber(info.price)}</td>
+      <td>${formatPriceListNumber(info.min)}</td>
+    </tr>
+  `).join('');
+}
+
 // ===================== STARTUP =====================
 document.addEventListener("DOMContentLoaded", async function () {
   const specialToggle = document.getElementById('specialPricingToggle');
@@ -5687,6 +5744,7 @@ document.addEventListener("DOMContentLoaded", async function () {
   try { if (typeof startNewOrder === 'function') startNewOrder(); } catch (e) {}
 
   initBreakageCalculator();
+  renderGlassPriceList();
 
   await loadCalcCustomers();
   setupCustomerLookup();
@@ -6610,6 +6668,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (which === 'pricelist'){
       const p = document.getElementById('pricelist-section');
       if (p){ p.style.display = 'block'; }
+      renderGlassPriceList();
       kympgSetHeader('Sq Ft Price List', 'Reference pricing inside the app.', 'Sq Ft Price List', 'Tool');
       return;
     }
